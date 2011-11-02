@@ -24,5 +24,5 @@ int main(int argc, char* argv[])
 
 	glutMainLoop();
 
-	exit(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }
