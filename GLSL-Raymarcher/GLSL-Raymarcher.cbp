@@ -16,6 +16,9 @@
 					<Add option="-g" />
 					<Add directory="../src" />
 				</Compiler>
+				<Linker>
+					<Add option="-lglut -lGLEW" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/GLSL-Raymarcher" prefix_auto="1" extension_auto="1" />
