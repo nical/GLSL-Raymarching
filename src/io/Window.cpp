@@ -26,6 +26,10 @@ namespace io{
   {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // implement the scene rendering here.
+    // like:
+    _render->drawScene();
+
     glutSwapBuffers();
     glutPostRedisplay();
   }
