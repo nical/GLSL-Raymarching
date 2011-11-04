@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "io/Window.hpp"
+#include "renderer/Renderer.hpp"
 
 
 #include <GL/glew.h>
@@ -24,11 +25,11 @@ namespace io{
 
   void RenderFunction(void)
   {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // implement the scene rendering here.
     // like:
-    _render->drawScene();
+    _renderer->drawScene();
 
     glutSwapBuffers();
     glutPostRedisplay();
@@ -85,7 +86,7 @@ namespace io{
       glGetString(GL_VERSION)
     );
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    r->init();
 
     _renderer = r;
   }

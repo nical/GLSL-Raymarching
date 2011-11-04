@@ -4,6 +4,7 @@
 #include <string.h>
 #include "io/Window.hpp"
 #include "renderer/DefaultShaders.hpp"
+#include "renderer/Renderer.hpp"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -18,7 +19,7 @@ void RenderFunction(void);
 
 int main(int argc, char* argv[])
 {
-  renderer::Renderer* _renderer = 0;
+  renderer::Renderer* _renderer = new renderer::Renderer;
 
 	io::InitWindow(_renderer, WIDTH, HEIGHT, WINDOW_TITLE_PREFIX, argc, argv);
 
