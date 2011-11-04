@@ -15,6 +15,7 @@
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="../src" />
+					<Add directory="../extern" />
 				</Compiler>
 				<Linker>
 					<Add option="-lglut -lGLEW" />
@@ -42,6 +43,8 @@
 		<Unit filename="../src/main.cpp" />
 		<Unit filename="../src/renderer/DefaultShaders.cpp" />
 		<Unit filename="../src/renderer/DefaultShaders.hpp" />
+		<Unit filename="../src/renderer/Renderer.cpp" />
+		<Unit filename="../src/renderer/Renderer.hpp" />
 		<Unit filename="../src/renderer/ShaderProgram.hpp" />
 		<Unit filename="../src/shaders/Raymarching.fs" />
 		<Unit filename="../src/shaders/Raymarching.vs" />
