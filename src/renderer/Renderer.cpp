@@ -20,6 +20,8 @@ namespace renderer{
   void Renderer::init(){
     createPlane();
 
+    projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
+
     glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
   }
 
@@ -35,9 +37,9 @@ namespace renderer{
   void Renderer::createPlane(){
     GLfloat vertices[12] = {
       0.0, 0.0, 0.0,
-      10.0, 0.0, 0.0,
-      10.0, 10.0, 0.0,
-      0.0, 10.0, 0.0
+      1.0, 0.0, 0.0,
+      1.0, 1.0, 0.0,
+      0.0, 1.0, 0.0
     };
 
     //  Generate and bind Vertex Array
