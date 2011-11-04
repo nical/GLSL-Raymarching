@@ -5,7 +5,7 @@
 
 namespace utils{
 
-const char* LoadFile( const char* path );
+  unsigned int LoadFile( const char* path, char *& buffer );
 
 }//namespace
 
