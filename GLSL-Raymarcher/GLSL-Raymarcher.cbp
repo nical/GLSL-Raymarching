@@ -38,6 +38,8 @@
 			<Add option="-Wall" />
 			<Add option="-lglut -lGLEW" />
 		</Compiler>
+		<Unit filename="../extern/shaderLoader/shader.cpp" />
+		<Unit filename="../extern/shaderLoader/shader.hpp" />
 		<Unit filename="../src/io/Window.cpp" />
 		<Unit filename="../src/io/Window.hpp" />
 		<Unit filename="../src/main.cpp" />
@@ -46,8 +48,8 @@
 		<Unit filename="../src/renderer/Renderer.cpp" />
 		<Unit filename="../src/renderer/Renderer.hpp" />
 		<Unit filename="../src/renderer/ShaderProgram.hpp" />
-		<Unit filename="../src/shaders/Raymarching.fs" />
-		<Unit filename="../src/shaders/Raymarching.vs" />
+		<Unit filename="../src/shaders/Raymarching.frag" />
+		<Unit filename="../src/shaders/Raymarching.vert" />
 		<Unit filename="../src/utils/LoadFile.cpp" />
 		<Unit filename="../src/utils/LoadFile.hpp" />
 		<Extensions>

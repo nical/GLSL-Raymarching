@@ -8,7 +8,7 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#define WINDOW_TITLE_PREFIX "Chapter 1"
+#define WINDOW_TITLE_PREFIX "Raymarcher Shader"
 #define WIDTH     800
 #define HEIGHT    600
 

@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "shaderLoader/shader.hpp"
 
 namespace renderer{
 
@@ -25,6 +26,8 @@ namespace renderer{
       glm::mat4 projectionMatrix;
       glm::mat4 viewMatrix;
       glm::mat4 modelMatrix;
+
+      Shader *planeShader;
 
       void createPlane();
   };
