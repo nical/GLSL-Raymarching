@@ -27,6 +27,7 @@ namespace renderer{
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
     glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
+    //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   }
 
   void Renderer::drawScene(){
