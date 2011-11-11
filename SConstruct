@@ -8,5 +8,7 @@ includeDirs = ['src/', 'extern/']
 # libraries
 libraries = ['GLEW','glut']
 
+# build flags
+buildFlags = ['-pg', '-g']
 # build
-Program( 'raymarcher', src, CPPPATH = includeDirs, LIBS=libraries )
+Program( 'raymarcher', src, CPPFLAGS=buildFlags, CPPPATH = includeDirs, LIBS=libraries )

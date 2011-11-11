@@ -12,9 +12,11 @@
 using namespace std;
 namespace io{
 
-  int CurrentWidth;
-	int CurrentHeight;
-	int WindowHandle = 0;
+    static const int TIMERMSECS = 10;
+
+    int CurrentWidth;
+    int CurrentHeight;
+    int WindowHandle = 0;
 
   static renderer::Renderer* _renderer;
 
@@ -25,8 +27,11 @@ namespace io{
     glViewport(0, 0, CurrentWidth, CurrentHeight);
   }
 
-  void RenderFunction(void)
+  
+  void RenderFunction( int millisec )
   {
+    glutTimerFunc(millisec, RenderFunction, 0);
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // implement the scene rendering here.
@@ -34,7 +39,6 @@ namespace io{
     _renderer->drawScene();
 
     glutSwapBuffers();
-    sleep(1);
     glutPostRedisplay();
   }
 
@@ -69,7 +73,8 @@ namespace io{
     }
 
     glutReshapeFunc(ResizeFunction);
-    glutDisplayFunc(RenderFunction);
+    glutTimerFunc(TIMERMSECS, RenderFunction, 0);
+    //glutDisplayFunc(RenderFunction);
 
     GLenum GlewInitResult = glewInit();
 

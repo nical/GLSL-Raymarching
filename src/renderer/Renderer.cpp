@@ -57,7 +57,7 @@ namespace renderer{
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
-
+    glFinish();
     //glBindBuffer(GL_ARRAY_BUFFER,0);
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
