@@ -33,8 +33,7 @@ namespace renderer{
   }
 
   void Renderer::drawScene(){
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_INDEX_ARRAY);
+
 
     planeShader->bind();
 
@@ -51,12 +50,10 @@ namespace renderer{
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
 
-    glDisable(GL_CULL_FACE);
-
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
 
-    glBindBuffer(GL_ARRAY_BUFFER,0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+    //glBindBuffer(GL_ARRAY_BUFFER,0);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
     planeShader->unbind();
 

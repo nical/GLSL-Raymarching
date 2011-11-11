@@ -1,5 +1,5 @@
 #version 330
-#define MAX_STEPS 200
+#define MAX_STEPS 100
 
 in vec3 pass_Color;
 
@@ -60,6 +60,7 @@ vec3 applyFog( in vec3 rgb, in float distance ){
 
 void main(void)
 {
+out_Color=vec4(1.0,1.0,0.0, 1.0);
 
   float windowRatio = 8.0/6.0;
 

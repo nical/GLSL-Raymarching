@@ -34,6 +34,7 @@ namespace io{
     _renderer->drawScene();
 
     glutSwapBuffers();
+    sleep(1);
     glutPostRedisplay();
   }
 
