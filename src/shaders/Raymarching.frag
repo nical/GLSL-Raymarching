@@ -5,6 +5,8 @@ in vec3 pass_Color;
 
 out vec4 out_Color;
 
+uniform float fuffaTime;
+
 float PlaneDistance(vec3 point, vec3 normal, float pDistance)
 {
 	return dot(point - (normal * pDistance), normal);
@@ -56,9 +58,8 @@ vec3 rayCast(vec3 position, vec3 direction, out vec3 hitColour){
     position += nextDistance * direction;
   }*/
 
-  while (position.z <= 10000){
-    i++;
-    lastCubeDistance = CubeDistance(position, vec3(5.0, 1.0, 50.0), vec3(1.0, 2.0, 1.0));
+  while (position.z <= 1000){
+    lastCubeDistance = CubeDistance(position, vec3(5.0, 1.0, mod(-fuffaTime, 70.0)), vec3(1.0, 2.0, 1.0));
     lastPlaneDistance = PlaneDistance(position, vec3(0.0, 1.0, 0.0), -1.0);
     nextDistance = min(lastCubeDistance, lastPlaneDistance);
     if (nextDistance < 0.2) {

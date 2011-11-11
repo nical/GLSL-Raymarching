@@ -31,6 +31,7 @@ namespace renderer{
     //glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+    fuffaTime = 0;
   }
 
   void Renderer::drawScene(){
@@ -42,10 +43,13 @@ namespace renderer{
     GLint projectionMatrixLocation = glGetUniformLocation(planeShader->id(), "projectionMatrix");
     GLint viewMatrixLocation = glGetUniformLocation(planeShader->id(), "viewMatrix");
     GLint modelMatrixLocation = glGetUniformLocation(planeShader->id(), "modelMatrix");
+    GLint timeLocation = glGetUniformLocation(planeShader->id(), "fuffaTime");
 
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform1f(timeLocation, fuffaTime);
+    fuffaTime++;
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
     glVertexPointer(3,GL_FLOAT,0,0);
