@@ -20,7 +20,7 @@ namespace renderer{
 
     private:
 
-      unsigned int vaoID[1];
+      unsigned int iboID[1];
       unsigned int vboID[1];
 
       glm::mat4 projectionMatrix;

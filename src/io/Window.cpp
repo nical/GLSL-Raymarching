@@ -7,7 +7,9 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <iostream>
 
+using namespace std;
 namespace io{
 
   int CurrentWidth;
@@ -86,8 +88,10 @@ namespace io{
       glGetString(GL_VERSION)
     );
 
+    if(r==0)cout<<"r=0\n";
+    cout<<"there!\n";
     r->init();
-
+    cout<<"bwaaaaah\n";
     _renderer = r;
   }
 }//namespace

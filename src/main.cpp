@@ -11,7 +11,7 @@
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"
 #define WIDTH     800
 #define HEIGHT    600
-
+#include <iostream>
 void Initialize(int, char*[]);
 void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
@@ -19,10 +19,11 @@ void RenderFunction(void);
 
 int main(int argc, char* argv[])
 {
-  renderer::Renderer* _renderer = new renderer::Renderer;
-
+    std::cout<<"plop\n";
+    renderer::Renderer* _renderer = new renderer::Renderer;
+    std::cout<<"plop\n";
 	io::InitWindow(_renderer, WIDTH, HEIGHT, WINDOW_TITLE_PREFIX, argc, argv);
-
+    std::cout<<"plop\n";
 	glutMainLoop();
 
 	return (EXIT_SUCCESS);
