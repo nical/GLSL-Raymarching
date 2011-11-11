@@ -7,6 +7,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -33,8 +34,8 @@ namespace renderer{
   }
 
   void Renderer::drawScene(){
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_INDEX_ARRAY);
+    //glEnableClientState(GL_VERTEX_ARRAY);
+    //glEnableClientState(GL_INDEX_ARRAY);
 
     planeShader->bind();
 
@@ -51,7 +52,7 @@ namespace renderer{
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
 
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
 
