@@ -29,6 +29,8 @@ namespace renderer{
 
       Shader *planeShader;
 
+      float fuffaTime;
+
       void createPlane();
   };
 } //  namespace

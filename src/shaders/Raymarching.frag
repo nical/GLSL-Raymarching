@@ -5,6 +5,8 @@ in vec3 pass_Color;
 
 out vec4 out_Color;
 
+uniform float fuffaTime;
+
 float PlaneDistance(vec3 point, vec3 normal, float pDistance)
 {
 	return dot(point - (normal * pDistance), normal);
@@ -20,6 +22,8 @@ float SphereDistance(vec3 point, vec3 center, float radius)
 }
 
 float CubeDistance(vec3 point, vec3 center, vec3 size) {
+  point.z = mod (point.z, 70.0);
+  point.x = mod (point.x, 20.0);
   vec3 d = point - center;
 	return max(max(abs(d.x) - size.x, abs(d.y) - size.y), abs(d.z) - size.z);
 }
@@ -37,15 +41,36 @@ float TorusDistance(vec3 point, vec3 center, float minorRadius, float majorRadiu
 }
 
 
-vec3 rayCast(vec3 position, vec3 direction){
-  int i;
+vec3 rayCast(vec3 position, vec3 direction, out vec3 hitColour){
+  int i = 0;
   float nextDistance;
+  float lastCubeDistance;
+  float lastPlaneDistance;
 
-  for (i = 0; (i < MAX_STEPS) ; i++){
+  /*for (i = 0; (i < MAX_STEPS) ; i++){
     //nextDistance = min(planeDistance (position, vec4(0.0, 1.0, 0.0, 0.0)), planeDistance(position, vec4(1.0, 0.0, 0.0, 25.0)));
-    nextDistance = min(SphereDistance(position, vec3(10.0, 10.0, 50.0), 3.0), CubeDistance(position, vec3(10.0, -15.0, 100.0), vec3(3.0)));
-    nextDistance = min(nextDistance, TorusDistance(position, vec3(0.0, -20.0, 60.0), 1.0, 5.0));
+    //nextDistance = min(SphereDistance(position, vec3(10.0, 10.0, 50.0), 3.0), CubeDistance(position, vec3(10.0, -15.0, 100.0), vec3(3.0)));
+    //nextDistance = min(nextDistance, TorusDistance(position, vec3(0.0, -20.0, 60.0), 1.0, 5.0));
     //nextDistance = SphereDistance(position, vec3(10.0, 10.0, 50.0), 3.0);
+    //nextDistance = min(PlaneDistance(position, vec3(0.0, 1.0, 0.0), -10.0), CubeDistance(position, vec3(0.0, 1.0, 0.0), vec3(1.0, 2.0, 1.0)));
+
+    nextDistance = CubeDistance(position, vec3(5.0, 0.0, 50.0), vec3(1.0, 2.0, 1.0));
+    position += nextDistance * direction;
+  }*/
+
+  while (position.z <= 1000){
+    lastCubeDistance = CubeDistance(position, vec3(5.0, 1.0, mod(-fuffaTime, 70.0)), vec3(1.0, 2.0, 1.0));
+    lastPlaneDistance = PlaneDistance(position, vec3(0.0, 1.0, 0.0), -1.0);
+    nextDistance = min(lastCubeDistance, lastPlaneDistance);
+    if (nextDistance < 0.2) {
+      if (lastCubeDistance < lastPlaneDistance) {
+        hitColour = vec3(0.0, 0.0, 1.0);
+      } else {
+        hitColour = vec3(0.42, 0.88, 0.11);
+      }
+      break;
+    }
+    hitColour = vec3(0.4, 0.6, 0.9);
     position += nextDistance * direction;
   }
 
@@ -55,7 +80,7 @@ vec3 rayCast(vec3 position, vec3 direction){
 vec3 applyFog( in vec3 rgb, in float distance ){
     float fogAmount = exp( -distance* 0.006 );
     vec3  fogColor  = vec3(0.5,0.6,0.7);
-    return mix( rgb, fogColor, fogAmount );
+    return mix( fogColor, rgb, fogAmount );
 }
 
 void main(void)
@@ -75,12 +100,13 @@ out_Color=vec4(1.0,1.0,0.0, 1.0);
   normalizedPosition.y = ((gl_FragCoord.y)/ 600.0) - 0.5;
 
   vec3 direction = normalize(vec3(normalizedPosition, 4.0));
-  vec3 landingPixel = rayCast (vec3(0.0, 0.0, 0.0), direction) * 0.1;
+  vec3 landingPixel = rayCast (vec3(0.0, 0.0, 0.0), direction, groundColour) * 0.1;
   float fogFactor = 1.0 - (1.0 / exp(landingPixel.z * 0.006));
 
-  colour = mix (groundColour, skyColour, fogFactor);
+  //colour = mix (groundColour, skyColour, fogFactor);
 
-  //colour = applyFog(groundColour, landingPixel.z);
+  colour = applyFog(groundColour, landingPixel.z);
+  //colour = vec3(landingPixel.z/10000);
 
   out_Color = vec4(colour, 1.0);
 
