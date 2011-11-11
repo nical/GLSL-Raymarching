@@ -60,8 +60,7 @@ vec3 applyFog( in vec3 rgb, in float distance ){
 
 void main(void)
 {
-   out_Color = vec4(1.0,1.0,0.0, 1.0);
-/*
+
   float windowRatio = 8.0/6.0;
 
   vec2 normalizedPosition;
@@ -83,7 +82,7 @@ void main(void)
   //colour = applyFog(groundColour, landingPixel.z);
 
   out_Color = vec4(colour, 1.0);
-*/
+
   /*if (landingPixel.z <= 350.0) {
     discard;
   }*/
