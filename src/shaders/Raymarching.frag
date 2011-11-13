@@ -6,6 +6,7 @@ in vec3 pass_Color;
 out vec4 out_Color;
 
 uniform float fuffaTime;
+uniform vec2 windowSize;
 
 #define epsilon 0.01
 
@@ -35,8 +36,8 @@ float SphereDistanceNormal(vec3 point, vec3 center, float radius, out vec3 norma
 float Building1Distance(in vec3 point)
 {
     vec3 size = vec3(2.0, 3.0, 2.0);
-    float tempz = point.z; 
-    float tempx = point.x; 
+    float tempz = point.z;
+    float tempx = point.x;
     point.z = mod (point.z+10, 17.0)-10;
     point.x = mod (point.x+10, 27.0)-10;
     size.y =  2+abs(sin(floor(tempx/27) + sin( 1.3*floor(tempz/17))) + sin(0.5*floor(tempz/17)) ) * 3;
@@ -92,7 +93,7 @@ float TorusDistance(vec3 point, vec3 center, float minorRadius, float majorRadiu
 
 
 void applyFog( in float distance, inout vec3 rgb ){
-    
+
     float fogAmount =  (1.0 - clamp(distance*0.00004,0.0,1.0) );
     //float fogAmount = exp( -distance* 0.006 );
     vec3  fogColor  = vec3(0.9,0.95,1);
@@ -105,24 +106,24 @@ vec3 AmbiantOcclusion2( in vec3 position, in vec3 direction )
     float sphereDist        = 2*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 0.5 );
     float planeDist         = 2*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 0.5 );
     float building1Dist     = 2*clamp( Building1Distance(newPos)                       , 0, 0.5 );
-    newPos += direction*2;    
+    newPos += direction*2;
     float sphereDist2       = 0.5*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 2.5 );
     float planeDist2        = 0.5*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 2.5 );
     float building1Dist2    = 0.5*clamp( Building1Distance(newPos)                       , 0, 2.5 );
-    newPos += direction*2;                                                                 
+    newPos += direction*2;
     float sphereDist3       = 0.2*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 4.5 );
     float planeDist3        = 0.2*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 4.5 );
     float building1Dist3    = 0.2*clamp( Building1Distance(newPos)                       , 0, 4.5 );
-    newPos += direction*3;                                                                 
+    newPos += direction*3;
     float sphereDist4       = 0.15*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 7.5 );
     float planeDist4        = 0.15*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 7.5 );
     float building1Dist4    = 0.15*clamp( Building1Distance(newPos)                       , 0, 7.5 );
 
     float sphereFactor = (sphereDist + 0.5 * sphereDist2 + 0.25 * sphereDist3 + 0.10 * sphereDist4);
 
-    return  
-        ( 
-          vec3(0.9,0.7,0.5) * (planeDist + 0.5 * planeDist2 + 0.25 * planeDist3 + 0.10 * planeDist4) 
+    return
+        (
+          vec3(0.9,0.7,0.5) * (planeDist + 0.5 * planeDist2 + 0.25 * planeDist3 + 0.10 * planeDist4)
         + vec3(0.9,0.7,0.5) * (building1Dist + 0.5 * building1Dist2 + 0.25 * building1Dist3 + 0.10 * building1Dist4)
         - vec3(-0.3,1.0,1.0) * (1-sphereFactor)
         ) * 0.2;
@@ -146,14 +147,14 @@ float AmbiantOcclusion( in vec3 position, in vec3 direction )
     float sphereDist4 = SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0);
     float planeDist4  = PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0);
     float building1Dist4 = Building1Distance(newPos);
-    
+
     float occlusion =(
         1-min(min( sphereDist, planeDist ), building1Dist1) * 0.5
         + (3- min(building1Dist2,min( sphereDist2, planeDist2 )))*0.25
         + (5- min(building1Dist3,min( sphereDist3, planeDist3 )))*0.15
         + (8- min(building1Dist3,min( sphereDist3, planeDist3 )))*0.10
     )/3.0;
-    
+
     return clamp(1.0-occlusion,0.0,1.0)*0.6+0.4 ;
 }
 
@@ -176,7 +177,7 @@ vec3 rayCast(in vec3 position, in vec3 direction, inout vec3 hitColor){
     int selected = 0;
 
     nextDistance = lastPlaneDistance;
-    
+
     if( lastSphereDistance < lastPlaneDistance )
     {
         selected = 2;
@@ -187,9 +188,9 @@ vec3 rayCast(in vec3 position, in vec3 direction, inout vec3 hitColor){
         selected = 1;
         nextDistance = lastCubeDistance;
     }
-    
+
     if (nextDistance < 0.1) {
-      hit = true;  
+      hit = true;
       if (selected == 2) { // spheres
         hitColor = vec3(1.0, 0.0, 0.05) * (1.0+dot(sphereNormal, vec3(0.4,0.4,0.0))) * AmbiantOcclusion(position, sphereNormal*1.1 );
         //hitColor.b = 0.9;
@@ -222,7 +223,7 @@ vec3 rayCast(in vec3 position, in vec3 direction, inout vec3 hitColor){
     hitColor = AmbiantOcclusion2(position, vec3(0.0,1.0,0.0));
     applyFog( dot(position-origin,position-origin), hitColor );
   }
-      
+
   return position;
 }
 
@@ -233,21 +234,19 @@ float darkenCorners(in vec2 screenPos)
 
 void main(void)
 {
-  vec2 resolution = vec2(640.0, 480.0);
-
-  float windowRatio = resolution.x / resolution.y;
+  float windowRatio = windowSize.x / windowSize.y;
 
   vec3 color;
   vec3 skyColor = vec3(0.9, 0.95, 1);
   vec3 hitColor = skyColor;
 
   vec2 screenPos;
-  screenPos.x = (gl_FragCoord.x/resolution.x - 0.5)*windowRatio;
-  screenPos.y =  gl_FragCoord.y/resolution.y - 0.5;
+  screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5)*windowRatio;
+  screenPos.y =  gl_FragCoord.y/windowSize.y - 0.5;
 
   vec3 direction = normalize(vec3(screenPos.x,screenPos.y, 1.0));
   vec3 position = vec3(5*sin(fuffaTime*0.01), 12.0, fuffaTime);
-  
+
   vec3 landingPixel = rayCast (position, direction, hitColor) * 0.1;
 
   //scanlines

@@ -13,10 +13,6 @@ using namespace std;
 
 namespace renderer{
 
-  Renderer::Renderer(){
-
-  }
-
   Renderer::~Renderer(){
 
   }
@@ -44,10 +40,12 @@ namespace renderer{
     GLint viewMatrixLocation = glGetUniformLocation(planeShader->id(), "viewMatrix");
     GLint modelMatrixLocation = glGetUniformLocation(planeShader->id(), "modelMatrix");
     GLint timeLocation = glGetUniformLocation(planeShader->id(), "fuffaTime");
+    GLint windowSizeLocation = glGetUniformLocation(planeShader->id(), "windowSize");
 
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform2f(windowSizeLocation, window.x, window.y);
     glUniform1f(timeLocation, fuffaTime);
     fuffaTime++;
 
@@ -98,4 +96,16 @@ namespace renderer{
     glEnableVertexAttribArray(0);
   }
 
+  void Renderer::createBuffers(){
+
+    //  Generate and bind the framebuffers
+
+    glGenFramebuffers(1, &bufID[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
+
+    //  Generate and bind Textures to the Framebuffer
+
+
+
+  }
 }

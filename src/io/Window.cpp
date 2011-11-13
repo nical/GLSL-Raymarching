@@ -24,14 +24,15 @@ namespace io{
   {
     CurrentWidth = Width;
     CurrentHeight = Height;
+    _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     glViewport(0, 0, CurrentWidth, CurrentHeight);
   }
 
-  
+
   void RenderFunction( int millisec )
   {
     glutTimerFunc(millisec, RenderFunction, 0);
-    
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // implement the scene rendering here.

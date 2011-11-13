@@ -20,7 +20,7 @@ void RenderFunction(void);
 int main(int argc, char* argv[])
 {
     std::cout<<"plop\n";
-    renderer::Renderer* _renderer = new renderer::Renderer;
+    renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
     std::cout<<"plop\n";
 	io::InitWindow(_renderer, WIDTH, HEIGHT, WINDOW_TITLE_PREFIX, argc, argv);
     std::cout<<"plop\n";
