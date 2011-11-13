@@ -46,6 +46,7 @@ namespace renderer{
       glm::mat4 modelMatrix;
 
       Shader *planeShader;
+      Shader *postEffectShader;
 
       float fuffaTime;
 

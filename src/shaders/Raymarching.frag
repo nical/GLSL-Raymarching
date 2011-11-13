@@ -1,12 +1,15 @@
 #version 330
 #define MAX_STEPS 70
 
-in vec3 pass_Color;
+//in vec3 pass_Color;
 
 out vec4 out_Color;
 
 uniform float fuffaTime;
 uniform vec2 windowSize;
+
+layout(location = 0) out vec4 outputColour;
+layout(location = 1) out vec4 outputNormals;
 
 #define epsilon 0.01
 
@@ -253,6 +256,8 @@ void main(void)
   if( mod(gl_FragCoord.y * 0.5, 2.0) < 0.5 )
     hitColor *= 0.95;
 
-  out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
+  outputColour = vec4(hitColor, 1.0);
 
+  out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
+  gl_FragData[0] = vec4(hitColor, 1.0);
 }
