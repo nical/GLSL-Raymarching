@@ -261,5 +261,5 @@ void main(void)
   //out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
   //gl_FragData[0] = vec4(hitColor, 1.0);
   out_Colour[0] = vec4(1.0, 1.0, 0.0, 1.0);
-  out_Colour[1] = vec4(1.0, 0.0, 1.0, 1.0);
+  out_Colour[1] = vec4(vec3(landingPixel.z/100.0), 1.0);
 }

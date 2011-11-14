@@ -24,7 +24,7 @@ namespace renderer{
       void setWindowDimensions (unsigned int x, unsigned int y) {
         window.x = x;
         window.y = y;
-        //freeBuffers();
+        //if (bufID[0]) freeBuffers();
         createBuffers();
       }
 

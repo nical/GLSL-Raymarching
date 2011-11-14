@@ -19,12 +19,8 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 in vec3 in_Position;
-out vec4 out_texCoord;
-
-attribute vec2 TexCoord;
 
 void main(void)
 {
   gl_Position = projectionMatrix /* * viewMatrix * modelMatrix*/ * vec4(in_Position, 1.0);
-  out_texCoord = gl_MultiTexCoord0;
 }

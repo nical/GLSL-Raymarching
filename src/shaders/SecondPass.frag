@@ -17,14 +17,16 @@
 out vec4 out_Color;
 
 uniform sampler2D colourTexture;
-uniform sampler2D normalTexture;
+uniform sampler2D normalsTexture;
 
-in vec4 out_texCoord;
 uniform vec2 windowSize;
 
 void main (void){
 
-    out_Color = texture2D(colourTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));
-
+    if (gl_FragCoord.x <= 320.0) {
+      out_Color = texture2D(colourTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));
+    } else {
+      out_Color = texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));
+    }
     //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
 }

@@ -95,8 +95,8 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
 
     //  Binding Normals' Texture
-    //glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, tcoID[0]);
     glTexCoordPointer(2,GL_FLOAT,0,0);
