@@ -97,6 +97,7 @@ namespace io{
 
     if(r==0)cout<<"r=0\n";
     cout<<"there!\n";
+    r->createBuffers();
     r->init();
     cout<<"bwaaaaah\n";
     _renderer = r;

@@ -152,6 +152,12 @@ namespace renderer{
 
   void Renderer::createBuffers(){
 
+    GLint maxBuffers;
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
+    std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
+
+    glEnable(GL_TEXTURE_2D);
+
     //  Colour Renderbuffer
 
     glGenTextures(1, &texColour[0]);
@@ -175,17 +181,25 @@ namespace renderer{
 
     //  Generate and bind the framebuffers
 
-    glGenFramebuffers(1, &bufID[0]);
-    glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
+    std::cout << "Textures Generated!" << std::endl;
 
-    //  Binging Textures to the Framebuffer
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_UNSUPPORTED){
+      glGenFramebuffers(1, &bufID[0]);
+      std::cout << "Framebuffer Generated!" << std::endl;
+      glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
+      std::cout << "Framebuffer Binded!" << std::endl;
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
+        //  Binging Textures to the Framebuffer
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-      std::cout << "Fuck!" << std::endl;
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+          std::cout << "Fuck!" << std::endl;
+        }
+    } else {
+      std::cout << "Ok, this is a problem..." << std::endl;
     }
 
     //  Unbind the Framebuffer
