@@ -35,8 +35,8 @@ namespace renderer{
     //glEnableClientState(GL_VERTEX_ARRAY);
     //glEnableClientState(GL_INDEX_ARRAY);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, bufID[0]);
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bufID[0]);
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     GLenum shaderBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
     glDrawBuffers(2, shaderBuffers);
@@ -68,7 +68,8 @@ namespace renderer{
 
     planeShader->unbind();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, bufID[0]);
+    glBindFramebuffer(GL_DRAW_BUFFER, 0);
 
     postEffectShader->bind();
 
@@ -149,6 +150,18 @@ namespace renderer{
 
   void Renderer::createBuffers(){
 
+    //  Colour Renderbuffer
+
+    glGenRenderbuffers(1, &texColour[0]);
+    glBindRenderbuffer(GL_RENDERBUFFER, texColour[0]);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA32F, window.x, window.y);
+
+    //  Normals Texture
+
+    glGenRenderbuffers(1, &texNorms[0]);
+    glBindRenderbuffer(GL_RENDERBUFFER, texNorms[0]);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA32F, window.x, window.y);
+
     //  Generate and bind the framebuffers
 
     glGenFramebuffers(1, &bufID[0]);
@@ -156,8 +169,11 @@ namespace renderer{
 
     //  Generate and bind Textures to the Framebuffer
 
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, texColour[0]);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, texNorms[0]);
+
     //  Colour Texture
-    glGenTextures(1, &texColour[0]);
+    /*glGenTextures(1, &texColour[0]);
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
@@ -166,14 +182,14 @@ namespace renderer{
     glGenTextures(1, &texNorms[0]);
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);*/
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
       std::cout << "Fuck!" << std::endl;
     }
 
     //  Unbind the Framebuffer
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   }

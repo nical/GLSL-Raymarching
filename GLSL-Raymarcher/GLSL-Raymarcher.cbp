@@ -50,6 +50,8 @@
 		<Unit filename="../src/renderer/ShaderProgram.hpp" />
 		<Unit filename="../src/shaders/Raymarching.frag" />
 		<Unit filename="../src/shaders/Raymarching.vert" />
+		<Unit filename="../src/shaders/SecondPass.frag" />
+		<Unit filename="../src/shaders/SecondPass.vert" />
 		<Unit filename="../src/utils/LoadFile.cpp" />
 		<Unit filename="../src/utils/LoadFile.hpp" />
 		<Extensions>
