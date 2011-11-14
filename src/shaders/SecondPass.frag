@@ -7,5 +7,10 @@ uniform sampler2D colourTexture;
 uniform sampler2D normalTexture;
 
 void main (void){
-  gl_FragColor = texture2D(colourTexture, gl_TexCoord[0].st);
+  if (gl_FragCoord.x <= 400 && gl_FragCoord.y <= 300 ) {
+    gl_FragColor = texture2D(colourTexture, gl_TexCoord[0].st);
+  } else {
+    gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+  }
+    //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
 }

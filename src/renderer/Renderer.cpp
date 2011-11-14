@@ -34,8 +34,9 @@ namespace renderer{
   void Renderer::drawScene(){
     //glEnableClientState(GL_VERTEX_ARRAY);
     //glEnableClientState(GL_INDEX_ARRAY);
+    glEnable(GL_TEXTURE_2D);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bufID[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     GLenum shaderBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
@@ -68,33 +69,35 @@ namespace renderer{
 
     planeShader->unbind();
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, bufID[0]);
-    glBindFramebuffer(GL_DRAW_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     postEffectShader->bind();
 
+    //  Generating Locations for Uniforms
     projectionMatrixLocation = glGetUniformLocation(postEffectShader->id(), "projectionMatrix");
     viewMatrixLocation = glGetUniformLocation(postEffectShader->id(), "viewMatrix");
     modelMatrixLocation = glGetUniformLocation(postEffectShader->id(), "modelMatrix");
     timeLocation = glGetUniformLocation(postEffectShader->id(), "fuffaTime");
     windowSizeLocation = glGetUniformLocation(postEffectShader->id(), "windowSize");
+    GLint textureLocation = glGetUniformLocation(postEffectShader->id(), "colourTexture");
+    GLint normalsLocation = glGetUniformLocation(postEffectShader->id(), "normalsTexture");
 
+    //  Putting data in the uniforms
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
     glUniform2f(windowSizeLocation, window.x, window.y);
-
-    glEnable(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE0);
-    GLint textureLocation = glGetUniformLocation(postEffectShader->id(), "colourTexture");
     glUniform1i(textureLocation, 0);
+    glUniform1i(normalsLocation, 1);
+
+    //  Binding Colour Texture
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
 
-    glEnable(GL_TEXTURE_2D);
+    //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
-    GLint normalsLocation = glGetUniformLocation(postEffectShader->id(), "normalsTexture");
-    glUniform1i(normalsLocation, 1);
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
     glVertexPointer(3,GL_FLOAT,0,0);
@@ -109,7 +112,6 @@ namespace renderer{
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
 
     postEffectShader->unbind();
 
@@ -152,44 +154,42 @@ namespace renderer{
 
     //  Colour Renderbuffer
 
-    glGenRenderbuffers(1, &texColour[0]);
-    glBindRenderbuffer(GL_RENDERBUFFER, texColour[0]);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA32F, window.x, window.y);
+    glGenTextures(1, &texColour[0]);
+    glBindTexture(GL_TEXTURE_2D, texColour[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     //  Normals Texture
 
-    glGenRenderbuffers(1, &texNorms[0]);
-    glBindRenderbuffer(GL_RENDERBUFFER, texNorms[0]);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA32F, window.x, window.y);
+    glGenTextures(1, &texNorms[0]);
+    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //  Depth Texture, created for compatibility
+
+    glGenTextures(1, &texDepth[0]);
+    glBindTexture(GL_TEXTURE_2D, texDepth[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, window.x, window.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     //  Generate and bind the framebuffers
 
     glGenFramebuffers(1, &bufID[0]);
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
 
-    //  Generate and bind Textures to the Framebuffer
+    //  Binging Textures to the Framebuffer
 
-    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, texColour[0]);
-    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, texNorms[0]);
-
-    //  Colour Texture
-    /*glGenTextures(1, &texColour[0]);
-    glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
-
-    //  Normals Texture
-    glGenTextures(1, &texNorms[0]);
-    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);*/
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
       std::cout << "Fuck!" << std::endl;
     }
 
     //  Unbind the Framebuffer
-    // glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   }
