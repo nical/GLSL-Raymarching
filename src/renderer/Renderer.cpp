@@ -29,18 +29,18 @@ namespace renderer{
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     fuffaTime = 0;
+
+    glEnable(GL_TEXTURE_2D);
   }
 
   void Renderer::drawScene(){
     //glEnableClientState(GL_VERTEX_ARRAY);
     //glEnableClientState(GL_INDEX_ARRAY);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
 
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    GLenum shaderBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-    glDrawBuffers(2, shaderBuffers);
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     planeShader->bind();
 
@@ -95,9 +95,11 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
 
     //  Binding Normals' Texture
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
 
+    glBindBuffer(GL_ARRAY_BUFFER, tcoID[0]);
+    glTexCoordPointer(2,GL_FLOAT,0,0);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
     glVertexPointer(3,GL_FLOAT,0,0);
@@ -128,6 +130,13 @@ namespace renderer{
       1.0, 1.0, 0.0
     };
 
+    GLfloat texCoord[8] = {
+      0.0, 0.0,
+      0.0, 1.0,
+      1.0, 0.0,
+      1.0, 1.0,
+    };
+
     GLuint indices[6]={0,1,2,1,2,3};
 
 
@@ -144,6 +153,11 @@ namespace renderer{
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
+    //texture coordinates
+    glGenBuffers(1, &tcoID[0]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tcoID[0]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 8 * sizeof(GLfloat), &texCoord[0], GL_STATIC_DRAW);
+
     //Specify that our coordinate data is going into attribute index 0(shaderAtribute), and contains three floats per vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     // Enable attribute index 0(shaderAtribute) as being used
@@ -156,12 +170,11 @@ namespace renderer{
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    glEnable(GL_TEXTURE_2D);
-
     //  Colour Renderbuffer
 
     glGenTextures(1, &texColour[0]);
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
+    std::cout << "TexColour ID: " << texColour[0] << std::endl;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -187,13 +200,16 @@ namespace renderer{
       glGenFramebuffers(1, &bufID[0]);
       std::cout << "Framebuffer Generated!" << std::endl;
       glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
-      std::cout << "Framebuffer Binded!" << std::endl;
+      std::cout << "Framebuffer Binded! ID: " << bufID[0] << std::endl;
 
         //  Binging Textures to the Framebuffer
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
+
+        GLenum shaderBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+        glDrawBuffers(2, shaderBuffers);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
           std::cout << "Fuck!" << std::endl;
@@ -206,5 +222,9 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  }
+
+  void Renderer::freeBuffers(){
+    glDeleteBuffers(1, &bufID[0]);
   }
 }

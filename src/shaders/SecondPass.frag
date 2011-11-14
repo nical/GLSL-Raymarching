@@ -1,16 +1,30 @@
 #version 330
-#define MAX_STEPS 70
+
+// Declare all the semantics
+#define ATTR_POSITION	0
+#define ATTR_COLOR		3
+#define ATTR_TEXCOORD	4
+#define VERT_POSITION	0
+#define VERT_COLOR		3
+#define VERT_TEXCOORD	4
+#define VERT_INSTANCE	7
+#define FRAG_COLOR		0
+#define FRAG_RED		  0
+#define FRAG_GREEN		1
+#define FRAG_BLUE		  2
+#define FRAG_ALPHA		3
 
 out vec4 out_Color;
 
 uniform sampler2D colourTexture;
 uniform sampler2D normalTexture;
 
+in vec4 out_texCoord;
+uniform vec2 windowSize;
+
 void main (void){
-  if (gl_FragCoord.x <= 400 && gl_FragCoord.y <= 300 ) {
-    gl_FragColor = texture2D(colourTexture, gl_TexCoord[0].st);
-  } else {
-    gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
-  }
+
+    out_Color = texture2D(colourTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));
+
     //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
 }

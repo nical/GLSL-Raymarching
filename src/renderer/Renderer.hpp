@@ -24,6 +24,7 @@ namespace renderer{
       void setWindowDimensions (unsigned int x, unsigned int y) {
         window.x = x;
         window.y = y;
+        //freeBuffers();
         createBuffers();
       }
 
@@ -32,6 +33,7 @@ namespace renderer{
     private:
 
       unsigned int iboID[1];
+      unsigned int tcoID[1];
       unsigned int vboID[1];
       unsigned int bufID[1];
       unsigned int texColour[1];
@@ -52,6 +54,7 @@ namespace renderer{
 
       float fuffaTime;
 
+      void freeBuffers();
       void createPlane();
   };
 } //  namespace

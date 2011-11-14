@@ -3,7 +3,7 @@
 
 //in vec3 pass_Color;
 
-out vec4 out_Color;
+out vec4 out_Colour[2];
 
 uniform float fuffaTime;
 uniform vec2 windowSize;
@@ -258,7 +258,8 @@ void main(void)
 
   outputColour = vec4(hitColor, 1.0);
 
-  out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
-  gl_FragData[0] = vec4(1.0, 1.0, 0.0, 1.0);
-  gl_FragData[1] = vec4(1.0, 1.0, 0.0, 1.0);
+  //out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
+  //gl_FragData[0] = vec4(hitColor, 1.0);
+  out_Colour[0] = vec4(1.0, 1.0, 0.0, 1.0);
+  out_Colour[1] = vec4(1.0, 0.0, 1.0, 1.0);
 }
