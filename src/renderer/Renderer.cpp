@@ -11,10 +11,20 @@
 
 using namespace std;
 
+#define CHECKERROR GLCheckError(__LINE__,__PRETTY_FUNCTION__);
+
+void GLCheckError(int line, const char* comment = "")
+  {
+    GLuint err = glGetError();
+    if( err != GL_NO_ERROR )
+    {
+        cout << "gl error at " <<line<<" "<< comment << ": " <<  err <<endl;
+    }
+  }
 namespace renderer{
 
-  Renderer::~Renderer(){
 
+  Renderer::~Renderer(){
   }
 
   void Renderer::init(){
@@ -34,22 +44,23 @@ namespace renderer{
   }
 
   void Renderer::drawScene(){
-    //glEnableClientState(GL_VERTEX_ARRAY);
-    //glEnableClientState(GL_INDEX_ARRAY);
+    CHECKERROR
     //glEnable(GL_TEXTURE_2D);
-
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
-
+    
+    CHECKERROR
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     planeShader->bind();
-
+    
+    CHECKERROR
     GLint projectionMatrixLocation = glGetUniformLocation(planeShader->id(), "projectionMatrix");
     GLint viewMatrixLocation = glGetUniformLocation(planeShader->id(), "viewMatrix");
     GLint modelMatrixLocation = glGetUniformLocation(planeShader->id(), "modelMatrix");
     GLint timeLocation = glGetUniformLocation(planeShader->id(), "fuffaTime");
     GLint windowSizeLocation = glGetUniformLocation(planeShader->id(), "windowSize");
 
+    CHECKERROR
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
@@ -57,16 +68,30 @@ namespace renderer{
     glUniform1f(timeLocation, fuffaTime);
     fuffaTime++;
 
+    CHECKERROR
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_INDEX_ARRAY);
+    CHECKERROR
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
+    CHECKERROR
     glVertexPointer(3,GL_FLOAT,0,0);
 
+    CHECKERROR
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
-    glFinish();
-    //glBindBuffer(GL_ARRAY_BUFFER,0);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+    CHECKERROR
+    //glEnableClientState(GL_VERTEX_ARRAY);
+    //glEnableClientState(GL_INDEX_ARRAY);
 
+    CHECKERROR
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
+    CHECKERROR
+    glFinish();
+    CHECKERROR
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+    CHECKERROR
     planeShader->unbind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -90,6 +115,8 @@ namespace renderer{
     glUniform1i(textureLocation, 0);
     glUniform1i(normalsLocation, 1);
 
+    glEnable(GL_TEXTURE_2D);
+
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
@@ -98,8 +125,6 @@ namespace renderer{
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
 
-    glBindBuffer(GL_ARRAY_BUFFER, tcoID[0]);
-    glTexCoordPointer(2,GL_FLOAT,0,0);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
     glVertexPointer(3,GL_FLOAT,0,0);
@@ -109,16 +134,30 @@ namespace renderer{
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
     glFinish();
 
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_INDEX_ARRAY);
+
+    glDisable(GL_TEXTURE_2D);
+
     postEffectShader->unbind();
 
-  }
 
+    GLuint err = glGetError();
+    if( err != GL_NO_ERROR )
+    {
+        cout << "gl error! " <<  err <<endl;
+
+    }
+  }
   void Renderer::createPlane(){
     if (!GLEW_ARB_vertex_array_object)
       std::cerr << "ARB_vertex_array_object not available." << std::endl;
@@ -130,12 +169,6 @@ namespace renderer{
       1.0, 1.0, 0.0
     };
 
-    GLfloat texCoord[8] = {
-      0.0, 0.0,
-      0.0, 1.0,
-      1.0, 0.0,
-      1.0, 1.0,
-    };
 
     GLuint indices[6]={0,1,2,1,2,3};
 
@@ -153,10 +186,6 @@ namespace renderer{
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
-    //texture coordinates
-    glGenBuffers(1, &tcoID[0]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tcoID[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 8 * sizeof(GLfloat), &texCoord[0], GL_STATIC_DRAW);
 
     //Specify that our coordinate data is going into attribute index 0(shaderAtribute), and contains three floats per vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);

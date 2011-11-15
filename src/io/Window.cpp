@@ -22,6 +22,7 @@ namespace io{
 
   void ResizeFunction(int Width, int Height)
   {
+    cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
     _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
@@ -51,7 +52,7 @@ namespace io{
 
     CurrentHeight = h;
     CurrentWidth = w;
-
+    
     glutInit(&argc, argv);
 
     glutInitContextVersion(3, 3);
@@ -83,6 +84,8 @@ namespace io{
 
     GLenum GlewInitResult = glewInit();
 
+    glViewport(0, 0, CurrentWidth, CurrentHeight);
+    
     if (GLEW_OK != GlewInitResult)
     {
       fprintf(
