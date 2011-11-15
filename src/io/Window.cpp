@@ -10,6 +10,19 @@
 #include <iostream>
 
 using namespace std;
+#define CHECKERROR GLCheckError2(__LINE__,__PRETTY_FUNCTION__);
+
+void GLCheckError2(int line, const char* comment = "")
+  {
+    GLuint err = glGetError();
+    if( err != GL_NO_ERROR )
+    {
+        cout << "gl error at " <<line<<" "<< comment << ": " <<  err <<endl;
+    }
+  }
+
+
+
 namespace io{
 
     static const int TIMERMSECS = 10;
@@ -22,15 +35,19 @@ namespace io{
 
   void ResizeFunction(int Width, int Height)
   {
+    CHECKERROR
+      cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
     _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     glViewport(0, 0, CurrentWidth, CurrentHeight);
+    CHECKERROR
   }
 
 
   void RenderFunction( int millisec )
   {
+    CHECKERROR
     glutTimerFunc(millisec, RenderFunction, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -41,32 +58,40 @@ namespace io{
 
     glutSwapBuffers();
     glutPostRedisplay();
+    CHECKERROR
   }
 
   void idleRendering(){
+    CHECKERROR
     glutPostRedisplay();
+    CHECKERROR
   }
 
   void InitWindow (renderer::Renderer* r, unsigned int w, unsigned int h, const char* name, int argc, char* argv[]){
 
     CurrentHeight = h;
     CurrentWidth = w;
-
+    
     glutInit(&argc, argv);
 
+    CHECKERROR
     glutInitContextVersion(3, 3);
-    glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+    //glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
+    CHECKERROR
     glutSetOption(
       GLUT_ACTION_ON_WINDOW_CLOSE,
       GLUT_ACTION_GLUTMAINLOOP_RETURNS
     );
 
+    CHECKERROR
     glutInitWindowSize(CurrentWidth, CurrentHeight);
 
+    CHECKERROR
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 
+    CHECKERROR
     WindowHandle = glutCreateWindow(name);
 
     if(WindowHandle < 1) {
@@ -77,12 +102,18 @@ namespace io{
       exit(EXIT_FAILURE);
     }
 
+    CHECKERROR
     glutReshapeFunc(ResizeFunction);
     glutTimerFunc(TIMERMSECS, RenderFunction, 0);
     //glutDisplayFunc(RenderFunction);
 
+    CHECKERROR
     GLenum GlewInitResult = glewInit();
+    CHECKERROR
 
+    glViewport(0, 0, CurrentWidth, CurrentHeight);
+    CHECKERROR
+    
     if (GLEW_OK != GlewInitResult)
     {
       fprintf(
@@ -100,9 +131,9 @@ namespace io{
     );
 
     if(r==0)cout<<"r=0\n";
-    cout<<"there!\n";
+    CHECKERROR
     r->init();
-    cout<<"bwaaaaah\n";
     _renderer = r;
+    CHECKERROR
   }
 }//namespace
