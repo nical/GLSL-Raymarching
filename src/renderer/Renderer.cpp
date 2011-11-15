@@ -28,19 +28,22 @@ namespace renderer{
   }
 
   void Renderer::init(){
+    CHECKERROR  
     createPlane();
+    CHECKERROR  
     planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
     postEffectShader = new Shader ("shaders/SecondPass.vert", "shaders/SecondPass.frag");
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
+    CHECKERROR  
     //glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    CHECKERROR  
 
     fuffaTime = 0;
 
-    glEnable(GL_TEXTURE_2D);
   }
 
   void Renderer::drawScene(){
@@ -69,33 +72,23 @@ namespace renderer{
     fuffaTime++;
 
     CHECKERROR
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_INDEX_ARRAY);
+    glBindVertexArray(iboID[0]);
+    
     CHECKERROR
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-    CHECKERROR
-    glVertexPointer(3,GL_FLOAT,0,0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    CHECKERROR
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
-
-    CHECKERROR
-    //glEnableClientState(GL_VERTEX_ARRAY);
-    //glEnableClientState(GL_INDEX_ARRAY);
-
-    CHECKERROR
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
     CHECKERROR
     glFinish();
     CHECKERROR
-    glBindBuffer(GL_ARRAY_BUFFER,0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+    glBindVertexArray(0);
 
     CHECKERROR
     planeShader->unbind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    CHECKERROR
     postEffectShader->bind();
 
     //  Generating Locations for Uniforms
@@ -107,6 +100,7 @@ namespace renderer{
     GLint textureLocation = glGetUniformLocation(postEffectShader->id(), "colourTexture");
     GLint normalsLocation = glGetUniformLocation(postEffectShader->id(), "normalsTexture");
 
+    CHECKERROR
     //  Putting data in the uniforms
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -115,41 +109,42 @@ namespace renderer{
     glUniform1i(textureLocation, 0);
     glUniform1i(normalsLocation, 1);
 
-    glEnable(GL_TEXTURE_2D);
-
+    CHECKERROR
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
 
+    CHECKERROR
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
 
 
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-    glVertexPointer(3,GL_FLOAT,0,0);
+    CHECKERROR
+    
+    glBindVertexArray(iboID[0]);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
+    glDrawArrays(GL_TRIANGLE_STRIP,0,4);
     glFinish();
 
-    glBindBuffer(GL_ARRAY_BUFFER,0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+    CHECKERROR
+    glBindVertexArray(0);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    CHECKERROR
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_INDEX_ARRAY);
 
-    glDisable(GL_TEXTURE_2D);
+    CHECKERROR
 
     postEffectShader->unbind();
 
+    CHECKERROR
 
     GLuint err = glGetError();
     if( err != GL_NO_ERROR )
@@ -159,6 +154,7 @@ namespace renderer{
     }
   }
   void Renderer::createPlane(){
+    CHECKERROR  
     if (!GLEW_ARB_vertex_array_object)
       std::cerr << "ARB_vertex_array_object not available." << std::endl;
 
@@ -172,7 +168,7 @@ namespace renderer{
 
     GLuint indices[6]={0,1,2,1,2,3};
 
-
+    /*
     //vbo
     //  Generate and bind Vertex Buffer Objects
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -191,10 +187,33 @@ namespace renderer{
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     // Enable attribute index 0(shaderAtribute) as being used
     glEnableVertexAttribArray(0);
+    */
+
+    glGenVertexArrays(1, &iboID[0]);
+    CHECKERROR  
+    glBindVertexArray(iboID[0]);
+    CHECKERROR  
+
+    // Generate and bind Vertex Buffer Objects
+    glGenBuffers(1, &vboID[0]);
+    CHECKERROR  
+    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
+    CHECKERROR  
+
+    // Load the buffer with the vertices and set its attributes
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    CHECKERROR  
+
+    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    CHECKERROR  
+
+    glBindVertexArray(0);
+    CHECKERROR  
   }
 
   void Renderer::createBuffers(){
 
+    CHECKERROR  
     std::cout << "Window dimensions: " << window.x << "x" << window.y << std::endl;
 
 
@@ -214,6 +233,7 @@ namespace renderer{
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    CHECKERROR  
     //  Normals Texture
 
     glGenTextures(1, &texNorms[0]);
@@ -225,6 +245,7 @@ namespace renderer{
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    CHECKERROR  
     //  Depth Texture, created for compatibility
 
     glGenTextures(1, &texDepth[0]);
@@ -237,6 +258,7 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, 0);
 
     //  Generate and bind the framebuffers
+    CHECKERROR  
 
     std::cout << "Textures Generated!" << std::endl;
 
@@ -266,6 +288,7 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    CHECKERROR  
   }
 
   void Renderer::freeBuffers(){
