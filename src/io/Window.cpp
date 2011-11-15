@@ -43,6 +43,10 @@ namespace io{
     glutPostRedisplay();
   }
 
+  void idleRendering(){
+    glutPostRedisplay();
+  }
+
   void InitWindow (renderer::Renderer* r, unsigned int w, unsigned int h, const char* name, int argc, char* argv[]){
 
     CurrentHeight = h;

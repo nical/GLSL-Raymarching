@@ -166,6 +166,9 @@ namespace renderer{
 
   void Renderer::createBuffers(){
 
+    std::cout << "Window dimensions: " << window.x << "x" << window.y << std::endl;
+
+
     GLint maxBuffers;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
@@ -225,6 +228,9 @@ namespace renderer{
   }
 
   void Renderer::freeBuffers(){
-    glDeleteBuffers(1, &bufID[0]);
+    glDeleteTextures(1, &texColour[0]);
+    glDeleteTextures(1, &texNorms[0]);
+    glDeleteTextures(1, &texDepth[0]);
+    glDeleteFramebuffers(1, &bufID[0]);
   }
 }

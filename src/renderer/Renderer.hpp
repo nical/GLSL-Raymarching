@@ -15,6 +15,7 @@ namespace renderer{
       Renderer(unsigned int x, unsigned int y){
         window.x = x;
         window.y = y;
+        bufID[0] = 0;
       }
       ~Renderer();
 
@@ -24,7 +25,7 @@ namespace renderer{
       void setWindowDimensions (unsigned int x, unsigned int y) {
         window.x = x;
         window.y = y;
-        //if (bufID[0]) freeBuffers();
+        if (bufID[0]) freeBuffers();
         createBuffers();
       }
 
