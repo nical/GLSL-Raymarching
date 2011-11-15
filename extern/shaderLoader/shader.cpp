@@ -163,3 +163,13 @@ void Shader::bind() {
 void Shader::unbind() {
     glUseProgram(0);
 }
+
+void Shader::addLocation (std::string location){
+  uniformLocations.insert(std::make_pair(location, glGetUniformLocation(id(), location.c_str())));
+}
+
+GLuint Shader::getLocation (std::string location){
+  uniformMap_t::iterator item;
+  item = uniformLocations.find(location);
+  return item->second;
+}

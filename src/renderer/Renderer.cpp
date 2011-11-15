@@ -20,7 +20,23 @@ namespace renderer{
   void Renderer::init(){
     createPlane();
     planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
+
+    planeShader->addLocation("projectionMatrix");
+    planeShader->addLocation("viewMatrix");
+    planeShader->addLocation("modelMatrix");
+    planeShader->addLocation("fuffaTime");
+    planeShader->addLocation("windowSize");
+
     postEffectShader = new Shader ("shaders/SecondPass.vert", "shaders/SecondPass.frag");
+
+    postEffectShader->addLocation("projectionMatrix");
+    postEffectShader->addLocation("viewMatrix");
+    postEffectShader->addLocation("modelMatrix");
+    postEffectShader->addLocation("fuffaTime");
+    postEffectShader->addLocation("windowSize");
+    postEffectShader->addLocation("colourTexture");
+    postEffectShader->addLocation("normalsTexture");
+
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
@@ -44,17 +60,11 @@ namespace renderer{
 
     planeShader->bind();
 
-    GLint projectionMatrixLocation = glGetUniformLocation(planeShader->id(), "projectionMatrix");
-    GLint viewMatrixLocation = glGetUniformLocation(planeShader->id(), "viewMatrix");
-    GLint modelMatrixLocation = glGetUniformLocation(planeShader->id(), "modelMatrix");
-    GLint timeLocation = glGetUniformLocation(planeShader->id(), "fuffaTime");
-    GLint windowSizeLocation = glGetUniformLocation(planeShader->id(), "windowSize");
-
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform2f(windowSizeLocation, window.x, window.y);
-    glUniform1f(timeLocation, fuffaTime);
+    glUniformMatrix4fv(planeShader->getLocation("projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(planeShader->getLocation("viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(planeShader->getLocation("modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform2f(planeShader->getLocation("windowSize"), window.x, window.y);
+    glUniform1f(planeShader->getLocation("fuffaTime"), fuffaTime);
     fuffaTime++;
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
@@ -73,22 +83,14 @@ namespace renderer{
 
     postEffectShader->bind();
 
-    //  Generating Locations for Uniforms
-    projectionMatrixLocation = glGetUniformLocation(postEffectShader->id(), "projectionMatrix");
-    viewMatrixLocation = glGetUniformLocation(postEffectShader->id(), "viewMatrix");
-    modelMatrixLocation = glGetUniformLocation(postEffectShader->id(), "modelMatrix");
-    timeLocation = glGetUniformLocation(postEffectShader->id(), "fuffaTime");
-    windowSizeLocation = glGetUniformLocation(postEffectShader->id(), "windowSize");
-    GLint textureLocation = glGetUniformLocation(postEffectShader->id(), "colourTexture");
-    GLint normalsLocation = glGetUniformLocation(postEffectShader->id(), "normalsTexture");
-
     //  Putting data in the uniforms
-    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform2f(windowSizeLocation, window.x, window.y);
-    glUniform1i(textureLocation, 0);
-    glUniform1i(normalsLocation, 1);
+    glUniformMatrix4fv(postEffectShader->getLocation("projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(postEffectShader->getLocation("viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(postEffectShader->getLocation("modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniform2f(postEffectShader->getLocation("windowSize"), window.x, window.y);
+    glUniform1f(postEffectShader->getLocation("fuffaTime"), fuffaTime);
+    glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
+    glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
 
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);

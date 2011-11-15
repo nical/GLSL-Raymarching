@@ -8,8 +8,8 @@ out vec4 out_Colour[2];
 uniform float fuffaTime;
 uniform vec2 windowSize;
 
-layout(location = 0) out vec4 outputColour;
-layout(location = 1) out vec4 outputNormals;
+//layout(location = 0) out vec4 outputColour;
+//layout(location = 1) out vec4 outputNormals;
 
 #define epsilon 0.01
 
@@ -256,10 +256,10 @@ void main(void)
   if( mod(gl_FragCoord.y * 0.5, 2.0) < 0.5 )
     hitColor *= 0.95;
 
-  outputColour = vec4(hitColor, 1.0);
+  //outputColour = vec4(hitColor, 1.0);
 
   //out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
   //gl_FragData[0] = vec4(hitColor, 1.0);
-  out_Colour[0] = vec4(1.0, 1.0, 0.0, 1.0);
+  out_Colour[0] = vec4(hitColor, 1.0);
   out_Colour[1] = vec4(vec3(landingPixel.z/100.0), 1.0);
 }
