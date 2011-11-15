@@ -74,8 +74,9 @@ namespace renderer{
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
     glFinish();
-    //glBindBuffer(GL_ARRAY_BUFFER,0);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
     planeShader->unbind();
 
@@ -110,6 +111,9 @@ namespace renderer{
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
     glFinish();
+
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
