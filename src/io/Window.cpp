@@ -24,19 +24,16 @@ namespace io{
 
   void ResizeFunction(int Width, int Height)
   {
-    
-      cout << "resize\n";
+    cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
     _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     glViewport(0, 0, CurrentWidth, CurrentHeight);
-    
   }
 
 
   void RenderFunction( int millisec )
   {
-    
     glutTimerFunc(millisec, RenderFunction, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -47,40 +44,22 @@ namespace io{
 
     glutSwapBuffers();
     glutPostRedisplay();
-    
-  }
-
-  void idleRendering(){
-    
-    glutPostRedisplay();
-    
   }
 
   void InitWindow (renderer::Renderer* r, unsigned int w, unsigned int h, const char* name, int argc, char* argv[]){
 
     CurrentHeight = h;
     CurrentWidth = w;
-    
     glutInit(&argc, argv);
-
-    
     glutInitContextVersion(3, 3);
     //glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
     glutInitContextProfile(GLUT_CORE_PROFILE);
-
-    
     glutSetOption(
       GLUT_ACTION_ON_WINDOW_CLOSE,
       GLUT_ACTION_GLUTMAINLOOP_RETURNS
     );
-
-    
     glutInitWindowSize(CurrentWidth, CurrentHeight);
-
-    
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-
-    
     WindowHandle = glutCreateWindow(name);
 
     if(WindowHandle < 1) {
@@ -91,18 +70,12 @@ namespace io{
       exit(EXIT_FAILURE);
     }
 
-    
     glutReshapeFunc(ResizeFunction);
     glutTimerFunc(TIMERMSECS, RenderFunction, 0);
     //glutDisplayFunc(RenderFunction);
 
-    
     GLenum GlewInitResult = glewInit();
-    
 
-    glViewport(0, 0, CurrentWidth, CurrentHeight);
-    
-    
     if (GLEW_OK != GlewInitResult)
     {
       fprintf(
@@ -120,9 +93,8 @@ namespace io{
     );
 
     if(r==0)cout<<"r=0\n";
-    
     r->init();
     _renderer = r;
-    
   }
+
 }//namespace

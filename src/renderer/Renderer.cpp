@@ -28,9 +28,7 @@ namespace renderer{
   }
 
   void Renderer::init(){
-    
     createPlane();
-    
     planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
 
     planeShader->addLocation("projectionMatrix");
@@ -53,21 +51,17 @@ namespace renderer{
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
-    
     //glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    
 
     fuffaTime = 0;
 
   }
 
   void Renderer::drawScene(){
-    
     //glEnable(GL_TEXTURE_2D);
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
 
-    
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     planeShader->bind();
@@ -78,30 +72,20 @@ namespace renderer{
     glUniform2f(planeShader->getLocation("windowSize"), window.x, window.y);
     glUniform1f(planeShader->getLocation("fuffaTime"), fuffaTime);
 
-    
-
     fuffaTime++;
 
-    
     glBindVertexArray(iboID[0]);
 
-    
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    
     glFinish();
-
-    
-
 
     glBindVertexArray(0);
 
-    
     planeShader->unbind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    
     postEffectShader->bind();
 
     //  Putting data in the uniforms
@@ -113,52 +97,33 @@ namespace renderer{
     glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
     glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
 
-    
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
-    
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
 
-    
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
-    
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-
-
-    
 
     glBindVertexArray(iboID[0]);
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
     glFinish();
 
-    
     glBindVertexArray(0);
 
-    glActiveTexture(GL_TEXTURE1);
+    //glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
-    
-
     postEffectShader->unbind();
 
-    
-
-    GLuint err = glGetError();
-    if( err != GL_NO_ERROR )
-    {
-        cout << "gl error! " <<  err <<endl;
-
-    }
   }
-  void Renderer::createPlane(){
-    
+  void Renderer::createPlane()
+  {
     if (!GLEW_ARB_vertex_array_object)
       std::cerr << "ARB_vertex_array_object not available." << std::endl;
 
@@ -172,53 +137,25 @@ namespace renderer{
 
     GLuint indices[6]={0,1,2,1,2,3};
 
-    /*
-    //vbo
-    //  Generate and bind Vertex Buffer Objects
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_INDEX_ARRAY);
-
-    glGenBuffers(1, &vboID[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
-    //ibo
-    glGenBuffers(1, &iboID[0]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
-
-    //Specify that our coordinate data is going into attribute index 0(shaderAtribute), and contains three floats per vertex
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    // Enable attribute index 0(shaderAtribute) as being used
-    glEnableVertexAttribArray(0);
-    */
-
     glGenVertexArrays(1, &iboID[0]);
-    
     glBindVertexArray(iboID[0]);
-    
 
     // Generate and bind Vertex Buffer Objects
     glGenBuffers(1, &vboID[0]);
-    
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-    
 
     // Load the buffer with the vertices and set its attributes
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    
 
     glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    
 
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
-    
   }
 
-  void Renderer::createBuffers(){
+  void Renderer::createBuffers()
+  {
 
-    
     std::cout << "Window dimensions: " << window.x << "x" << window.y << std::endl;
 
 
@@ -238,7 +175,6 @@ namespace renderer{
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    
     //  Normals Texture
 
     glGenTextures(1, &texNorms[0]);
@@ -250,7 +186,6 @@ namespace renderer{
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    
     //  Depth Texture, created for compatibility
 
     glGenTextures(1, &texDepth[0]);
@@ -263,7 +198,6 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, 0);
 
     //  Generate and bind the framebuffers
-    
 
     std::cout << "Textures Generated!" << std::endl;
 
@@ -275,7 +209,7 @@ namespace renderer{
 
         //  Binging Textures to the Framebuffer
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
 
@@ -293,7 +227,6 @@ namespace renderer{
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    
   }
 
   void Renderer::freeBuffers(){
