@@ -1,4 +1,7 @@
 #include "renderer/Renderer.hpp"
+#include "utils/LoadFile.hpp"
+#include "renderer/Shader.hpp"
+#include "utils/CheckGLError.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
@@ -8,19 +11,11 @@
 #include <GL/freeglut.h>
 #include <iostream>
 #include <time.h>
+#include <initializer_list>
+
 
 using namespace std;
 
-#define CHECKERROR __glcheckerror(__LINE__,__PRETTY_FUNCTION__);
-
-void __glcheckerror(int line, const char* comment = "")
-  {
-    GLuint err = glGetError();
-    if( err != GL_NO_ERROR )
-    {
-        cout << "gl error at " <<line<<" "<< comment << ": " <<  err <<endl;
-    }
-  }
 namespace renderer{
 
 
@@ -28,7 +23,9 @@ namespace renderer{
   }
 
   void Renderer::init(){
+    CHECKERROR
     createPlane();
+    /*
     planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
 
     planeShader->addLocation("projectionMatrix");
@@ -46,7 +43,7 @@ namespace renderer{
     postEffectShader->addLocation("windowSize");
     postEffectShader->addLocation("colourTexture");
     postEffectShader->addLocation("normalsTexture");
-
+    */
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
@@ -56,58 +53,107 @@ namespace renderer{
 
     fuffaTime = 0;
 
+    // shaders
+
+    CHECKERROR
+    string vs, fs;
+    utils::LoadTextFile("shaders/Raymarching.vert", vs);
+    utils::LoadTextFile("shaders/Raymarching.frag", fs);
+    Shader::LocationMap marcherLoc = {
+        {"projectionMatrix",{ Shader::UNIFORM | Shader::MAT4F} },
+        {"viewMatrix",      { Shader::UNIFORM | Shader::MAT4F} },
+        {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
+        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
+        {"colourTexture",   { Shader::OUTPUT  | Shader::SAMPLER2D} },
+        {"normalsTexture",  { Shader::OUTPUT  | Shader::SAMPLER2D} }
+    };
+    raymarchingShader= new Shader();
+    CHECKERROR
+    raymarchingShader->build( vs, fs, marcherLoc );
+
+    CHECKERROR
+    vs.clear();
+    fs.clear();
+
+    utils::LoadTextFile("shaders/SecondPass.vert", vs);
+    utils::LoadTextFile("shaders/SecondPass.frag", fs);
+    Shader::LocationMap postFxLoc = {
+        {"projectionMatrix",{ Shader::UNIFORM | Shader::MAT4F} },
+        {"viewMatrix",      { Shader::UNIFORM | Shader::MAT4F} },
+        {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
+        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
+        {"colourTexture",   { Shader::UNIFORM | Shader::SAMPLER2D} },
+        {"normalsTexture",  { Shader::UNIFORM | Shader::SAMPLER2D} }
+    };
+    postEffectShader = new Shader;
+    CHECKERROR
+    postEffectShader->build( vs, fs, postFxLoc );
+
+    CHECKERROR
   }
 
   void Renderer::drawScene(){
+    CHECKERROR
     //glEnable(GL_TEXTURE_2D);
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
 
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    planeShader->bind();
-
-    glUniformMatrix4fv(planeShader->getLocation("projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
-    glUniformMatrix4fv(planeShader->getLocation("viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(planeShader->getLocation("modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform2f(planeShader->getLocation("windowSize"), window.x, window.y);
-    glUniform1f(planeShader->getLocation("fuffaTime"), fuffaTime);
+    raymarchingShader->bind();
+    raymarchingShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
+    raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
+    raymarchingShader->uniformMatrix4fv("modelMatrix", &modelMatrix[0][0] );
+    raymarchingShader->uniform2f("windowSize", window.x, window.y );
+    raymarchingShader->uniform1f("fuffaTime", fuffaTime );
 
     fuffaTime++;
 
     glBindVertexArray(iboID[0]);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
+#ifdef DEBUG
     glFinish();
+#endif
 
     glBindVertexArray(0);
 
-    planeShader->unbind();
+    raymarchingShader->unbind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    CHECKERROR
+
 
     postEffectShader->bind();
-
+    postEffectShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
+    postEffectShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
+    postEffectShader->uniformMatrix4fv("modelMatrix", &modelMatrix[0][0] );
+    postEffectShader->uniform2f("windowSize", window.x, window.y );
+    postEffectShader->uniform1f("fuffaTime", fuffaTime );
+    postEffectShader->uniform1i("colourTexture", 0 );
+    postEffectShader->uniform1i("normalsTexture", 1 );
+    CHECKERROR
+    
     //  Putting data in the uniforms
-    glUniformMatrix4fv(postEffectShader->getLocation("projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
-    glUniformMatrix4fv(postEffectShader->getLocation("viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(postEffectShader->getLocation("modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniform2f(postEffectShader->getLocation("windowSize"), window.x, window.y);
-    glUniform1f(postEffectShader->getLocation("fuffaTime"), fuffaTime);
-    glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
-    glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
+    //glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
+    //glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
 
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
+    CHECKERROR
 
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    CHECKERROR
 
     glBindVertexArray(iboID[0]);
+    CHECKERROR
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+    CHECKERROR
     glFinish();
 
     glBindVertexArray(0);
@@ -120,7 +166,7 @@ namespace renderer{
 
 
     postEffectShader->unbind();
-
+    CHECKERROR
   }
   void Renderer::createPlane()
   {

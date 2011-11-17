@@ -4,60 +4,63 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "shaderLoader/shader.hpp"
+//#include "shaderLoader/shader.hpp"
 
 namespace renderer{
+  class Shader;
 
-  class Renderer {
+class Renderer 
+{
+public:
 
-    public:
+  Renderer(unsigned int x, unsigned int y){
+    window.x = x;
+    window.y = y;
+    bufID[0] = 0;
+  }
+  ~Renderer();
 
-      Renderer(unsigned int x, unsigned int y){
-        window.x = x;
-        window.y = y;
-        bufID[0] = 0;
-      }
-      ~Renderer();
+  void init();
+  void drawScene();
 
-      void init();
-      void drawScene();
+  void setWindowDimensions (unsigned int x, unsigned int y) {
+    window.x = x;
+    window.y = y;
+    if (bufID[0]) freeBuffers();
+    createBuffers();
+  }
 
-      void setWindowDimensions (unsigned int x, unsigned int y) {
-        window.x = x;
-        window.y = y;
-        if (bufID[0]) freeBuffers();
-        createBuffers();
-      }
+  void createBuffers();
 
-      void createBuffers();
+private:
 
-    private:
+  unsigned int iboID[1];
+  unsigned int tcoID[1];
+  unsigned int vboID[1];
+  unsigned int bufID[1];
+  unsigned int texColour[1];
+  unsigned int texNorms[1];
+  unsigned int texDepth[1];
 
-      unsigned int iboID[1];
-      unsigned int tcoID[1];
-      unsigned int vboID[1];
-      unsigned int bufID[1];
-      unsigned int texColour[1];
-      unsigned int texNorms[1];
-      unsigned int texDepth[1];
+  struct {
+    unsigned int x;
+    unsigned int y;
+  } window;
 
-      struct {
-        unsigned int x;
-        unsigned int y;
-      } window;
+  glm::mat4 projectionMatrix;
+  glm::mat4 viewMatrix;
+  glm::mat4 modelMatrix;
 
-      glm::mat4 projectionMatrix;
-      glm::mat4 viewMatrix;
-      glm::mat4 modelMatrix;
+  Shader *raymarchingShader;
+  Shader *postEffectShader;
 
-      Shader *planeShader;
-      Shader *postEffectShader;
+  float fuffaTime;
 
-      float fuffaTime;
+  void freeBuffers();
+  void createPlane();
+};
 
-      void freeBuffers();
-      void createPlane();
-  };
+
 } //  namespace
 
 #endif // RENDERER_HPP_INCLUDED

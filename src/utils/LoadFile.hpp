@@ -3,9 +3,11 @@
 #ifndef UTILS_LOADFILE_HPP
 #define UTILS_LOADFILE_HPP
 
+#include <string>
+
 namespace utils{
 
-  unsigned int LoadFile( const char* path, char *& buffer );
+  bool LoadTextFile( const std::string& path, std::string& buffer );
 
 }//namespace
 

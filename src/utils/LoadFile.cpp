@@ -2,10 +2,38 @@
 #include "utils/LoadFile.hpp"
 #include <iostream>
 #include <fstream>
+#include <string>
+
+using namespace std;
 
 namespace utils{
 
-unsigned int LoadFile( const char* path, char *& buffer )
+bool LoadTextFile( const string& path, string& buffer )
+{
+	string line;
+
+	ifstream file(path);
+	if (file.is_open())
+    {
+		while (!file.eof())
+        {
+			getline(file, line);
+		  	buffer.append(line);
+			buffer.append("\n");
+		}
+		file.close();
+	}
+    else
+    {
+        cout << "Failed loading " << path << endl;
+	    return false;
+    }
+
+return true;
+}
+
+
+unsigned int LoadFile2( const char* path, char *& buffer )
 {
 
     int length;
