@@ -1,0 +1,123 @@
+
+
+## Using OpenGL 3+ on different hardwares
+
+One of the biggest difficulties we encountered was to make the program work on
+different graphic cards. Luckily enough, the two laptops we work on have deffierent
+hardware (one nvidia and one ATI) so it gives stronger chances to detect some problems. 
+For instance, at some point the program worked on both computers, but after an update
+of the graphics driver the nvidia one wouldn't render the scene any more, displaying
+silently a black screen instead. It turned out that some initialization steps were
+done in the wrong order (some code that was written a week before without us noticing it),
+with ATI drivers being more permissive than nvida's on
+the matter. The use of gDebugger helped a lot to understand what was going on inside,
+since a traditionnal debugguer cannot inspect what happens within OpenGL and since OpenGL
+does not give much information on errors.
+gDebugger let you see and intercept draw calls and displays the buffers that are
+on gpu memory (textures, render buffers, vertex buffers, etc.), which is convenient
+when implementing deferred shading.
+It also happened that in order to implement the deferred shading on the nvidia linux
+system, we had to enable the _glewExperimental_ flag.
+
+
+## Ray marching algorithm
+
+Ray marching is a technic similar to ray tracing on many aspects. The color of
+each fragment is determined by using rays going from the viewer to the scene with
+a pinhole camera model. Rays are not casted directly to the surfaces of the objects
+like in most of the methods derived from ray tracing. Instead, the distance to the
+closest object is computed, the ray is advanced one step, and this is repeated
+until the ray reaches an object, or a maximum number of steps is reached.
+
+This method can seem sub-optimal at first, as every ray need several iterations before reaching an object,
+but it turns out that it is often faster
+than raytracing for the following reasons:
+ * most simple objects have a very fast distance equation as we can see at this
+ [link](http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm).
+ * distance functions can be modified in order to add interesting effects such as
+infinite repetition for a negligible cost.
+
+
+### Infinite repetition 
+
+In raymarching repeating objects infinitely is both easy and cheap in term of gpu cycles.
+
+Lets take a look at the distance function of a sphere.
+
+#define center vec3(0,0,0)
+#define radius 2.0
+float SphereDistance( vec3 point )
+{
+    return length( center - point ) - radius;
+}
+
+This functions returns the distance between a point and the center of the sphere
+minus the radius of the sphere.
+
+To repeat infinitely the sphere arround the X axis we only need to add a modulo
+operation like follows:
+
+#define dist 10
+// ...
+point.x = mod( point.x + dist/2, dist ) - dist/2;
+return length( center - point ) - radius;
+}
+
+An infinty of copy of the same object appear now, and the frame rate did not change
+noticeably. adding _dist/2_ inside the modulo and removing it afterward doesn't alter
+the position of the object, but is necessary because without it, the sphere would
+be cut by the modulo as it is centered on zero.
+
+%todo: image of a cut sphere
+
+%todo: scheme to explain the effect of modulo on the position of the distance field
+
+We can now see a big advantage of ray marching. repeating geometry to infinity
+at almost no cost is great. However, the resulting image is somewhat boring because
+of the repetition itself. This is not a big problem however, because we can modify
+the distance function in order to have modify the shape in function of the position.
+For instance, to have variable sphere radius on the same object wa can add the following
+line before applying the modulo:
+
+float newRadius =  1+2*sin(floor(point.x/dist)));
+
+Here, _floor(point.x/dist)_ returns a different constant number for replication
+of the sphere as we devide by the distance between two repetitions, and remove
+the floating point part of the number. This number would grow along with x, so it
+can be interesting to place it inside a periodic function so as to make it stay
+whithin a certain range. Then is is just a matter of playing with the mathematical
+function in order to break periodicity and introduce a feeling of randomness.
+
+too sum up, with the following distance function, we obtain an infinite number
+of spheres which radius varies between 1.0 and 3.0. 
+
+#define dist 10
+#define center vec3(0,0,0)
+float SphereDistance( vec3 point )
+{
+    float newRadius =  1+2*sin(floor(point.x/dist)));
+    point.x = mod( point.x + dist/2, dist ) - dist/2;
+    return length( center - point ) - newRadius;
+}
+
+Performance-wise, this is huge. An infinity of objects in the screen introduced by
+one simple three lines distance function that contains no loop, and not even a branch.  
+
+
+### Computing normals
+
+At first we tried to compute normals using a specific function for each kind of
+shape. This is simple for a sphere but can get less convenient for other objects.
+In fact there is a much simpler and efficient way to compute normals, by using
+the expression of the gradient:
+Given a point _p_ on the surface of an object
+described by the distance function _f_, its normal _n_ can be evaluated using a very
+small _epsilon_ quantity as follows:
+
+n = normalize( vec3(
+      f(p + vec3(epsilon,0,0)  ) - f(p - vec3(epsilon,0,0))
+    , f(p + vec3(0,epsilon,0)  ) - f(p - vec3(0,epsilon,0))
+    , f(p + vec3(0,0,epsilon)  ) - f(p - vec3(0,0,epsilon))
+) );
+
+This is very convenient on objects more complicated than a sphere, most objects that is.

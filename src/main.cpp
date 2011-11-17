@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "io/Window.hpp"
-#include "renderer/DefaultShaders.hpp"
 #include "renderer/Renderer.hpp"
 #include <assert.h>
 #include "kiwi/core/all.hpp"
-#include "renderer/ShaderProgram.hpp"
+#include "renderer/Shader.hpp"
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"

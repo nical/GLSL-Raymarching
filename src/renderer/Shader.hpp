@@ -7,6 +7,8 @@
 #include <vector>
 #include <GL/glew.h>
 #include <string>
+#include <map>
+
 
 namespace renderer{
 
@@ -75,6 +77,8 @@ public:
     {
         return _locations.end();
     }
+
+    bool build(const string& vsSrc,const string& fsSrc, const LocationMap& locations);
 
     bool bind()
     {
