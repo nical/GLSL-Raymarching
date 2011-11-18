@@ -8,11 +8,16 @@
 #include <string.h>
 #include <assert.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtx/projection.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
+#include "kiwi/core/Node.hpp"
+#include "kiwi/core/InputPort.hpp"
+
 using namespace std;
 
 namespace renderer{
-
-
 
 static void validateProgram(GLuint program) {
     const unsigned int BUFFER_SIZE = 512;
@@ -20,15 +25,15 @@ static void validateProgram(GLuint program) {
     memset(buffer, 0, BUFFER_SIZE);
     GLsizei length = 0;
 
-    glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the program
-    if (length > 0) // If we have any information to display
-        cout << "Program " << program << " link error: " << buffer << endl; // Output the information
+    glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer);
+    if (length > 0)
+        cout << "Program " << program << " link error: " << buffer << endl;
 
-    glValidateProgram(program); // Get OpenGL to try validating the program
+    glValidateProgram(program);
     GLint status;
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
-    if (status == GL_FALSE) // If there was a problem validating
-		cout << "Error validating shader " << program << endl; // Output which program had the error
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
+    if (status == GL_FALSE)
+		cout << "Error validating shader " << program << endl;
 }
 
 
@@ -100,5 +105,51 @@ bool Shader::hasLocation(const std::string& name) const
     }
     return false;
 }
+
+
+
+
+bool ShaderNodeUpdater::update( const kiwi::core::Node& node )
+{
+    for( auto it = _shader->locations_begin(); it != _shader->locations_end(); ++it )
+    {
+        if( it->second.type | Shader::UNIFORM )
+        {
+            switch( it->second.type & ~Shader::UNIFORM )
+            {
+                case Shader::INT:
+                {
+                    _shader->uniform1i( it->first, *node.input(it->first).dataAs<int>() );
+                    break;
+                }
+                case Shader::FLOAT:
+                {
+                    _shader->uniform1f( it->first, *node.input(it->first).dataAs<float>() );
+                    break;
+                }
+                case Shader::FLOAT2:
+                {
+                    auto v2 = node.input(it->first).dataAs<glm::vec2>();
+                    _shader->uniform2f( it->first, v2->x, v2->y );
+                    break;
+                }
+                case Shader::FLOAT3: 
+                {
+                    auto v3 = node.input(it->first).dataAs<glm::vec3>();
+                    _shader->uniform3f( it->first, v3->x, v3->y, v3->z );
+                    break;
+                }
+                case Shader::MAT4F:
+                {
+                    _shader->uniformMatrix4fv( it->first
+                            , &(*node.input(it->first).dataAs<glm::mat4>())[0][0] );
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
 
 }//namespace

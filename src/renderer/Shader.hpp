@@ -10,23 +10,12 @@
 #include <map>
 #include <assert.h>
 
+#include "kiwi/core/NodeUpdater.hpp"
 
 namespace renderer{
 
-/**
- * Mother class for shader builders.
- *
- * Has access the Shader's protected mumbers.
- */ 
-class ShaderBuilder
-{
-public:
-    
-};
-
 class Shader
 {
-friend class ShaderBuilder;
 public:
     struct Location
     {
@@ -41,7 +30,7 @@ public:
 
     enum { NOT_BUILT=0, BINDED=2, BUILD_FAILED=4, VALID=1 };
     enum { UNIFORM=1, ATTRIBUTE=2, OUTPUT=4, INVALID=8
-        , FLOAT=16, FLOAT2=32, FLOAT3=64, MAT4F=128, SAMPLER2D = 256 };
+        , FLOAT=16, FLOAT2=32, FLOAT3=64, MAT4F=128, INT = 256, SAMPLER2D = INT };
 
     Shader()
     {
@@ -136,6 +125,17 @@ private:
     GLuint _id;
     State _state;
     LocationMap _locations;
+};
+
+
+
+class ShaderNodeUpdater : public kiwi::core::NodeUpdater
+{
+public:
+    ShaderNodeUpdater( Shader* shader );
+    bool update( const kiwi::core::Node& node );
+private:
+    Shader* _shader;
 };
 
 
