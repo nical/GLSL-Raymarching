@@ -21,11 +21,13 @@ void RenderFunction(void);
 
 KIWI_DECLARE_CONTAINER(int,"Int");
 
+void InitKiwi();
+
 int main(int argc, char* argv[])
 {
-    auto IntInfo = kiwi::core::DataTypeManager::RegisterDataType("Int", &Newint); 
 
-    assert(IntInfo);
+    InitKiwi();
+
     glewExperimental = GL_TRUE;
     renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
 	io::InitWindow(_renderer, WIDTH, HEIGHT, WINDOW_TITLE_PREFIX, argc, argv);

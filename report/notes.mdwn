@@ -121,3 +121,14 @@ n = normalize( vec3(
 ) );
 
 This is very convenient on objects more complicated than a sphere, most objects that is.
+
+### Ambient occlusion
+
+Ambient occlusion (AO) is the effect of small areas being darkened by taking into
+account the attenuation of light due to occlusion by surrounding objects.
+AO is a crude approximateion of the way light bounces around in real world, in
+order to provide with more realistic results. It does not give as good results as
+global illumination techniques like radiosity, but helps providing convincing graphics
+in real time.
+
+

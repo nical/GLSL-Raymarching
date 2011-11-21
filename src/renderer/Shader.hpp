@@ -11,6 +11,9 @@
 #include <assert.h>
 
 #include "kiwi/core/NodeUpdater.hpp"
+#include "kiwi/core/Commons.hpp"
+
+namespace kiwi{ namespace core { class NodeTypeInfo; } }
 
 namespace renderer{
 
@@ -138,6 +141,9 @@ private:
     Shader* _shader;
 };
 
+
+
+const kiwi::core::NodeTypeInfo * RegisterShaderNode(const kiwi::string& name, Shader& shader);
 
 }//namespace
 

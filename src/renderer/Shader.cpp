@@ -150,6 +150,22 @@ bool ShaderNodeUpdater::update( const kiwi::core::Node& node )
     }
 }
 
-
-
+/*
+const kiwi::core::NodeTypeInfo * RegisterShaderNode(const kiwi::string& name, Shader& shader)
+{
+    NodeLayoutDescriptor layout;
+    for( auto it = shader.locations_begin(); it != shader.locations_end(); ++it )
+    {
+        if ( it->type & Shader::UNIFORM )
+        {
+            auto dataType = kiwi::core::DataTypeManager::TypeOf( ShaderType(it->second.type) );
+            assert( dataType != 0 );
+            layout.inputs.push_back( {it->first, dataType, READ} );
+        }
+        
+    }
+    KIWI_NOT_IMPLEMENTED("RegisterShaderNode");
+    return 0;
+}
+*/
 }//namespace

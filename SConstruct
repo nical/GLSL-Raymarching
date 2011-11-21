@@ -6,9 +6,9 @@ src = src+ Glob('extern/shaderLoader/*.cpp')
 includeDirs = ['src/', 'extern/', 'extern/kiwi/include/']
 # libraries
 libraries = ['GLEW','glut','kiwicpp.a']
-libPath = ['extern/kiwi/']
+libPaths = ['extern/kiwi/']
 # build flags
 buildFlags = ['-pg', '-g', '-std=c++0x','-L.']
 
 # build
-Program( 'raymarcher', src, CPPFLAGS=buildFlags, CPPPATH = includeDirs, LIBS=libraries, LIBPATH=libPath )
+Program( 'raymarcher', src, CPPFLAGS=buildFlags, CPPPATH=includeDirs, LIBS=libraries, LIBPATH=libPaths )

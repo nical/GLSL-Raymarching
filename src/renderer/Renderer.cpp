@@ -3,6 +3,8 @@
 #include "renderer/Shader.hpp"
 #include "utils/CheckGLError.hpp"
 
+#include "kiwi/core/all.hpp"
+
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -25,28 +27,20 @@ namespace renderer{
   void Renderer::init(){
     CHECKERROR
     createPlane();
-    /*
-    planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
-
-    planeShader->addLocation("projectionMatrix");
-    planeShader->addLocation("viewMatrix");
-    planeShader->addLocation("modelMatrix");
-    planeShader->addLocation("fuffaTime");
-    planeShader->addLocation("windowSize");
-
-    postEffectShader = new Shader ("shaders/SecondPass.vert", "shaders/SecondPass.frag");
-
-    postEffectShader->addLocation("projectionMatrix");
-    postEffectShader->addLocation("viewMatrix");
-    postEffectShader->addLocation("modelMatrix");
-    postEffectShader->addLocation("fuffaTime");
-    postEffectShader->addLocation("windowSize");
-    postEffectShader->addLocation("colourTexture");
-    postEffectShader->addLocation("normalsTexture");
-    */
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+
+    projMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
+    viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
+    modelMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
+    winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
+    
+    *projMatNode->output().dataAs<glm::mat4>() = glm::ortho(0.0, 1.0, 0.0, 1.0);
+    *viewMatNode->output().dataAs<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
+    *modelMatNode->output().dataAs<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+
+    assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
 
     //glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -71,6 +65,19 @@ namespace renderer{
     raymarchingShader= new Shader();
     CHECKERROR
     raymarchingShader->build( vs, fs, marcherLoc );
+
+    auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
+    auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
+    auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
+    //RegisterShaderNode("RayMarcher", *raymarchingShader );
+    kiwi::core::NodeLayoutDescriptor raymacherLayout; 
+    raymacherLayout.inputs = {
+        {"projectionMatrix", mat4TypeInfo, kiwi::READ },
+        {"viewMatrix", mat4TypeInfo, kiwi::READ },
+        {"modelMatrix", mat4TypeInfo, kiwi::READ },
+        {"fuffaTime", uintTypeInfo, kiwi::READ },
+        {"windowSize", vec2TypeInfo, kiwi::READ }
+    };
 
     CHECKERROR
     vs.clear();

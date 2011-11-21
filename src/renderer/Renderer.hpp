@@ -4,7 +4,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-//#include "shaderLoader/shader.hpp"
+
+#include "kiwi/core/all.hpp"
 
 namespace renderer{
   class Shader;
@@ -50,6 +51,14 @@ private:
   glm::mat4 projectionMatrix;
   glm::mat4 viewMatrix;
   glm::mat4 modelMatrix;
+
+  kiwi::core::Node * projMatNode; 
+  kiwi::core::Node * viewMatNode; 
+  kiwi::core::Node * modelMatNode; 
+  kiwi::core::Node * winSizeNode;
+  kiwi::core::Node * TimeNode;
+
+  kiwi::core::Pipeline * renderPipeline;
 
   Shader *raymarchingShader;
   Shader *postEffectShader;
