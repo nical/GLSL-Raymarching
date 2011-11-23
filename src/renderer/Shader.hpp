@@ -9,6 +9,7 @@
 #include <string>
 #include <map>
 #include <assert.h>
+#include <iostream>
 
 #include "kiwi/core/NodeUpdater.hpp"
 #include "kiwi/core/Commons.hpp"
@@ -38,6 +39,7 @@ public:
 
     Shader()
     {
+        std::cout << "Shader::constructor" << std::endl;
         _state = NOT_BUILT;
         _vsId = glCreateShader(GL_VERTEX_SHADER);
         _fsId = glCreateShader(GL_FRAGMENT_SHADER);

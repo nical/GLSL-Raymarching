@@ -30,24 +30,6 @@ namespace renderer{
     
     createPlane();
 
-    planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
-
-    planeShader->addLocation("projectionMatrix");
-    planeShader->addLocation("viewMatrix");
-    planeShader->addLocation("modelMatrix");
-    planeShader->addLocation("fuffaTime");
-    planeShader->addLocation("windowSize");
-
-    postEffectShader = new Shader ("shaders/SecondPass.vert", "shaders/SecondPass.frag");
-
-    postEffectShader->addLocation("projectionMatrix");
-    postEffectShader->addLocation("viewMatrix");
-    postEffectShader->addLocation("modelMatrix");
-    postEffectShader->addLocation("fuffaTime");
-    postEffectShader->addLocation("windowSize");
-    postEffectShader->addLocation("colourTexture");
-    postEffectShader->addLocation("normalsTexture");
-
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
@@ -94,7 +76,7 @@ namespace renderer{
         {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
-    raymarchingShader= new Shader();
+    raymarchingShader = new Shader;
     CHECKERROR
     raymarchingShader->build( vs, fs, marcherLoc );
 
@@ -155,7 +137,7 @@ namespace renderer{
 
     fuffaTime++;
 
-    glBindVertexArray(iboID[0]);
+    glBindVertexArray(vaoID[0]);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #ifdef DEBUG
@@ -193,9 +175,6 @@ namespace renderer{
     glActiveTexture(GL_TEXTURE1);
     //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
     _frameBuffer->texture(1).bind();
-    CHECKERROR
-
-    glBindVertexArray(iboID[0]);
     CHECKERROR
 
     glBindVertexArray(vaoID[0]);

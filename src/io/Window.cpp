@@ -98,6 +98,7 @@ namespace io{
   }
 
   void GLWidget::setRenderer (renderer::Renderer* r){
+    std::cout << "Initialising renderer" << std::endl;    
     r->init();
     r->createBuffers();
     _renderer = r;

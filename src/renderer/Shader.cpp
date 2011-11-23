@@ -65,6 +65,9 @@ bool Shader::build(const string& vs_src,const string& fs_src, const LocationMap&
 
     CHECKERROR
     glLinkProgram(_id);
+
+    CHECKERROR
+    validateProgram(_id);
     
     for(auto it = _locations.begin(); it != _locations.end(); ++it)
     {
@@ -76,8 +79,6 @@ bool Shader::build(const string& vs_src,const string& fs_src, const LocationMap&
         }
     }
 
-    CHECKERROR
-    validateProgram(_id);
 
     _state |= VALID;
     cout << "shader state: "<<_state << endl;

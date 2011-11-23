@@ -37,15 +37,7 @@ public:
 
 private:
   FrameBuffer* _frameBuffer;
-
-  unsigned int iboID[1];
-  unsigned int tcoID[1];
-  unsigned int vboID[1];
-  unsigned int bufID[1];
-  //unsigned int texColour[1];
-  //unsigned int texNorms[1];
-  //unsigned int texDepth[1];
-
+  
   struct {
     unsigned int x;
     unsigned int y;
