@@ -1,5 +1,6 @@
 
 #include "renderer/Shader.hpp"
+#include "renderer/Texture.hpp"
 #include "utils/CheckGLError.hpp"
 
 #include <iostream>
@@ -14,6 +15,7 @@
 
 #include "kiwi/core/Node.hpp"
 #include "kiwi/core/InputPort.hpp"
+#include "kiwi/core/OutputPort.hpp"
 
 using namespace std;
 
@@ -106,49 +108,82 @@ bool Shader::hasLocation(const std::string& name) const
     return false;
 }
 
+const Shader::Location* Shader::location(const string& name)
+{
+    if( ! hasLocation(name) )
+        return 0;
+    return &_locations[name];
+}
 
-
+GLuint getGLTextureLocation( int i )
+{
+    switch( i )
+    {   
+        case 0 : return GL_TEXTURE0;
+        case 1 : return GL_TEXTURE1;
+        case 2 : return GL_TEXTURE2;
+        case 3 : return GL_TEXTURE3;
+        case 4 : return GL_TEXTURE4;
+        case 5 : return GL_TEXTURE5;
+        case 6 : return GL_TEXTURE6;
+        case 7 : return GL_TEXTURE7;
+    }
+    assert( "bad"=="parameter" );
+    return 0;
+}
 
 bool ShaderNodeUpdater::update( const kiwi::core::Node& node )
 {
-    for( auto it = _shader->locations_begin(); it != _shader->locations_end(); ++it )
+    //for( auto it = _shader->locations_begin(); it != _shader->locations_end(); ++it )
+    for( int i = 0; i < node.inputs().size(); ++i )
     {
-        if( it->second.type | Shader::UNIFORM )
+        auto name = node.inputName(i);
+        auto loc = _shader->location( name );
+        switch( loc->type & ~Shader::UNIFORM )
         {
-            switch( it->second.type & ~Shader::UNIFORM )
+            case Shader::INT:
             {
-                case Shader::INT:
-                {
-                    _shader->uniform1i( it->first, *node.input(it->first).dataAs<int>() );
-                    break;
-                }
-                case Shader::FLOAT:
-                {
-                    _shader->uniform1f( it->first, *node.input(it->first).dataAs<float>() );
-                    break;
-                }
-                case Shader::FLOAT2:
-                {
-                    auto v2 = node.input(it->first).dataAs<glm::vec2>();
-                    _shader->uniform2f( it->first, v2->x, v2->y );
-                    break;
-                }
-                case Shader::FLOAT3: 
-                {
-                    auto v3 = node.input(it->first).dataAs<glm::vec3>();
-                    _shader->uniform3f( it->first, v3->x, v3->y, v3->z );
-                    break;
-                }
-                case Shader::MAT4F:
-                {
-                    _shader->uniformMatrix4fv( it->first
-                            , &(*node.input(it->first).dataAs<glm::mat4>())[0][0] );
-                    break;
-                }
+                _shader->uniform1i( name, *node.input(i).dataAs<int>() );
+                break;
+            }
+            case Shader::FLOAT:
+            {
+                _shader->uniform1f( name, *node.input(i).dataAs<float>() );
+                break;
+            }
+            case Shader::FLOAT2:
+            {
+                auto v2 = node.input(i).dataAs<glm::vec2>();
+                _shader->uniform2f( name, v2->x, v2->y );
+                break;
+            }
+            case Shader::FLOAT3: 
+            {
+                auto v3 = node.input(i).dataAs<glm::vec3>();
+                _shader->uniform3f( name, v3->x, v3->y, v3->z );
+                break;
+            }
+            case Shader::MAT4F:
+            {
+                _shader->uniformMatrix4fv( name
+                        , &(*node.input(i).dataAs<glm::mat4>())[0][0] );
+                break;
+            }
+            case Shader::TEXTURE2D:
+            {
+                _shader->uniform1i( name, node.input(i).dataAs<Texture2D>()->id() );
+                break;
             }
         }
     }
+    for( int i = 0; i < node.outputs().size(); ++i )
+    {
+        glActiveTexture( getGLTextureLocation(i) );
+        auto tex = node.output(i).dataAs<Texture2D>();
+        glBindTexture( GL_TEXTURE_2D, tex->id() );
+    }
 }
+
 
 /*
 const kiwi::core::NodeTypeInfo * RegisterShaderNode(const kiwi::string& name, Shader& shader)

@@ -9,7 +9,8 @@
 
 namespace renderer{
   class Shader;
-
+  class FrameBuffer;
+  
 class Renderer 
 {
 public:
@@ -18,6 +19,7 @@ public:
     window.x = x;
     window.y = y;
     bufID[0] = 0;
+    _frameBuffer = 0;
   }
   ~Renderer();
 
@@ -27,21 +29,22 @@ public:
   void setWindowDimensions (unsigned int x, unsigned int y) {
     window.x = x;
     window.y = y;
-    if (bufID[0]) freeBuffers();
+    freeBuffers();
     createBuffers();
   }
 
   void createBuffers();
 
 private:
+  FrameBuffer* _frameBuffer;
 
   unsigned int iboID[1];
   unsigned int tcoID[1];
   unsigned int vboID[1];
   unsigned int bufID[1];
-  unsigned int texColour[1];
-  unsigned int texNorms[1];
-  unsigned int texDepth[1];
+  //unsigned int texColour[1];
+  //unsigned int texNorms[1];
+  //unsigned int texDepth[1];
 
   struct {
     unsigned int x;

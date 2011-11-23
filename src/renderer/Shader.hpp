@@ -23,6 +23,7 @@ public:
     struct Location
     {
         Location( int t=0 ) : location(0), type(t) {}
+        Location( int t, GLuint l ) : location(l), type(t) {}
         GLuint location;
         int type;
     };
@@ -33,7 +34,7 @@ public:
 
     enum { NOT_BUILT=0, BINDED=2, BUILD_FAILED=4, VALID=1 };
     enum { UNIFORM=1, ATTRIBUTE=2, OUTPUT=4, INVALID=8
-        , FLOAT=16, FLOAT2=32, FLOAT3=64, MAT4F=128, INT = 256, SAMPLER2D = INT };
+        , FLOAT=16, FLOAT2=32, FLOAT3=64, MAT4F=128, INT = 256, TEXTURE2D = 512 };
 
     Shader()
     {
@@ -61,6 +62,8 @@ public:
     {
         return _state;
     }
+
+    const Location * location(const string& name);
 
     LocationIterator locations_begin() const
     {
@@ -135,7 +138,8 @@ private:
 class ShaderNodeUpdater : public kiwi::core::NodeUpdater
 {
 public:
-    ShaderNodeUpdater( Shader* shader );
+    ShaderNodeUpdater( Shader* shader )
+    : _shader( shader ) {}
     bool update( const kiwi::core::Node& node );
 private:
     Shader* _shader;

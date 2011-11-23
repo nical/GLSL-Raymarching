@@ -2,6 +2,7 @@
 #include "utils/LoadFile.hpp"
 #include "renderer/Shader.hpp"
 #include "utils/CheckGLError.hpp"
+#include "renderer/FrameBuffer.hpp"
 
 #include "kiwi/core/all.hpp"
 
@@ -35,14 +36,15 @@ namespace renderer{
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     modelMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
-    
+
+    /* SEGFAULT
     *projMatNode->output().dataAs<glm::mat4>() = glm::ortho(0.0, 1.0, 0.0, 1.0);
     *viewMatNode->output().dataAs<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     *modelMatNode->output().dataAs<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
     assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
+    */
 
-    //glClearColor(0.4f, 0.6f, 0.9f, 0.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     fuffaTime = 0;
@@ -59,8 +61,8 @@ namespace renderer{
         {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
-        {"colourTexture",   { Shader::OUTPUT  | Shader::SAMPLER2D} },
-        {"normalsTexture",  { Shader::OUTPUT  | Shader::SAMPLER2D} }
+        {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
+        {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
     raymarchingShader= new Shader();
     CHECKERROR
@@ -91,8 +93,8 @@ namespace renderer{
         {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
-        {"colourTexture",   { Shader::UNIFORM | Shader::SAMPLER2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::SAMPLER2D} }
+        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
     postEffectShader = new Shader;
     CHECKERROR
@@ -103,8 +105,11 @@ namespace renderer{
 
   void Renderer::drawScene(){
     CHECKERROR
+    if( _frameBuffer == 0 ) return;
+    
     //glEnable(GL_TEXTURE_2D);
-    glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
+    _frameBuffer->bind();
+    //glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
 
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -128,7 +133,8 @@ namespace renderer{
 
     raymarchingShader->unbind();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    FrameBuffer::unbind();
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     CHECKERROR
 
 
@@ -148,12 +154,14 @@ namespace renderer{
 
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texColour[0]);
+    //glBindTexture(GL_TEXTURE_2D, texColour[0]);
+    _frameBuffer->texture(0).bind();
     CHECKERROR
 
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    _frameBuffer->texture(1).bind();
     CHECKERROR
 
     glBindVertexArray(iboID[0]);
@@ -216,6 +224,7 @@ namespace renderer{
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
+    /*
     //  Colour Renderbuffer
 
     glGenTextures(1, &texColour[0]);
@@ -279,13 +288,20 @@ namespace renderer{
     //  Unbind the Framebuffer
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+    */
+    std::cout << "aaaaaaaand..."<< std::endl;
+    _frameBuffer = new FrameBuffer(2, window.x, window.y);
+    std::cout << "...it didn't crash! (yet)"<< std::endl;
   }
 
   void Renderer::freeBuffers(){
+    if( _frameBuffer != 0 )
+        delete _frameBuffer;
+    /*
     glDeleteTextures(1, &texColour[0]);
     glDeleteTextures(1, &texNorms[0]);
     glDeleteTextures(1, &texDepth[0]);
     glDeleteFramebuffers(1, &bufID[0]);
+    */ 
   }
 }
