@@ -5,7 +5,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <iostream>
 #include <time.h>
 
@@ -68,39 +67,28 @@ namespace renderer{
     glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
 
 
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     planeShader->bind();
-
     glUniformMatrix4fv(planeShader->getLocation("projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
     glUniformMatrix4fv(planeShader->getLocation("viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(planeShader->getLocation("modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
     glUniform2f(planeShader->getLocation("windowSize"), window.x, window.y);
     glUniform1f(planeShader->getLocation("fuffaTime"), fuffaTime);
 
-
-
     fuffaTime++;
-
 
     glBindVertexArray(vaoID[0]);
 
-
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
 
     glFinish();
 
-
-
-
     glBindVertexArray(0);
-
 
     planeShader->unbind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
     postEffectShader->bind();
 
@@ -114,34 +102,37 @@ namespace renderer{
     glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
 
     //  Binding Colour Texture
-    glActiveTexture(GL_TEXTURE0);
-
+     glActiveTexture(GL_TEXTURE0);
+     //std::cout << "Trying to bind Texture " << texColour[0] << std::endl;
     glBindTexture(GL_TEXTURE_2D, texColour[0]);
-
+CHECKERROR
 
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
 
+    //std::cout << "Trying to bind Texture " << texNorms[0] << std::endl;
     glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-
+CHECKERROR
 
     glBindVertexArray(vaoID[0]);
-
+CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
     glFinish();
 
 
     glBindVertexArray(0);
-
+CHECKERROR
     glActiveTexture(GL_TEXTURE1);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
-
+CHECKERROR
 
     glActiveTexture(GL_TEXTURE0);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
 
     postEffectShader->unbind();
-
+    CHECKERROR
 
     GLuint err = glGetError();
     if( err != GL_NO_ERROR )
