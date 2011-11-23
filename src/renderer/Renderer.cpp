@@ -32,19 +32,29 @@ namespace renderer{
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
+    auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
+    auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
+    auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
+    auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
+    
+
     projMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     modelMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
-
-    /* SEGFAULT
-    *projMatNode->output().dataAs<glm::mat4>() = glm::ortho(0.0, 1.0, 0.0, 1.0);
-    *viewMatNode->output().dataAs<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-    *modelMatNode->output().dataAs<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+/*
+    projMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
+    viewMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
+    modelMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
+*/
+    assert( projMatNode->output().data() != 0 );
+    assert( projMatNode != 0 );
+    *projMatNode->output().data()->value<glm::mat4>() = glm::ortho(0.0, 1.0, 0.0, 1.0);
+    *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
+    *modelMatNode->output().data()->value<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
     assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
-    */
-
+    
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     fuffaTime = 0;
@@ -68,9 +78,7 @@ namespace renderer{
     CHECKERROR
     raymarchingShader->build( vs, fs, marcherLoc );
 
-    auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
-    auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
-    auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
+    
     //RegisterShaderNode("RayMarcher", *raymarchingShader );
     kiwi::core::NodeLayoutDescriptor raymacherLayout; 
     raymacherLayout.inputs = {
@@ -80,6 +88,11 @@ namespace renderer{
         {"fuffaTime", uintTypeInfo, kiwi::READ },
         {"windowSize", vec2TypeInfo, kiwi::READ }
     };
+    raymacherLayout.outputs = {
+        {"color", textureTypeInfo, kiwi::READ },
+        {"normals", textureTypeInfo, kiwi::READ }
+    };
+    
 
     CHECKERROR
     vs.clear();
@@ -109,8 +122,7 @@ namespace renderer{
     
     //glEnable(GL_TEXTURE_2D);
     _frameBuffer->bind();
-    //glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
-
+    
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     raymarchingShader->bind();
@@ -134,7 +146,6 @@ namespace renderer{
     raymarchingShader->unbind();
 
     FrameBuffer::unbind();
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     CHECKERROR
 
 
@@ -219,89 +230,16 @@ namespace renderer{
 
     std::cout << "Window dimensions: " << window.x << "x" << window.y << std::endl;
 
-
     GLint maxBuffers;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    /*
-    //  Colour Renderbuffer
-
-    glGenTextures(1, &texColour[0]);
-    glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    std::cout << "TexColour ID: " << texColour[0] << std::endl;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    //  Normals Texture
-
-    glGenTextures(1, &texNorms[0]);
-    glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window.x, window.y, 0, GL_RGBA, GL_FLOAT, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    //  Depth Texture, created for compatibility
-
-    glGenTextures(1, &texDepth[0]);
-    glBindTexture(GL_TEXTURE_2D, texDepth[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, window.x, window.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    //  Generate and bind the framebuffers
-
-    std::cout << "Textures Generated!" << std::endl;
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_UNSUPPORTED){
-      glGenFramebuffers(1, &bufID[0]);
-      std::cout << "Framebuffer Generated!" << std::endl;
-      glBindFramebuffer(GL_FRAMEBUFFER, bufID[0]);
-      std::cout << "Framebuffer Binded! ID: " << bufID[0] << std::endl;
-
-        //  Binging Textures to the Framebuffer
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColour[0],0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texNorms[0], 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth[0], 0);
-
-        GLenum shaderBuffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-        glDrawBuffers(2, shaderBuffers);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-          std::cout << "Fuck!" << std::endl;
-        }
-    } else {
-      std::cout << "Ok, this is a problem..." << std::endl;
-    }
-
-    //  Unbind the Framebuffer
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    */
-    std::cout << "aaaaaaaand..."<< std::endl;
     _frameBuffer = new FrameBuffer(2, window.x, window.y);
-    std::cout << "...it didn't crash! (yet)"<< std::endl;
+
   }
 
   void Renderer::freeBuffers(){
     if( _frameBuffer != 0 )
         delete _frameBuffer;
-    /*
-    glDeleteTextures(1, &texColour[0]);
-    glDeleteTextures(1, &texNorms[0]);
-    glDeleteTextures(1, &texDepth[0]);
-    glDeleteFramebuffers(1, &bufID[0]);
-    */ 
   }
 }
