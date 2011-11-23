@@ -69,19 +69,22 @@ float CubeRepetition(in vec3 point, in vec3 repetition ) {
 }
 
 float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453) + 1.0) * 0.5;
 }
 
 float softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt, float iterations ){
     float penumbraFactor = 1.0;
     vec3 sphereNormal;
-    for( float t = mint; t < maxt; ){
+    for( float t = (mint + rand(gl_FragCoord.xy) * 0.01); t < maxt; ){
         //float nextDist = min(Building1Distance(landPoint + lightVector * t), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
         float nextDist = min(CubeRepetition(landPoint + lightVector * t, vec3(20.0, 0.0, 20.0)), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
+        //nextDist = min(nextDist, PlaneDistance(landPoint + lightVector * t, vec3(0.0, 1.0, 0.0), 0.0));
         //nextDist = min(nextDist, CubeRepetition(landPoint + lightVector * t, vec3(30.0)));
-        if( nextDist < 0.001 )
+        if( nextDist < 0.001 ){
             return 0.0;
-        penumbraFactor = min( penumbraFactor, iterations * nextDist/t );
+        }
+        //float penuAttenuation = mix (1.0, 0.0, t/maxt);
+        penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
         t += nextDist;
     }
     return penumbraFactor;
@@ -320,7 +323,7 @@ void main(void)
   vec3 position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
 
   vec3 landingPixel = rayCast (position, direction, hitColor);
-  float penumbra = softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 100.0, 2.0);
+  float penumbra = softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 50.0, 8.0);
 
   landingPixel.z -= fuffaTime;
 
