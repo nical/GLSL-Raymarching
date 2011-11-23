@@ -1,5 +1,6 @@
 // g++ src/main.cpp -lglut -lGLEW
-
+#include <GL/glew.h>
+//#include <GL/gl.h>
 #include <stdlib.h>
 #include <string.h>
 #include "io/Window.hpp"
@@ -7,11 +8,12 @@
 #include <assert.h>
 #include "kiwi/core/all.hpp"
 #include "renderer/Shader.hpp"
-#include <GL/glew.h>
-#include <GL/freeglut.h>
+#include <QApplication>
+#include <QGLFormat>
+
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"
-#define WIDTH     640
-#define HEIGHT    480
+#define WIDTH     400
+#define HEIGHT    400
 #include <iostream>
 
 void Initialize(int, char*[]);
@@ -19,20 +21,28 @@ void InitWindow(int, char*[]);
 void ResizeFunction(int, int);
 void RenderFunction(void);
 
-KIWI_DECLARE_CONTAINER(int,"Int");
-
 void InitKiwi();
 
 int main(int argc, char* argv[])
 {
 
     InitKiwi();
+    QApplication raymarcher( argc, argv );
+
+    // Specify an OpenGL 3.3 format using the Core profile.
+    // That is, no old-school fixed pipeline functionality
+    QGLFormat glFormat;
+    glFormat.setVersion( 3, 3 );
+    //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
+    glFormat.setAlpha( true );
+    glFormat.setSampleBuffers( true );
 
     glewExperimental = GL_TRUE;
     renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
-	io::InitWindow(_renderer, WIDTH, HEIGHT, WINDOW_TITLE_PREFIX, argc, argv);
-	glutMainLoop();
+    io::GLWidget glsection (glFormat);
+    glsection.show();
+    glsection.setRenderer(_renderer);
 
-	return (EXIT_SUCCESS);
+	return (raymarcher.exec());
 }
 

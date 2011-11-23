@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 
 #include <stdio.h>
 
@@ -5,8 +6,11 @@
 #include "renderer/Renderer.hpp"
 
 
-#include <GL/glew.h>
-#include <GL/freeglut.h>
+
+#include <QApplication>
+#include <QGLFormat>
+#include <QTimer>
+
 #include <iostream>
 
 using namespace std;
@@ -14,67 +18,37 @@ using namespace std;
 
 namespace io{
 
-    static const int TIMERMSECS = 10;
+  static const int TIMERMSECS = 10;
 
-    int CurrentWidth;
-    int CurrentHeight;
-    int WindowHandle = 0;
+  int CurrentWidth;
+  int CurrentHeight;
+  int WindowHandle = 0;
 
   static renderer::Renderer* _renderer;
 
-  void ResizeFunction(int Width, int Height)
+  GLWidget::GLWidget(const QGLFormat& format, QWidget *parent)
+    : QGLWidget( format, parent)
   {
-    cout << "resize\n";
-    CurrentWidth = Width;
-    CurrentHeight = Height;
-    _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
-    glViewport(0, 0, CurrentWidth, CurrentHeight);
+    connect(&redrawClock, SIGNAL(timeout()), this, SLOT(update()));
+    redrawClock.start(20);
   }
 
+  GLWidget::~GLWidget(){
 
-  void RenderFunction( int millisec )
-  {
-    glutTimerFunc(millisec, RenderFunction, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    // implement the scene rendering here.
-    // like:
-    _renderer->drawScene();
-
-    glutSwapBuffers();
-    glutPostRedisplay();
   }
 
-  void InitWindow (renderer::Renderer* r, unsigned int w, unsigned int h, const char* name, int argc, char* argv[]){
+  QSize GLWidget::minimumSizeHint() const {
+    return QSize(50, 50);
+  }
 
-    CurrentHeight = h;
-    CurrentWidth = w;
-    glutInit(&argc, argv);
-    glutInitContextVersion(3, 3);
-    //glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
-    glutInitContextProfile(GLUT_CORE_PROFILE);
-    glutSetOption(
-      GLUT_ACTION_ON_WINDOW_CLOSE,
-      GLUT_ACTION_GLUTMAINLOOP_RETURNS
-    );
-    glutInitWindowSize(CurrentWidth, CurrentHeight);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    WindowHandle = glutCreateWindow(name);
+  QSize GLWidget::sizeHint() const {
+    return QSize(400, 400);
+  }
 
-    if(WindowHandle < 1) {
-      fprintf(
-        stderr,
-        "ERROR: Could not create a new rendering window.\n"
-      );
-      exit(EXIT_FAILURE);
-    }
-
-    glutReshapeFunc(ResizeFunction);
-    glutTimerFunc(TIMERMSECS, RenderFunction, 0);
-    //glutDisplayFunc(RenderFunction);
+  void GLWidget::initializeGL() {
 
     GLenum GlewInitResult = glewInit();
+    glViewport(0, 0, CurrentWidth, CurrentHeight);
 
     if (GLEW_OK != GlewInitResult)
     {
@@ -92,8 +66,40 @@ namespace io{
       glGetString(GL_VERSION)
     );
 
-    if(r==0)cout<<"r=0\n";
+  }
+
+
+  void GLWidget::resizeGL(int Width, int Height)
+  {
+
+      cout << "resize\n";
+    CurrentWidth = Width;
+    CurrentHeight = Height;
+    if (_renderer) {
+      _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
+    }
+    glViewport(0, 0, CurrentWidth, CurrentHeight);
+
+  }
+
+
+  void GLWidget::paintGL()
+  {
+
+    //glutTimerFunc(millisec, RenderFunction, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // implement the scene rendering here.
+    // like:
+      _renderer->drawScene();
+    //glutPostRedisplay();
+
+  }
+
+  void GLWidget::setRenderer (renderer::Renderer* r){
     r->init();
+    r->createBuffers();
     _renderer = r;
   }
 

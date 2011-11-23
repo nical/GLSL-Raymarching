@@ -23,7 +23,7 @@ uniform vec2 windowSize;
 
 void main (void){
 
-    if (gl_FragCoord.x <= 320.0) {
+    if (gl_FragCoord.x <= (windowSize * 0.5) ) {
       out_Color = texture2D(colourTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));
     } else {
       out_Color = texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y));

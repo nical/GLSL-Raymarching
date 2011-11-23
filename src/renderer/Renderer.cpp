@@ -11,7 +11,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <iostream>
 #include <time.h>
 #include <initializer_list>
@@ -26,8 +25,29 @@ namespace renderer{
   }
 
   void Renderer::init(){
+      
     CHECKERROR
+    
     createPlane();
+
+    planeShader = new Shader ("shaders/Raymarching.vert", "shaders/Raymarching.frag");
+
+    planeShader->addLocation("projectionMatrix");
+    planeShader->addLocation("viewMatrix");
+    planeShader->addLocation("modelMatrix");
+    planeShader->addLocation("fuffaTime");
+    planeShader->addLocation("windowSize");
+
+    postEffectShader = new Shader ("shaders/SecondPass.vert", "shaders/SecondPass.frag");
+
+    postEffectShader->addLocation("projectionMatrix");
+    postEffectShader->addLocation("viewMatrix");
+    postEffectShader->addLocation("modelMatrix");
+    postEffectShader->addLocation("fuffaTime");
+    postEffectShader->addLocation("windowSize");
+    postEffectShader->addLocation("colourTexture");
+    postEffectShader->addLocation("normalsTexture");
+
     projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
@@ -117,14 +137,15 @@ namespace renderer{
   }
 
   void Renderer::drawScene(){
+
     CHECKERROR
     if( _frameBuffer == 0 ) return;
     
     //glEnable(GL_TEXTURE_2D);
     _frameBuffer->bind();
     
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    
     raymarchingShader->bind();
     raymarchingShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
     raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
@@ -147,7 +168,6 @@ namespace renderer{
 
     FrameBuffer::unbind();
     CHECKERROR
-
 
     postEffectShader->bind();
     postEffectShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
@@ -178,18 +198,22 @@ namespace renderer{
     glBindVertexArray(iboID[0]);
     CHECKERROR
 
+    glBindVertexArray(vaoID[0]);
+CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
     CHECKERROR
     glFinish();
 
     glBindVertexArray(0);
-
+CHECKERROR
     //glActiveTexture(GL_TEXTURE1);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
+CHECKERROR
 
     glActiveTexture(GL_TEXTURE0);
+    CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
-
 
     postEffectShader->unbind();
     CHECKERROR
@@ -209,20 +233,27 @@ namespace renderer{
 
     GLuint indices[6]={0,1,2,1,2,3};
 
-    glGenVertexArrays(1, &iboID[0]);
-    glBindVertexArray(iboID[0]);
+    glGenVertexArrays(1, &vaoID[0]);
+
+    glBindVertexArray(vaoID[0]);
+
 
     // Generate and bind Vertex Buffer Objects
     glGenBuffers(1, &vboID[0]);
+
     glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
+
 
     // Load the buffer with the vertices and set its attributes
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 
+
     glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+
   }
 
   void Renderer::createBuffers()

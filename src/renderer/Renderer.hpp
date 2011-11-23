@@ -65,6 +65,10 @@ private:
 
   Shader *raymarchingShader;
   Shader *postEffectShader;
+  unsigned int vaoID[1];
+  unsigned int tcoID[1];
+  unsigned int vboID[1];
+  unsigned int bufID[1];
 
   float fuffaTime;
 
