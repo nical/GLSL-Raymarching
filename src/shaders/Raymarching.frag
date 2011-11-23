@@ -63,10 +63,22 @@ float Building1Distance(in vec3 point)
     //return CubeDistance2(point, size);
 }
 
+float CubeRepetition(in vec3 point, in vec3 repetition ) {
+    vec3 q = mod(point, repetition)-0.5*repetition;
+    return CubeDistance2 ( q, vec3 (2.0, 4.0, 2.0));
+}
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 float softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt, float iterations ){
     float penumbraFactor = 1.0;
+    vec3 sphereNormal;
     for( float t = mint; t < maxt; ){
-        float nextDist = Building1Distance(landPoint * 10 + lightVector * t);
+        //float nextDist = min(Building1Distance(landPoint + lightVector * t), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
+        float nextDist = min(CubeRepetition(landPoint + lightVector * t, vec3(20.0, 0.0, 20.0)), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
+        //nextDist = min(nextDist, CubeRepetition(landPoint + lightVector * t, vec3(30.0)));
         if( nextDist < 0.001 )
             return 0.0;
         penumbraFactor = min( penumbraFactor, iterations * nextDist/t );
@@ -106,10 +118,6 @@ float CubeDistance(in vec3 point, in vec3 center, in vec3 size) {
 	return max(max(abs(d.x) - size.x, abs(d.y) - size.y), abs(d.z) - size.z);
 }
 
-float CubeRepetition(in vec3 point, in vec3 repetition ) {
-    vec3 q = mod(point, repetition)-0.5*repetition;
-    return CubeDistance2 ( q, vec3 (2.0, 4.0, 2.0));
-}
 
 float JazzBuilding01 (in vec3 point){
     vec3 baseSize = vec3(3.0, 6.0, 3.0);
@@ -223,10 +231,10 @@ vec3 rayCast(in vec3 position, in vec3 direction, inout vec3 hitColor){
   bool hit = false;
   for (i = 0; i < MAX_STEPS ; ++i){
     //lastCubeDistance = CubeDistance(position, vec3(5.0, 2.0, 0.0), vec3(4.0, 4.0, 4.0));
-    lastCubeDistance = Building1Distance(position);
+    //lastCubeDistance = Building1Distance(position);
     lastSphereDistance = SphereDistanceNormal(position, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal);
     lastPlaneDistance = PlaneDistance(position, vec3(0.0, 1.0, 0.0), 0.0);
-    //lastJazzBuilding = CubeRepetition(position, vec3(20.0, 0.0, 20.0));
+    lastCubeDistance = CubeRepetition(position, vec3(20.0, 0.0, 20.0));
     //lastJazzBuilding = JazzBuilding01(position);
 
     int selected = 0;
@@ -306,25 +314,25 @@ void main(void)
   screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5)*windowRatio;
   screenPos.y =  gl_FragCoord.y/windowSize.y - 0.5;
 
-  vec3 lightpos = vec3(0.0, 5.0, (fuffaTime*0.1) + 10.0 );
+  vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
 
   vec3 direction = normalize(vec3(screenPos.x,screenPos.y, 1.0));
-  vec3 position = vec3(5*sin(fuffaTime*0.01), 12.0, fuffaTime);
+  vec3 position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
 
-  vec3 landingPixel = rayCast (position, direction, hitColor) * 0.1;
-  float penumbra = softshadow(landingPixel, normalize(lightpos - landingPixel), 0.001, 10, 8);
+  vec3 landingPixel = rayCast (position, direction, hitColor);
+  float penumbra = softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 100.0, 2.0);
 
-  landingPixel.z -= fuffaTime*0.1;
+  landingPixel.z -= fuffaTime;
 
   //scanlines
-  if( mod(gl_FragCoord.y * 0.5, 2.0) < 0.5 )
-    hitColor *= 0.95;
+  /*if( mod(gl_FragCoord.y * 0.5, 2.0) < 0.5 )
+    hitColor *= 0.95;*/
 
   //outputColour = vec4(hitColor, 1.0);
 
   //out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
   //gl_FragData[0] = vec4(hitColor, 1.0);
-  hitColor = mix(vec3(0.35), hitColor,(penumbra));
+  hitColor = mix(vec3(0.0, 0.0, 0.35), hitColor,(penumbra));
   out_Colour[0] = vec4(hitColor, 1.0);
   out_Colour[1] = vec4(vec3(penumbra), 1.0);
   //out_Colour[1] = vec4(vec3(landingPixel.z/50.0), 1.0);
