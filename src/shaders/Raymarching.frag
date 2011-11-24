@@ -338,7 +338,7 @@ void main(void)
   //gl_FragData[0] = vec4(hitColor, 1.0);
   hitColor = mix(vec3(0.0, 0.0, 0.35), hitColor,(penumbra));
   out_Colour[0] = vec4(hitColor, 1.0);
-  out_Colour[1] = vec4(vec3(penumbra), 1.0);
+  out_Colour[1] = vec4(vec3(penumbra), landingPixel.z/100.0);
   //out_Colour[0] = vec4(1.0);
   //out_Colour[1] = vec4(vec3(landingPixel.z/50.0), 1.0);
 }
