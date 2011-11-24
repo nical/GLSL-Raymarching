@@ -1,7 +1,7 @@
 #! /bin/sh
-if [ -f ".ProjectSetup" ]
+
+if [ -d "../kiwi" ]
 then
-    echo "-- First initialization"
     cd ../kiwi/cpp
     echo "-- Pulling kiwi from git"
     git pull origin master
@@ -18,26 +18,25 @@ else
     ./REBUILD.sh
     echo "-- Moving back to project directory"
     pwd
-    cd ../../GLSL-Raymarching 
+    cd ../../GLSL-Raymarching
     echo "-- Creating links for kiwi"
-    ln -s ../kiwi/cpp/ ./extern/.
+    ln -s ../../kiwi/cpp/ ./extern/
     mv ./extern/cpp ./extern/kiwi
-    if [ -d "./bin" ]
-    then
-        echo "-- bin directory already exists"
-    else
-        echo "-- Creating bin directory"
-        mkdir ./bin
-    fi
-    if [ -L "./bin/shaders" ]
-    then
-        rm ./bin/shaders
-    fi
-    echo "-- Creating links for shaders"
-    ln -s ./src/shaders/ bin/.
-    
-    touch .ProjectSetup
-    echo "-- End of the setup script"
+    ls ./extern/kiwi/
 fi
 
+if [ -d "./bin" ]
+then
+    echo "-- bin directory already exists"
+else
+    echo "-- Creating bin directory"
+    mkdir ./bin
+fi
+
+rm ./bin/shaders
+echo "-- Creating links for shaders"
+ln -s ../src/shaders/ ./bin/shaders
+ls bin/shaders/
+
+echo "-- Setup complete"
 

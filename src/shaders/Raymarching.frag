@@ -8,10 +8,25 @@ out vec4 out_Colour[2];
 uniform float fuffaTime;
 uniform vec2 windowSize;
 
+#define shadowColor vec3(0.0,0.3,0.7) // todo pass it as uniform
+#define buildingsColor vec3(1.0,1.0,1.0) // todo pass it as uniform
+#define groundColor vec3(0.8,0.8,0.8) // todo pass it as uniform
+#define redColor vec3(1.0,0.1,0.1) // todo pass it as uniform
+#define skyColor vec3(0.6,0.9,1.0) // todo pass it as uniform
+
 //layout(location = 0) out vec4 outputColour;
 //layout(location = 1) out vec4 outputNormals;
 
 #define epsilon 0.01
+
+#define NO_HIT 0
+#define HAS_HIT 1
+// materials
+#define SKY_MTL 0
+#define GROUND_MTL 1
+#define BUILDINGS_MTL 2
+#define RED_MTL 3
+
 
 float PlaneDistance(in vec3 point, in vec3 normal, in float pDistance)
 {
@@ -26,15 +41,6 @@ float SphereDistance(vec3 point, vec3 center, float radius)
   return length(point - center) - radius;
 }
 
-float SphereDistanceNormal(vec3 point, vec3 center, float radius, out vec3 normal)
-{
-  point.z = mod(point.z+15, 230.0)-15;
-  point.x = mod(point.x+15, 230.0)-15;
-  //point.y = mod(point.y, 30.0);
-  vec3 d = point - center;
-  normal = normalize(d);
-  return length(d) - radius;
-}
 
 float CubeDistance2 (in vec3 point, in vec3 size) {
 
@@ -73,48 +79,6 @@ float rand(vec2 co){
     return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453) + 1.0) * 0.5;
 }
 
-float softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt, float iterations ){
-    float penumbraFactor = 1.0;
-    vec3 sphereNormal;
-    for( float t = (mint + rand(gl_FragCoord.xy) * 0.01); t < maxt; ){
-        //float nextDist = min(Building1Distance(landPoint + lightVector * t), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
-        float nextDist = min(CubeRepetition(landPoint + lightVector * t, vec3(20.0, 0.0, 20.0)), SphereDistanceNormal(landPoint + lightVector * t, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal));
-        //nextDist = min(nextDist, PlaneDistance(landPoint + lightVector * t, vec3(0.0, 1.0, 0.0), 0.0));
-        //nextDist = min(nextDist, CubeRepetition(landPoint + lightVector * t, vec3(30.0)));
-        if( nextDist < 0.001 ){
-            return 0.0;
-        }
-        //float penuAttenuation = mix (1.0, 0.0, t/maxt);
-        penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
-        t += nextDist;
-    }
-    return penumbraFactor;
-}
-
-/*
-vec3 Building1Normal(in vec3 point)
-{
-    point.z = mod (point.z+10, 17.0)-10;
-    point.x = mod (point.x+10, 27.0)-10;
-    point -= vec3(5.0, 3.0, 3.0);//center
-    point /= vec3(2.0, 3.0, 2.0);
-    if( abs(point.x) > abs(point.z) )
-    {
-        if(abs(point.y) > abs(point.x))
-            return vec3(0.0,1.0,0.0);
-        else
-            return faceforward( vec3(-1.0,0.0,0.0), point, vec3(1.0,0.0,0.0) );
-    }
-    else
-    {
-        if(abs(point.y) > abs(point.z))
-            return vec3(0.0,1.0,0.0);
-        else
-            return faceforward( vec3(0.0,0.0,-1.0), point, vec3(0.0,0.0,1.0) );
-    }
-    return vec3(1.0,1.0,1.0);
-}
-*/
 float CubeDistance(in vec3 point, in vec3 center, in vec3 size) {
   //point.z = mod (point.z+10, 20.0)-10;
   //point.x = mod (point.x+10, 20.0)-10;
@@ -222,123 +186,130 @@ float AmbiantOcclusion( in vec3 position, in vec3 direction )
     return clamp(1.0-occlusion,0.0,1.0)*0.6+0.4 ;
 }
 
-
-vec3 rayCast(in vec3 position, in vec3 direction, inout vec3 hitColor){
-  int i = 0;
-  float nextDistance;
-  float lastCubeDistance;
-  float lastSphereDistance;
-  float lastPlaneDistance;
-  float lastJazzBuilding;
-  vec3 origin = position;
-  vec3 sphereNormal = vec3(0.0,1.0,0.0);
-  bool hit = false;
-  for (i = 0; i < MAX_STEPS ; ++i){
-    //lastCubeDistance = CubeDistance(position, vec3(5.0, 2.0, 0.0), vec3(4.0, 4.0, 4.0));
-    //lastCubeDistance = Building1Distance(position);
-    lastSphereDistance = SphereDistanceNormal(position, vec3(0.0, 3.0, 5.0), 5.0, sphereNormal);
-    lastPlaneDistance = PlaneDistance(position, vec3(0.0, 1.0, 0.0), 0.0);
-    lastCubeDistance = CubeRepetition(position, vec3(20.0, 20.0, 20.0));
-    //lastJazzBuilding = JazzBuilding01(position);
-
-    int selected = 0;
-
-    nextDistance = lastPlaneDistance;
-
-    if( lastSphereDistance < lastPlaneDistance )
-    {
-        selected = 2;
-        nextDistance = lastSphereDistance;
-    }
-    if( lastCubeDistance < nextDistance )
-    {
-        selected = 1;
-        nextDistance = lastCubeDistance;
-    }
-    /*if (lastJazzBuilding < nextDistance){
-        selected = 3;
-        nextDistance = lastJazzBuilding;
-    }*/
-
-    if (nextDistance < 0.001) {
-      hit = true;
-      if (selected == 2) { // spheres
-        hitColor = vec3(1.0, 0.0, 0.05) * (1.0+dot(sphereNormal, vec3(0.4,0.4,0.0))) * AmbiantOcclusion(position, sphereNormal*1.1 );
-        //hitColor.b = 0.9;
-        applyFog( dot(position-origin,position-origin), hitColor );
-      } else if (selected == 0) { // plane
-        //hitColor = vec3(0.6, 0.7, 0.9) * AmbiantOcclusion(position, vec3(0.0,1.0,0.0) );
-        //hitColor = mix(vec3(0.2, 0.4, 0.8), vec3(0.9, 0.9, 1.0), AmbiantOcclusion(position, vec3(0.0,1.0,0.0)) );
-        hitColor = 0.5*(vec3(0.2, 0.4, 0.8) + AmbiantOcclusion2(position, vec3(0.0,1.0,0.0)));
-        hitColor = AmbiantOcclusion2(position, vec3(0.0,1.0,0.0));
-        applyFog( dot(position-origin,position-origin), hitColor );
-      } else if (selected == 1) { // cubes
-        vec3 buildingNormal
-            = normalize( vec3( Building1Distance( position + vec3(epsilon,0,0) ) - Building1Distance( position - vec3(epsilon,0,0) )
-                , Building1Distance( position + vec3(0,epsilon,0) ) - Building1Distance( position - vec3(0,epsilon,0) )
-                , Building1Distance( position + vec3(0,0,epsilon) ) - Building1Distance( position - vec3(0,0,epsilon) )
-            ) );
-        hitColor = (/*vec3(1.0, 1.0, 1.0) +*/ AmbiantOcclusion2(position, buildingNormal )) * (1.0+dot(buildingNormal, vec3(0.4,0.4,0.0)));
-        hitColor.b = 1.0;
-        hitColor = buildingNormal*0.5 + vec3(0.5);
-        applyFog( dot(position-origin,position-origin), hitColor );
-        //hitColor = vec3(0.5) + 0.5*Building1Normal(position);
-      } else if (selected == 3){
-        hitColor = vec3(1.0, 0.2, 1.0);
-        applyFog( dot(position-origin,position-origin), hitColor );
-      }
-      break;
-    }
-    position += nextDistance * direction;
-  }
-  // quick hack to catch the fragments that went out of steps but should be on the plane
-  if(!hit && direction.y < 0 ){
-    hitColor = 0.5*(vec3(0.2, 0.4, 0.8) + AmbiantOcclusion2(position, vec3(0.0,1.0,0.0)));
-    hitColor = AmbiantOcclusion2(position, vec3(0.0,1.0,0.0));
-    applyFog( dot(position-origin,position-origin), hitColor );
-  }
-
-  return position;
+float RedDistance(in vec3 position)
+{
+    return SphereDistance(position, vec3(0.0, 3.0, 5.0), 5.0);
 }
 
-float darkenCorners(in vec2 screenPos)
+float BuildingsDistance(in vec3 position)
 {
-    return 1.2-clamp(1.5*dot(screenPos,screenPos)+0.045, 0.2, 1.0);
+    return CubeRepetition(position, vec3(20.0, 20.0, 20.0));
+}
+
+float GroundDistance(in vec3 position)
+{
+    return PlaneDistance(position, vec3(0.0,1.0,0.0), 0.0);
+}
+
+float DistanceField(in vec3 position, out int mtl )
+{
+    float redDistance = RedDistance(position);
+    float bldDistance = BuildingsDistance(position);
+    float gndDistance = GroundDistance(position);
+    float closest = gndDistance;
+    mtl = GROUND_MTL;
+    if ( bldDistance < closest )
+    {
+        closest = bldDistance;
+        mtl = BUILDINGS_MTL;
+    }
+    if ( redDistance < closest )
+    {
+        closest = redDistance;
+        mtl = RED_MTL;
+    }
+    return closest;
+}
+
+
+float Softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt, float iterations )
+{
+    float penumbraFactor = 1.0;
+    vec3 sphereNormal;
+    for( float t = (mint + rand(gl_FragCoord.xy) * 0.01); t < maxt; )
+    {
+        float nextDist = min(
+            BuildingsDistance(landPoint + lightVector * t )
+            , RedDistance(landPoint + lightVector * t )
+        );
+
+        if( nextDist < 0.001 ){
+            return 0.0;
+        }
+        //float penuAttenuation = mix (1.0, 0.0, t/maxt);
+        penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
+        t += nextDist;
+    }
+    return penumbraFactor;
+}
+
+
+vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
+{
+    float nextDistance = 1.0;
+    for (int i = 0; i < MAX_STEPS ; ++i)
+    {
+        nextDistance = DistanceField(position,mtl);
+        
+        if ( nextDistance < 0.001)
+        {
+            return position;
+        }
+        position += direction * nextDistance;
+    }
+    // out of steps
+    if (direction.y < 0.0 )
+    {
+        mtl = GROUND_MTL;
+    }
+    else
+    {
+        mtl = SKY_MTL;
+    }
+    return position;
+}
+
+vec3 MaterialColor( int mtl )
+{
+    switch(mtl)
+    {
+        case SKY_MTL : return skyColor;
+        case BUILDINGS_MTL : return buildingsColor;
+        case GROUND_MTL : return groundColor;
+        case RED_MTL : return redColor;
+    }
+    return vec3(1.0,0.0,1.0); // means error
 }
 
 void main(void)
 {
-  float windowRatio = windowSize.x / windowSize.y;
+    float windowRatio = windowSize.x / windowSize.y;
 
-  vec3 color;
-  vec3 skyColor = vec3(0.9, 0.95, 1);
-  vec3 hitColor = skyColor;
+    // position on the screen
+    vec2 screenPos;
+    screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5)*windowRatio;
+    screenPos.y = gl_FragCoord.y/windowSize.y - 0.5;
 
-  vec2 screenPos;
-  screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5)*windowRatio;
-  screenPos.y = gl_FragCoord.y/windowSize.y - 0.5;
+    vec3 direction = normalize(vec3(screenPos.x,screenPos.y, 1.0));
+    vec3 position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
 
-  vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
+    int material;
+    vec3 landingPixel = RayMarch(position, direction, material);
 
-  vec3 direction = normalize(vec3(screenPos.x,screenPos.y, 1.0));
-  vec3 position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
-
-  vec3 landingPixel = rayCast (position, direction, hitColor);
-  float penumbra = softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 50.0, 8.0);
-
-  landingPixel.z -= fuffaTime;
-
-  //scanlines
-  /*if( mod(gl_FragCoord.y * 0.5, 2.0) < 0.5 )
-    hitColor *= 0.95;*/
-
-  //outputColour = vec4(hitColor, 1.0);
-
-  //out_Color = vec4(hitColor, 1.0) * darkenCorners(screenPos);
-  //gl_FragData[0] = vec4(hitColor, 1.0);
-  hitColor = mix(vec3(0.0, 0.0, 0.35), hitColor,(penumbra));
-  out_Colour[0] = vec4(hitColor, 1.0);
-  out_Colour[1] = vec4(vec3(penumbra), 1.0);
-  //out_Colour[0] = vec4(1.0);
-  //out_Colour[1] = vec4(vec3(landingPixel.z/50.0), 1.0);
+    vec3 hitColor;
+    if( material != SKY_MTL ) // has hit something
+    {
+        vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
+        float penumbra = Softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 50.0, 8.0);
+        vec3 mtlColor = MaterialColor(material);
+        hitColor = mix(shadowColor, mtlColor, penumbra);
+        out_Colour[0] = vec4(hitColor, 1.0);
+        out_Colour[1] = vec4(vec3(penumbra), 1.0);        // todo apply fog
+    }
+    else // sky
+    {
+        vec3 hitColor = skyColor;
+        out_Colour[0] = vec4(hitColor, 1.0);
+        out_Colour[1] = vec4(1.0);
+    }
 }

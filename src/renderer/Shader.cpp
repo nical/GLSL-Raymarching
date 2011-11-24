@@ -21,6 +21,8 @@ using namespace std;
 
 namespace renderer{
 
+static const bool SHADER_BUILD_ERROR = false;
+
 static void validateProgram(GLuint program) {
     const unsigned int BUFFER_SIZE = 512;
     char buffer[BUFFER_SIZE];
@@ -35,7 +37,10 @@ static void validateProgram(GLuint program) {
     GLint status;
     glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
     if (status == GL_FALSE)
+    {
 		cout << "Error validating shader " << program << endl;
+        assert(SHADER_BUILD_ERROR);
+    }
 }
 
 
