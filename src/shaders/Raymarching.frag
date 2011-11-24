@@ -8,13 +8,11 @@ out vec4 out_Colour[2];
 uniform float fuffaTime;
 uniform vec2 windowSize;
 uniform mat4 viewMatrix;
-
-#define shadowColor vec3(0.0,0.3,0.7) // todo pass it as uniform
-#define buildingsColor vec3(1.0,1.0,1.0) // todo pass it as uniform
-#define groundColor vec3(1.0,1.0,1.0) // todo pass it as uniform
-#define redColor vec3(1.0,0.1,0.1) // todo pass it as uniform
-#define skyColor vec3(0.9,1.0,1.0) // todo pass it as uniform
-#define viewMatrix mat4(0.0) // todo pass it as uniform
+uniform vec3 shadowColor; //vec3(0.0,0.3,0.7) // todo pass it as uniform
+uniform vec3 buildingsColor;// vec3(1.0,1.0,1.0) // todo pass it as uniform
+uniform vec3 groundColor;// vec3(1.0,1.0,1.0) // todo pass it as uniform
+uniform vec3 redColor;// vec3(1.0,0.1,0.1) // todo pass it as uniform
+uniform vec3 skyColor;//vec3(0.9,1.0,1.0) // todo pass it as uniform
 #define fovyCoefficient 1.0 // todo pass it as uniform
 #define shadowHardness 7.0 // todo pass it as uniform
 

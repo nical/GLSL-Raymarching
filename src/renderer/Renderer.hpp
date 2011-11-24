@@ -45,9 +45,7 @@ private:
 
   glm::mat4 viewMatrix;
 
-  kiwi::core::Node * projMatNode; 
   kiwi::core::Node * viewMatNode; 
-  kiwi::core::Node * modelMatNode; 
   kiwi::core::Node * winSizeNode;
   kiwi::core::Node * TimeNode;
 
