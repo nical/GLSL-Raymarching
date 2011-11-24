@@ -30,33 +30,19 @@ namespace renderer{
     
     createPlane();
 
-    projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-    modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
     auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
     auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
     auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
+    auto vec3TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec3");
     auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
     
 
-    projMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
-    modelMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
-/*
-    projMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
-    viewMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
-    modelMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
-*/
-    assert( projMatNode->output().data() != 0 );
-    assert( projMatNode != 0 );
-    *projMatNode->output().data()->value<glm::mat4>() = glm::ortho(0.0, 1.0, 0.0, 1.0);
     *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-    *modelMatNode->output().data()->value<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
-    assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
-    
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     fuffaTime = 0;
@@ -68,10 +54,15 @@ namespace renderer{
     utils::LoadTextFile("shaders/Raymarching.vert", vs);
     utils::LoadTextFile("shaders/Raymarching.frag", fs);
     Shader::LocationMap marcherLoc = {
-        {"projectionMatrix",{ Shader::UNIFORM | Shader::MAT4F} },
         {"viewMatrix",      { Shader::UNIFORM | Shader::MAT4F} },
-        {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
+        {"shadowColor",     { Shader::UNIFORM | Shader::FLOAT3} },
+        {"skyColor",        { Shader::UNIFORM | Shader::FLOAT3} },
+        {"groundColor",     { Shader::UNIFORM | Shader::FLOAT3} },
+        {"buildingsColor",  { Shader::UNIFORM | Shader::FLOAT3} },
+        {"redColor",        { Shader::UNIFORM | Shader::FLOAT3} },
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"shadowHardness",  { Shader::UNIFORM | Shader::FLOAT} },
+        {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
@@ -84,9 +75,11 @@ namespace renderer{
     //RegisterShaderNode("RayMarcher", *raymarchingShader );
     kiwi::core::NodeLayoutDescriptor raymacherLayout; 
     raymacherLayout.inputs = {
-        {"projectionMatrix", mat4TypeInfo, kiwi::READ },
+        {"skyColor", vec3TypeInfo, kiwi::READ },
+        {"groundColor", vec3TypeInfo, kiwi::READ },
+        {"buildingsColor", vec3TypeInfo, kiwi::READ },
+        {"shadowColor", vec3TypeInfo, kiwi::READ },
         {"viewMatrix", mat4TypeInfo, kiwi::READ },
-        {"modelMatrix", mat4TypeInfo, kiwi::READ },
         {"fuffaTime", uintTypeInfo, kiwi::READ },
         {"windowSize", vec2TypeInfo, kiwi::READ }
     };
@@ -102,9 +95,6 @@ namespace renderer{
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
     utils::LoadTextFile("shaders/SecondPass.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"projectionMatrix",{ Shader::UNIFORM | Shader::MAT4F} },
-        {"viewMatrix",      { Shader::UNIFORM | Shader::MAT4F} },
-        {"modelMatrix",     { Shader::UNIFORM | Shader::MAT4F} },
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
@@ -128,17 +118,26 @@ namespace renderer{
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
     raymarchingShader->bind();
-    raymarchingShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
     raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    raymarchingShader->uniformMatrix4fv("modelMatrix", &modelMatrix[0][0] );
+    raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
+    raymarchingShader->uniform3f("buildingsColor", 1.0, 1.0, 1.0 );
+    raymarchingShader->uniform3f("groundColor", 1.0, 1.0, 1.0 );
+    raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
+    raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
     raymarchingShader->uniform2f("windowSize", window.x, window.y );
+    CHECKERROR
     raymarchingShader->uniform1f("fuffaTime", fuffaTime );
-
+    CHECKERROR
+    raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
+    CHECKERROR
+    raymarchingShader->uniform1f("shadowHardness", 7.0f );
+    CHECKERROR
     fuffaTime++;
 
     glBindVertexArray(vaoID[0]);
-
+    CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CHECKERROR
 #ifdef DEBUG
     glFinish();
 #endif
@@ -151,9 +150,6 @@ namespace renderer{
     CHECKERROR
 
     postEffectShader->bind();
-    postEffectShader->uniformMatrix4fv("projectionMatrix", &projectionMatrix[0][0] );
-    postEffectShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    postEffectShader->uniformMatrix4fv("modelMatrix", &modelMatrix[0][0] );
     postEffectShader->uniform2f("windowSize", window.x, window.y );
     postEffectShader->uniform1f("fuffaTime", fuffaTime );
     postEffectShader->uniform1i("colourTexture", 0 );
@@ -202,10 +198,10 @@ CHECKERROR
       std::cerr << "ARB_vertex_array_object not available." << std::endl;
 
     GLfloat vertices[12] = {
-      0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0,
-      1.0, 0.0, 0.0,
-      1.0, 1.0, 0.0
+      -1.0, -1.0, -1.0,
+      -1.0, 1.0, -1.0,
+      1.0, -1.0, -1.0,
+      1.0, 1.0, -1.0
     };
 
 
