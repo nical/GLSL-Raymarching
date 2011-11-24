@@ -7,6 +7,7 @@ out vec4 out_Colour[2];
 
 uniform float fuffaTime;
 uniform vec2 windowSize;
+uniform mat4 viewMatrix;
 
 #define shadowColor vec3(0.0,0.3,0.7) // todo pass it as uniform
 #define buildingsColor vec3(1.0,1.0,1.0) // todo pass it as uniform

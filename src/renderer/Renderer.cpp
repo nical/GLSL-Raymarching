@@ -30,9 +30,7 @@ namespace renderer{
     
     createPlane();
 
-    projectionMatrix = glm::ortho (0.0, 1.0, 0.0, 1.0);
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-    modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
     auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
     auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
@@ -40,9 +38,7 @@ namespace renderer{
     auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
     
 
-    projMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
-    modelMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
 /*
     projMatNode->output().data() = new kiwi::core::Container<glm::mat4>( mat4TypeInfo );
@@ -55,7 +51,7 @@ namespace renderer{
     *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     *modelMatNode->output().data()->value<glm::mat4>() = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 
-    assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
+    //assert( *projMatNode->output().dataAs<glm::mat4>() == projectionMatrix );
     
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -202,10 +198,10 @@ CHECKERROR
       std::cerr << "ARB_vertex_array_object not available." << std::endl;
 
     GLfloat vertices[12] = {
-      0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0,
-      1.0, 0.0, 0.0,
-      1.0, 1.0, 0.0
+      -1.0, -1.0, -1.0,
+      -1.0, 1.0, -1.0,
+      1.0, -1.0, -1.0,
+      1.0, 1.0, -1.0
     };
 
 

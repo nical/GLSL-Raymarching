@@ -43,9 +43,7 @@ private:
     unsigned int y;
   } window;
 
-  glm::mat4 projectionMatrix;
   glm::mat4 viewMatrix;
-  glm::mat4 modelMatrix;
 
   kiwi::core::Node * projMatNode; 
   kiwi::core::Node * viewMatNode; 
