@@ -10,14 +10,15 @@ uniform vec2 windowSize;
 
 #define shadowColor vec3(0.0,0.3,0.7) // todo pass it as uniform
 #define buildingsColor vec3(1.0,1.0,1.0) // todo pass it as uniform
-#define groundColor vec3(0.8,0.8,0.8) // todo pass it as uniform
+#define groundColor vec3(1.0,1.0,1.0) // todo pass it as uniform
 #define redColor vec3(1.0,0.1,0.1) // todo pass it as uniform
-#define skyColor vec3(0.6,0.9,1.0) // todo pass it as uniform
-
-//layout(location = 0) out vec4 outputColour;
-//layout(location = 1) out vec4 outputNormals;
+#define skyColor vec3(0.9,1.0,1.0) // todo pass it as uniform
+#define viewMatrix mat4(0.0) // todo pass it as uniform
+#define fovyCoefficient 1.0 // todo pass it as uniform
+#define shadowHardness 7.0 // todo pass it as uniform
 
 #define epsilon 0.01
+#define PI 3.14159265
 
 #define NO_HIT 0
 #define HAS_HIT 1
@@ -122,10 +123,10 @@ return sqrt(x * x + d.y * d.y) - minorRadius;
 
 void applyFog( in float distance, inout vec3 rgb ){
 
-    float fogAmount = (1.0 - clamp(distance*0.00004,0.0,1.0) );
+    float fogAmount = (1.0 - clamp(distance*0.0005,0.0,1.0) );
     //float fogAmount = exp( -distance* 0.006 );
     vec3 fogColor = vec3(0.9,0.95,1);
-    rgb = mix( fogColor, rgb, fogAmount );
+    rgb = mix( skyColor, rgb, fogAmount );
 }
 
 vec3 AmbiantOcclusion2( in vec3 position, in vec3 direction )
@@ -193,8 +194,11 @@ float RedDistance(in vec3 position)
 
 float BuildingsDistance(in vec3 position)
 {
-    return CubeRepetition(position, vec3(20.0, 20.0, 20.0));
-}
+    return min(
+        CubeRepetition(position, vec3(20.0, 0.0, 20.0))
+        , Building1Distance(position)
+        );
+}   
 
 float GroundDistance(in vec3 position)
 {
@@ -281,30 +285,70 @@ vec3 MaterialColor( int mtl )
     return vec3(1.0,0.0,1.0); // means error
 }
 
+vec3 ComputeNormal(vec3 pos, int material)
+{
+    int dummy;
+    return normalize(
+        vec3(
+          DistanceField( vec3(pos.x + epsilon, pos.y, pos.z), dummy ) - DistanceField( vec3(pos.x - epsilon, pos.y, pos.z), dummy )
+        , DistanceField( vec3(pos.x, pos.y + epsilon, pos.z), dummy ) - DistanceField( vec3(pos.x, pos.y - epsilon, pos.z), dummy )
+        , DistanceField( vec3(pos.x, pos.y, pos.z + epsilon), dummy ) - DistanceField( vec3(pos.x, pos.y, pos.z - epsilon), dummy )
+        )
+    );
+}
+
+void PinHoleCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out vec3 position, out vec3 direction )
+{
+    screenPos.x *= ratio;
+    direction = normalize(vec3(screenPos.x,screenPos.y, fovy));
+    position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
+}
+
+void FishEyeCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out vec3 position, out vec3 direction )
+{
+    screenPos.y -= 0.2;
+    screenPos *= vec2(PI*0.5,PI*0.5/ratio)/fovy;
+    
+    direction = vec3(
+           sin(screenPos.y+PI*0.5)*sin(screenPos.x)
+        , -cos(screenPos.y+PI*0.5)
+        ,  sin(screenPos.y+PI*0.5)*cos(screenPos.x)
+    );
+    position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
+}
+
 void main(void)
 {
-    float windowRatio = windowSize.x / windowSize.y;
-
+    float ratio = windowSize.x / windowSize.y;
     // position on the screen
     vec2 screenPos;
-    screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5)*windowRatio;
+    screenPos.x = (gl_FragCoord.x/windowSize.x - 0.5);
     screenPos.y = gl_FragCoord.y/windowSize.y - 0.5;
 
-    vec3 direction = normalize(vec3(screenPos.x,screenPos.y, 1.0));
-    vec3 position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
-
+    vec3 direction;
+    vec3 position;
+    FishEyeCamera(screenPos, ratio, fovyCoefficient, viewMatrix, position, direction);
     int material;
-    vec3 landingPixel = RayMarch(position, direction, material);
+    vec3 hitPosition = RayMarch(position, direction, material);
 
     vec3 hitColor;
     if( material != SKY_MTL ) // has hit something
     {
         vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
-        float penumbra = Softshadow(landingPixel, normalize(lightpos - landingPixel), 0.1, 50.0, 8.0);
+        vec3 lightVector = normalize(lightpos - hitPosition);
+        // soft shadows
+        float shadow = Softshadow(hitPosition, lightVector, 0.1, 50.0, shadowHardness);
+        // attenuation due to facing (or not) the light
+        vec3 normal = ComputeNormal(hitPosition, material);
+        float attenuation = clamp(dot(normal, lightVector),0.0,1.0)*0.6 + 0.4;
+        shadow = min(shadow, attenuation);
+        //material color
         vec3 mtlColor = MaterialColor(material);
-        hitColor = mix(shadowColor, mtlColor, penumbra);
+        hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6);
+        
+        applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
-        out_Colour[1] = vec4(vec3(penumbra), 1.0);        // todo apply fog
+        out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
     }
     else // sky
     {
