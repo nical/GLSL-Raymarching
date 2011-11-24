@@ -1,20 +1,18 @@
 #version 330
 #define MAX_STEPS 100
 
-//in vec3 pass_Color;
-
 out vec4 out_Colour[2];
 
 uniform float fuffaTime;
 uniform vec2 windowSize;
 uniform mat4 viewMatrix;
-uniform vec3 shadowColor; //vec3(0.0,0.3,0.7) // todo pass it as uniform
-uniform vec3 buildingsColor;// vec3(1.0,1.0,1.0) // todo pass it as uniform
-uniform vec3 groundColor;// vec3(1.0,1.0,1.0) // todo pass it as uniform
-uniform vec3 redColor;// vec3(1.0,0.1,0.1) // todo pass it as uniform
-uniform vec3 skyColor;//vec3(0.9,1.0,1.0) // todo pass it as uniform
-#define fovyCoefficient 1.0 // todo pass it as uniform
-#define shadowHardness 7.0 // todo pass it as uniform
+uniform vec3 shadowColor; 
+uniform vec3 buildingsColor;
+uniform vec3 groundColor;
+uniform vec3 redColor;
+uniform vec3 skyColor;
+uniform float fovyCoefficient;
+uniform float shadowHardness;
 
 #define epsilon 0.01
 #define PI 3.14159265
@@ -114,10 +112,6 @@ vec3 d = point - center;
 float x = sqrt(d.x * d.x + d.z * d.z) - majorRadius;
 return sqrt(x * x + d.y * d.y) - minorRadius;
 }
-
-
-
-
 
 
 void applyFog( in float distance, inout vec3 rgb ){

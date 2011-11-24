@@ -61,6 +61,8 @@ namespace renderer{
         {"buildingsColor",  { Shader::UNIFORM | Shader::FLOAT3} },
         {"redColor",        { Shader::UNIFORM | Shader::FLOAT3} },
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"shadowHardness",  { Shader::UNIFORM | Shader::FLOAT} },
+        {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
@@ -123,13 +125,19 @@ namespace renderer{
     raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
     raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
     raymarchingShader->uniform2f("windowSize", window.x, window.y );
+    CHECKERROR
     raymarchingShader->uniform1f("fuffaTime", fuffaTime );
-
+    CHECKERROR
+    raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
+    CHECKERROR
+    raymarchingShader->uniform1f("shadowHardness", 7.0f );
+    CHECKERROR
     fuffaTime++;
 
     glBindVertexArray(vaoID[0]);
-
+    CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CHECKERROR
 #ifdef DEBUG
     glFinish();
 #endif
