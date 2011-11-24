@@ -2,7 +2,6 @@ CONFIG += qt
 QT += opengl
 HEADERS +=  src/io/Window.hpp \
             src/utils/LoadFile.hpp \
-            src/renderer/ShaderProgram.hpp \
             src/renderer/Renderer.hpp \
             src/renderer/Texture.hpp \
             src/renderer/FrameBuffer.hpp \

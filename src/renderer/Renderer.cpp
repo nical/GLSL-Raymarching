@@ -94,7 +94,6 @@ namespace renderer{
         {"color", textureTypeInfo, kiwi::READ },
         {"normals", textureTypeInfo, kiwi::READ }
     };
-    
 
     CHECKERROR
     vs.clear();
