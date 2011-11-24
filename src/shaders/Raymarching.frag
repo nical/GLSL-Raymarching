@@ -349,6 +349,9 @@ void main(void)
         applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
+        hitPosition.z -= position.z;
+
+        out_Colour[1].a = hitPosition.z/300.0;
     }
     else // sky
     {
@@ -356,4 +359,5 @@ void main(void)
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
     }
+
 }
