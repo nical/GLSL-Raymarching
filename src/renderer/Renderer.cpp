@@ -10,6 +10,9 @@
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "nodes/TimeNode.hpp"
+#include "nodes/ColorNode.hpp"
+
 #include <GL/glew.h>
 #include <iostream>
 #include <time.h>
@@ -42,6 +45,9 @@ namespace renderer{
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
     *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
+
+    nodes::RegisterTimeNode();
+    timeNode = nodes::CreateTimeNode();
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 

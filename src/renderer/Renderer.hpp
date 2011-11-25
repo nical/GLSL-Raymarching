@@ -33,6 +33,8 @@ public:
     createBuffers();
   }
 
+  void drawQuad();
+
   void createBuffers();
 
 private:
@@ -47,7 +49,15 @@ private:
 
   kiwi::core::Node * viewMatNode; 
   kiwi::core::Node * winSizeNode;
-  kiwi::core::Node * TimeNode;
+  kiwi::core::Node * timeNode;
+  kiwi::core::Node * skyColorNode;
+  kiwi::core::Node * groundColorNode;
+  kiwi::core::Node * buildingsColorNode;
+  kiwi::core::Node * redColorNode;
+  
+  kiwi::core::Node * rayMarchingNode;
+  kiwi::core::Node * radialBlurNode;
+  kiwi::core::Node * edgeDetectionNode;
 
   kiwi::core::Pipeline * renderPipeline;
 
@@ -58,7 +68,7 @@ private:
   unsigned int vboID[1];
   unsigned int bufID[1];
 
-  float fuffaTime;
+  GLuint fuffaTime;
 
   void freeBuffers();
   void createPlane();

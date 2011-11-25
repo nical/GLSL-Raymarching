@@ -6,6 +6,9 @@ HEADERS +=  src/io/Window.hpp \
             src/renderer/Texture.hpp \
             src/renderer/FrameBuffer.hpp \
             src/renderer/Shader.hpp \
+            src/nodes/TimeNode.hpp \
+            src/nodes/ColorNode.hpp \
+            src/nodes/RayMarchingNode.hpp \
             src/utils/CheckGLError.hpp
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
@@ -14,6 +17,9 @@ SOURCES +=  src/main.cpp \
             src/renderer/Renderer.cpp \
             src/renderer/Shader.cpp \
             src/renderer/FrameBuffer.cpp \
+            src/nodes/TimeNode.cpp \
+            src/nodes/ColorNode.cpp \
+            src/nodes/RayMarchingNode.cpp \
             src/utils/CheckGLError.cpp \
             src/KiwiInit.cpp
 
