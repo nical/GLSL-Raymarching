@@ -323,9 +323,9 @@ void main(void)
     FishEyeCamera(screenPos, ratio, fovyCoefficient, viewMatrix, position, direction);
     int material;
     vec3 hitPosition = RayMarch(position, direction, material);
-
+    
     vec3 hitColor;
-    if( material != SKY_MTL ) // has hit something
+    if( material != SKY_MTL && hitPosition.z <= 300.0 + fuffaTime ) // has hit something
     {
         vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
         vec3 lightVector = normalize(lightpos - hitPosition);
@@ -337,13 +337,17 @@ void main(void)
         shadow = min(shadow, attenuation);
         //material color
         vec3 mtlColor = MaterialColor(material);
+        if(material == BUILDINGS_MTL){
+          mtlColor = mix(vec3(0.0), mtlColor, clamp(hitPosition.y/7.0, 0.0, 1.0));
+        }
         hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6);
         
         applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
         hitPosition.z -= position.z;
-
+        
+        out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
         out_Colour[1].a = hitPosition.z/300.0;
     }
     else // sky
