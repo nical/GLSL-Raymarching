@@ -1,5 +1,5 @@
 #version 330
-#define MAX_STEPS 100
+#define MAX_STEPS 200
 
 out vec4 out_Colour[2];
 
@@ -25,6 +25,7 @@ uniform float shadowHardness;
 #define BUILDINGS_MTL 2
 #define RED_MTL 3
 
+vec3 debugColor;
 
 float PlaneDistance(in vec3 point, in vec3 normal, in float pDistance)
 {
@@ -51,26 +52,56 @@ vec3 DistanceRepetition(in vec3 point, in vec3 repetition ) {
 }
 
 
-
+/*
 float Building1Distance(in vec3 point)
 {
     vec3 size = vec3(2.0, 3.0, 2.0);
     float tempz = point.z;
     float tempx = point.x;
-    point.z = mod (point.z+10, 17.0)-10;
-    point.x = mod (point.x+10, 27.0)-10;
+    point.z = mod (point.z, 17.0)-8.5;
+    point.x = mod (point.x, 27.0)-13.5;
     //point = DistanceRepetition(point, vec3(17.0, 0.0, 27.0));
-    size.y = 2.0 + abs(cos(floor(tempx/27) + sin( 1.3*ceil(tempz/17))) + sin(0.5*floor(tempz/17)) ) * 3;
+    size.y = 12.0 + 3* (
+            + sin( floor(tempx/27.0) )
+            + cos( 3.0*floor(tempx/27.0))
+            + sin( 2*floor(tempz/17.0) )
+            + cos( 4.0*floor(tempz/17.0))
+    );
+    size.y = 2.0;
     //size.y = 2.0 + abs(cos());
     point -= vec3(5.0, 3.0, 3.0); // center
-    return max(max(abs(point.x) - size.x, abs(point.y) - size.y), abs(point.z) - size.z);
-    //return CubeDistance2(point, size);
+    return length(max(abs(point)-size, 0.0));
+    
+}
+*/
+float Rand2D(float x, float y)
+{
+    return 0.5 + (1.0/8.0) * (
+        + sin( floor(x)     )
+        + cos( 3.0*floor(x) )
+        + sin( 3.0*floor(y) )
+        + cos( 4.0*floor(y) )
+    );
 }
 
+float RandomBuildingDistance(in vec3 point, in vec3 repetition, in float maxHeight )
+{
+    vec3 q = mod(point, repetition)-0.5*repetition;
+    q.y = point.y;
+    
+    float height = Rand2D(point.x/repetition.x,point.z/repetition.z);
+    
+    height *= maxHeight;
+    //debugColor = vec3(0.0,sin(height),0.0);
+    return CubeDistance2 ( q,
+        vec3 ( 1.0+2*Rand2D(point.x/repetition.x+100,point.z/repetition.z+100)
+        , height
+        , 1.0 + 2*Rand2D(point.x/repetition.x+50,point.z/repetition.z+400)));
+}
 float CubeRepetition(in vec3 point, in vec3 repetition ) {
     vec3 q = mod(point, repetition)-0.5*repetition;
     q.y = point.y;
-    return CubeDistance2 ( q, vec3 (2.0, 4.0, 2.0));
+    return CubeDistance2 ( q, vec3 (2.0, 7.0, 2.0));
 }
 
 float rand(vec2 co){
@@ -121,7 +152,7 @@ void applyFog( in float distance, inout vec3 rgb ){
     vec3 fogColor = vec3(0.9,0.95,1);
     rgb = mix( skyColor, rgb, fogAmount );
 }
-
+/*
 vec3 AmbiantOcclusion2( in vec3 position, in vec3 direction )
 {
     vec3 newPos = position + direction * 0.5;
@@ -179,7 +210,7 @@ float AmbiantOcclusion( in vec3 position, in vec3 direction )
 
     return clamp(1.0-occlusion,0.0,1.0)*0.6+0.4 ;
 }
-
+*/
 float RedDistance(in vec3 position)
 {
     return SphereDistance(position, vec3(0.0, 3.0, 5.0), 5.0);
@@ -187,10 +218,11 @@ float RedDistance(in vec3 position)
 
 float BuildingsDistance(in vec3 position)
 {
-    return min(
-        CubeRepetition(position, vec3(20.0, 0.0, 20.0))
-        , Building1Distance(position)
-        );
+    //return min(
+//          RandomBuildingDistance(position, vec3(20, 0, 36), 9)
+//        , RandomBuildingDistance(position, vec3(37, 0, 33), 12)
+//        );
+    return CubeRepetition(position, vec3(20.0, 0.0, 20.0));
 }   
 
 float GroundDistance(in vec3 position)
@@ -312,6 +344,7 @@ void FishEyeCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out
 
 void main(void)
 {
+    debugColor = vec3(0.0,0.0,0.0);
     float ratio = windowSize.x / windowSize.y;
     // position on the screen
     vec2 screenPos;
@@ -324,10 +357,12 @@ void main(void)
     int material;
     vec3 hitPosition = RayMarch(position, direction, material);
     
+    vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
+    colour[2] = vec4(vec3(0.0), 1.0);
+    
     vec3 hitColor;
-    if( material != SKY_MTL && hitPosition.z <= 300.0 + fuffaTime ) // has hit something
+    if( material != SKY_MTL ) // has hit something
     {
-        vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
         vec3 lightVector = normalize(lightpos - hitPosition);
         // soft shadows
         float shadow = Softshadow(hitPosition, lightVector, 0.1, 50.0, shadowHardness);
@@ -337,10 +372,11 @@ void main(void)
         shadow = min(shadow, attenuation);
         //material color
         vec3 mtlColor = MaterialColor(material);
+
         if(material == BUILDINGS_MTL){
           mtlColor = mix(vec3(0.0), mtlColor, clamp(hitPosition.y/7.0, 0.0, 1.0));
         }
-        hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6);
+        hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6) - debugColor;
         
         applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
@@ -349,12 +385,16 @@ void main(void)
         
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
         out_Colour[1].a = hitPosition.z/300.0;
+        if (length(hit.position) - length(lightpos) <= lightDimension && hit.position.z < lightpos.z){
+          out_Colour[2] = vec4(vec3(0.0), 1.0);
+        }
     }
     else // sky
     {
         vec3 hitColor = skyColor;
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
+        out_Colour[2] = vec4(hitColor, 1.0);
     }
 
 }

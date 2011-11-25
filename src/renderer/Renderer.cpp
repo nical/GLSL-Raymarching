@@ -65,7 +65,8 @@ namespace renderer{
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} },
+        {"godRaysTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
     raymarchingShader = new Shader;
     CHECKERROR
@@ -85,7 +86,8 @@ namespace renderer{
     };
     raymacherLayout.outputs = {
         {"color", textureTypeInfo, kiwi::READ },
-        {"normals", textureTypeInfo, kiwi::READ }
+        {"normals", textureTypeInfo, kiwi::READ },
+        {"godRays", textureTypeInfo, kiwi::READ }
     };
 
     CHECKERROR
@@ -98,7 +100,8 @@ namespace renderer{
         {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"godRaysTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
     postEffectShader = new Shader;
     CHECKERROR
@@ -154,6 +157,8 @@ namespace renderer{
     postEffectShader->uniform1f("fuffaTime", fuffaTime );
     postEffectShader->uniform1i("colourTexture", 0 );
     postEffectShader->uniform1i("normalsTexture", 1 );
+    postEffectShader->uniform1i("godRaysTexture", 2 );
+
     CHECKERROR
     
     //  Putting data in the uniforms
@@ -171,6 +176,12 @@ namespace renderer{
     //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
     _frameBuffer->texture(1).bind();
     CHECKERROR
+    
+    //  Binding Normals' Texture
+    glActiveTexture(GL_TEXTURE2);
+    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
+    _frameBuffer->texture(2).bind();
+    CHECKERROR
 
     glBindVertexArray(vaoID[0]);
 CHECKERROR
@@ -180,7 +191,13 @@ CHECKERROR
 
     glBindVertexArray(0);
 CHECKERROR
+    
     //glActiveTexture(GL_TEXTURE1);
+    CHECKERROR
+    glBindTexture(GL_TEXTURE_2D, 0);
+CHECKERROR
+
+    glActiveTexture(GL_TEXTURE1);
     CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
 CHECKERROR
@@ -239,7 +256,7 @@ CHECKERROR
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    _frameBuffer = new FrameBuffer(2, window.x, window.y);
+    _frameBuffer = new FrameBuffer(3, window.x, window.y);
 
   }
 
