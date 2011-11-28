@@ -1,6 +1,7 @@
 #ifndef RENDERER_HPP_INCLUDED
 #define RENDERER_HPP_INCLUDED
 
+#include "GL/glew.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
