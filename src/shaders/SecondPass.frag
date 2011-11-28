@@ -22,14 +22,14 @@ float focalDepth = 100.0;  //focal point. comes from external script, but you ma
 float depthSamples = 3; //samples on the first ring
 float depthRings = 5; //ring count
 
-bool useAutoFocus = true; //use autofocus in shader?
-float focalRange = 30000.0; //focal range
+bool useAutoFocus = false; //use autofocus in shader?
+float focalRange = 10000.0; //focal range
 float maxBlur =  1.5;//clamp value of max blur
 
 float highlightThreshold = 0.9; //highlight threshold;
 float highlightGain = 1.0; //highlight gain;
 
-float bokehBias = 0.7; //bokeh edge bias
+float bokehBias = 0.8; //bokeh edge bias
 float bokehFringe = 0.7; //bokeh chromatic aberration/fringing
 
 bool useNoise = true; //use noise instead of pattern for sample dithering
@@ -106,7 +106,7 @@ float depthBlurring(vec2 coords)
 
 	for( int i = 0; i < 9; i++ )
 	{
-		float tmpDepth = texture2D(normalsTexture, coords + offset[i]).a;
+		float tmpDepth = texture2D(normalsTexture, clamp(coords + offset[i], 0.0, 1.0)).a;
 		depth += tmpDepth * kernel[i];
 	}
 
@@ -211,7 +211,7 @@ void main (void){
 
     float zDistance = texture2D(normalsTexture, texelCoord).a;
 
-    if (gl_FragCoord.x < (windowSize.x * 0.5) ) {
+    if (gl_FragCoord.x < (windowSize.x * 1.5) ) {
       //out_Color = texture2D(colourTexture, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
