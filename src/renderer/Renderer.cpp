@@ -3,6 +3,7 @@
 #include "renderer/Shader.hpp"
 #include "utils/CheckGLError.hpp"
 #include "renderer/FrameBuffer.hpp"
+#include "renderer/DrawQuad.hpp"
 
 #include "kiwi/core/all.hpp"
 
@@ -12,6 +13,7 @@
 
 #include "nodes/TimeNode.hpp"
 #include "nodes/ColorNode.hpp"
+#include "nodes/RayMarchingNode.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -31,7 +33,10 @@ namespace renderer{
       
     CHECKERROR
     
-    createPlane();
+    //createPlane();
+    InitQuad();
+    
+
 
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
 
@@ -78,7 +83,9 @@ namespace renderer{
     CHECKERROR
     raymarchingShader->build( vs, fs, marcherLoc );
 
-    
+    nodes::RegisterRayMarchingNode(raymarchingShader);
+    rayMarchingNode = nodes::CreateRayMarchingNode();
+
     //RegisterShaderNode("RayMarcher", *raymarchingShader );
     kiwi::core::NodeLayoutDescriptor raymacherLayout; 
     raymacherLayout.inputs = {
@@ -116,6 +123,9 @@ namespace renderer{
     CHECKERROR
   }
 
+
+
+
   void Renderer::drawScene(){
 
     CHECKERROR
@@ -138,7 +148,7 @@ namespace renderer{
     raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
     raymarchingShader->uniform1f("shadowHardness", 7.0f );
     fuffaTime++;
-
+/*
     glBindVertexArray(vaoID[0]);
     CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -146,6 +156,8 @@ namespace renderer{
 #ifdef DEBUG
     glFinish();
 #endif
+*/
+    DrawQuad();
 
     glBindVertexArray(0);
 
@@ -174,6 +186,8 @@ namespace renderer{
     _frameBuffer->texture(1).bind();
     CHECKERROR
     
+    DrawQuad();
+    /*
     glBindVertexArray(vaoID[0]);
 CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
@@ -182,7 +196,7 @@ CHECKERROR
 
     glBindVertexArray(0);
 CHECKERROR
-    
+    */
     //glActiveTexture(GL_TEXTURE1);
     CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -200,6 +214,10 @@ CHECKERROR
     postEffectShader->unbind();
     CHECKERROR
   }
+
+
+
+
   void Renderer::createPlane()
   {
     if (!GLEW_ARB_vertex_array_object)

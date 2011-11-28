@@ -1,7 +1,8 @@
 
 #include "renderer/DrawQuad.hpp"
-
+#include "utils/CheckGLError.hpp"
 #include <GL/glew.h>
+#include <iostream>
 
 namespace renderer{
 

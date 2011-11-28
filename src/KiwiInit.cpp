@@ -9,6 +9,8 @@
 #include "renderer/Texture.hpp"
 #include "renderer/FrameBuffer.hpp"
 
+//#include "nodes/RayMarchingNode.hpp"
+
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
@@ -41,6 +43,7 @@ void InitKiwi()
     DataTypeManager::RegisterDataType("Mat4", &Newmat4);
     DataTypeManager::RegisterDataType("Texture2D", &NewTexture2D_ptr);
     DataTypeManager::RegisterDataType("FrameBuffer", &NewFrameBuffer_ptr);
+
 
     kiwi::log << "available nodes:" << kiwi::endl;
     for(auto it = NodeTypeManager::Types_begin(); it!= NodeTypeManager::Types_end(); ++it )

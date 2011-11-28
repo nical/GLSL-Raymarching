@@ -10,8 +10,6 @@
 namespace renderer{
 
 
-//void AddFrameBuffer( FrameBuffer* fbo );
-//void DeleteFrameBuffer( FrameBuffer* fbo );
 void ResizeFrameBuffers(int w, int h);
 
 

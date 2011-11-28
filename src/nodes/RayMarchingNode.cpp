@@ -24,16 +24,18 @@ static const NodeTypeInfo * _marcherTypeInfo = 0;
 static renderer::Shader * _raymarchingShader = 0;
 static renderer::FrameBuffer * _frameBuffer = 0;
 
+enum{ FBO_INDEX = 0, TEX0_INDEX = 1, TEX1_INDEX=2 };
+
 typedef DynamicNodeUpdater::DataArray DataArray;
 bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
 {
-    if(_frameBuffer == 0) return false;
     if(_raymarchingShader == 0) return false;
 
     auto viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     float time = 1.0;
 
-    _frameBuffer->bind();
+    (*outputs[FBO_INDEX]->value<FrameBuffer*>())->bind();
+    //_frameBuffer->bind();
 
     _raymarchingShader->bind();
     _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
@@ -52,7 +54,7 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
 }
 
 
-void RegisterRarMarchingNode( Shader * shader )
+void RegisterRayMarchingNode( Shader * shader )
 {
     _raymarchingShader = shader;
     //RegisterShaderNode("RayMarcher", *raymarchingShader );
@@ -95,7 +97,5 @@ Node * CreateRayMarchingNode()
 
     return node;
 }
-
-
 
 }//namespace

@@ -6,10 +6,12 @@
 
 namespace kiwi{ namespace core{ class Node; }}
 
+namespace renderer{ class Shader; }
+
 namespace nodes {
 
-void RegisterRaymarchingNode();
-kiwi::core::Node * CreateRaymarchingNode();
+void RegisterRayMarchingNode( renderer::Shader* shader );
+kiwi::core::Node * CreateRayMarchingNode();
 
 } //namespace
 

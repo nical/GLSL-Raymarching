@@ -30,8 +30,6 @@ public:
   void setWindowDimensions (unsigned int x, unsigned int y) {
     window.x = x;
     window.y = y;
-    freeBuffers();
-    createBuffers();
   }
 
   void drawQuad();
