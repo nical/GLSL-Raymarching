@@ -6,7 +6,7 @@ out vec4 out_Colour[3];
 uniform float fuffaTime;
 uniform vec2 windowSize;
 uniform mat4 viewMatrix;
-uniform vec3 shadowColor; 
+uniform vec3 shadowColor;
 uniform vec3 buildingsColor;
 uniform vec3 groundColor;
 uniform vec3 redColor;
@@ -32,6 +32,13 @@ float PlaneDistance(in vec3 point, in vec3 normal, in float pDistance)
 return dot(point - (normal * pDistance), normal);
 }
 
+void MeshTwist (inout vec3 point){
+  float cosine = cos(0.002 * point.y);
+  float sine = sin(0.002 * point.y);
+  mat2  tempMatrix = mat2( cosine, -sine, sine, cosine);
+  point = vec3(tempMatrix * point.xz, point.y);
+}
+
 float SphereDistance(vec3 point, vec3 center, float radius)
 {
   point.z = mod(point.z+15, 230.0)-15;
@@ -51,7 +58,6 @@ vec3 DistanceRepetition(in vec3 point, in vec3 repetition ) {
   return q;
 }
 
-
 float Rand2D(float x, float y)
 {
     return 0.5 + (1.0/8.0) * (
@@ -66,9 +72,9 @@ float RandomBuildingDistance(in vec3 point, in vec3 repetition, in float maxHeig
 {
     vec3 q = mod(point, repetition)-0.5*repetition;
     q.y = point.y;
-    
+
     float height = Rand2D(point.x/repetition.x,point.z/repetition.z);
-    
+
     height *= maxHeight;
     //debugColor = vec3(0.0,sin(height),0.0);
     return CubeDistance2 ( q,
@@ -79,7 +85,7 @@ float RandomBuildingDistance(in vec3 point, in vec3 repetition, in float maxHeig
 float CubeRepetition(in vec3 point, in vec3 repetition ) {
     vec3 q = mod(point, repetition)-0.5*repetition;
     q.y = point.y;
-    return CubeDistance2 ( q, vec3 (2.0, 7.0, 2.0));
+    return CubeDistance2 ( q, vec3 (2.0, 10.0, 2.0));
 }
 
 float rand(vec2 co){
@@ -122,11 +128,15 @@ float x = sqrt(d.x * d.x + d.z * d.z) - majorRadius;
 return sqrt(x * x + d.y * d.y) - minorRadius;
 }
 
+float lightSphere (in vec3 position, in float radius, in vec3 centrePos){
+  vec3 modPosition = centrePos - position;
+  return length(modPosition) - radius;
+}
 
 void applyFog( in float distance, inout vec3 rgb ){
 
-    float fogAmount = (1.0 - clamp(distance*0.0005,0.0,1.0) );
-    //float fogAmount = exp( -distance* 0.006 );
+    //float fogAmount = (1.0 - clamp(distance*0.005,0.0,1.0) );
+    float fogAmount = exp( -distance* 0.001 );
     vec3 fogColor = vec3(0.9,0.95,1);
     rgb = mix( skyColor, rgb, fogAmount );
 }
@@ -138,11 +148,13 @@ float RedDistance(in vec3 position)
 
 float BuildingsDistance(in vec3 position)
 {
+  vec3 theOtherPosition = position + vec3(350.0,-2.0,0.0);
+  //MeshTwist(position);
     return min(
       CubeRepetition(position, vec3(17.0, 0.0, 20.0))
-      , CubeRepetition(position+vec3(350.0,-2.0,0.0), vec3(23.0, 0.0, 23.0))
+      , CubeRepetition(theOtherPosition, vec3(23.0, 0.0, 23.0))
     );
-}   
+}
 
 float GroundDistance(in vec3 position)
 {
@@ -198,7 +210,7 @@ vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
     for (int i = 0; i < MAX_STEPS ; ++i)
     {
         nextDistance = DistanceField(position,mtl);
-        
+
         if ( nextDistance < 0.001)
         {
             return position;
@@ -252,13 +264,22 @@ void FishEyeCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out
 {
     screenPos.y -= 0.2;
     screenPos *= vec2(PI*0.5,PI*0.5/ratio)/fovy;
-    
+
     direction = vec3(
            sin(screenPos.y+PI*0.5)*sin(screenPos.x)
         , -cos(screenPos.y+PI*0.5)
         ,  sin(screenPos.y+PI*0.5)*cos(screenPos.x)
     );
     position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
+}
+
+float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float samples) {
+	float occlusion;
+	int tempMaterial;
+	for (occlusion = 1.0 ; samples > 0.0 ; samples--) {
+		occlusion -= (samples * stepDistance - (DistanceField( point + normal * samples * stepDistance, tempMaterial))) / pow(2.0, samples);
+	}
+	return occlusion;
 }
 
 void main(void)
@@ -275,8 +296,7 @@ void main(void)
     FishEyeCamera(screenPos, ratio, fovyCoefficient, viewMatrix, position, direction);
     int material;
     vec3 hitPosition = RayMarch(position, direction, material);
-    
-    
+
     vec3 hitColor;
     if( material != SKY_MTL ) // has hit something
     {
@@ -292,24 +312,30 @@ void main(void)
         vec3 mtlColor = MaterialColor(material);
 
         if(material == BUILDINGS_MTL){
-          mtlColor = mix(vec3(0.0), mtlColor, clamp(hitPosition.y/7.0, 0.0, 1.0));
+          mtlColor = mix(shadowColor, mtlColor, clamp(hitPosition.y/7.0, 0.0, 1.0));
         }
         hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6) - debugColor;
-        
-        applyFog( length(position-hitPosition), hitColor);
+        vec3 hitNormal = ComputeNormal(hitPosition, 0);
+        float AO = AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0);
+        hitColor = mix(shadowColor, hitColor, AO);
+
+        //applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
+        out_Colour[2].a = 0.0;
+
+
         hitPosition.z -= position.z;
-        
+
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
         out_Colour[1].a = hitPosition.z/300.0;
-        
     }
     else // sky
     {
         vec3 hitColor = skyColor;
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
+        //out_Colour[2] = vec4(hitColor, 1.0);
     }
 
 }
