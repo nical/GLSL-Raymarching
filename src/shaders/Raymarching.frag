@@ -335,6 +335,7 @@ void main(void)
         vec3 hitColor = skyColor;
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
+        out_Colour[1].a = 1000000.0;
         //out_Colour[2] = vec4(hitColor, 1.0);
     }
 

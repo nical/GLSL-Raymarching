@@ -168,15 +168,15 @@ float edgeDetection(in vec2 uncoords){
 
   vec2 coords = (uncoords / windowSize);
 
-  float depth0 = texture2D(normalsTexture,coords).a / 300.0;
-  float depth1 = texture2D(normalsTexture,coords + vec2(dxtex,0.0)).a / 300.0;
-  float depth2 = texture2D(normalsTexture,coords + vec2(0.0,-dytex)).a / 300.0;
-  float depth3 = texture2D(normalsTexture,coords + vec2(-dxtex,0.0)).a / 300.0;
-  float depth4 = texture2D(normalsTexture,coords + vec2(0.0,dytex)).a / 300.0;
+  float depth0 = texture2D(normalsTexture,coords).a;
+  float depth1 = texture2D(normalsTexture,coords + vec2(dxtex,0.0)).a;
+  float depth2 = texture2D(normalsTexture,coords + vec2(0.0,-dytex)).a;
+  float depth3 = texture2D(normalsTexture,coords + vec2(-dxtex,0.0)).a;
+  float depth4 = texture2D(normalsTexture,coords + vec2(0.0,dytex)).a;
 
   float ddx = abs((depth1 - depth0) - (depth0 - depth3));
   float ddy = abs((depth2 - depth0) - (depth0 - depth4));
-  return clamp((ddx + ddy - 0.005)*100.0,0.0,1.0)/(depth0 * 5);
+  return clamp(clamp((ddx + ddy - 0.5) * 0.1,0.0,1.0)/(depth0 * 0.01), -1.0, 1.0);
 }
 
 vec4 radialBlur(in vec2 coords) {
@@ -211,7 +211,7 @@ void main (void){
 
     float zDistance = texture2D(normalsTexture, texelCoord).a;
 
-    if (gl_FragCoord.x < (windowSize.x * 1.5) ) {
+    if (gl_FragCoord.x > (windowSize.x * 1.5) ) {
       //out_Color = texture2D(colourTexture, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
@@ -220,7 +220,7 @@ void main (void){
       //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).rgb, 1.0);
       //out_Color = vec4(texture2D(normalsTexture, texelCoord).aaa, 1.0);
       out_Color = texture2D(colourTexture, texelCoord);
-      out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
+      out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, clamp(mix(1.0, 0.0, zDistance/300.0), 0.0, 1.0)), edgeDetection(gl_FragCoord.xy));
       //out_Color = vec4(texture2D(godRaysTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).aaa, 1.0);
     }
     //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
