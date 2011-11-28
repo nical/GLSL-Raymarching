@@ -136,7 +136,7 @@ float lightSphere (in vec3 position, in float radius, in vec3 centrePos){
 void applyFog( in float distance, inout vec3 rgb ){
 
     //float fogAmount = (1.0 - clamp(distance*0.005,0.0,1.0) );
-    float fogAmount = exp( -distance* 0.001 );
+    float fogAmount = exp( -(clamp(distance-300.0, 0.0, 300000000.0))* 0.01 );
     vec3 fogColor = vec3(0.9,0.95,1);
     rgb = mix( skyColor, rgb, fogAmount );
 }
@@ -319,7 +319,7 @@ void main(void)
         float AO = AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0);
         hitColor = mix(shadowColor, hitColor, AO);
 
-        //applyFog( length(position-hitPosition), hitColor);
+        applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
         out_Colour[2].a = 0.0;

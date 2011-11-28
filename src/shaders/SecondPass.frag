@@ -176,7 +176,7 @@ float edgeDetection(in vec2 uncoords){
 
   float ddx = abs((depth1 - depth0) - (depth0 - depth3));
   float ddy = abs((depth2 - depth0) - (depth0 - depth4));
-  return clamp(clamp((ddx + ddy - 0.5) * 0.1,0.0,1.0)/(depth0 * 0.01), -1.0, 1.0);
+  return clamp(clamp((ddx + ddy - 0.5) * 0.5,0.0,1.0)/(depth0 * 0.02), -1.0, 1.0);
 }
 
 vec4 radialBlur(in vec2 coords) {
@@ -211,7 +211,7 @@ void main (void){
 
     float zDistance = texture2D(normalsTexture, texelCoord).a;
 
-    if (gl_FragCoord.x > (windowSize.x * 1.5) ) {
+    if (gl_FragCoord.x < (windowSize.x * 1.5) ) {
       //out_Color = texture2D(colourTexture, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
