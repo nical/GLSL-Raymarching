@@ -328,7 +328,7 @@ void main(void)
         hitPosition.z -= position.z;
 
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
-        out_Colour[1].a = hitPosition.z/300.0;
+        out_Colour[1].a = hitPosition.z;
     }
     else // sky
     {
