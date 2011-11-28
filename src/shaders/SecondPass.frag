@@ -64,7 +64,8 @@ void main (void){
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
     } else {
       //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).rgb, 1.0);
-      out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).bbb, 1.0);
+      //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).bbb, 1.0);
+      out_Color = vec4(texture2D(godRaysTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).aaa, 1.0);
     }
     //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
 }
