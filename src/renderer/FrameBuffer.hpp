@@ -9,6 +9,10 @@
 
 namespace renderer{
 
+
+void ResizeFrameBuffers(int w, int h);
+
+
 class FrameBuffer{
 public:
     typedef std::vector<Texture2D*> TextureArray; 
@@ -35,7 +39,12 @@ public:
         return *_textures[i];
     }
 
+    void resize(int w, int h);
 private:
+    void init(int nbTextures, int fbwidth, int fbheight);
+    void destroy();
+
+    GLuint _nbTex;
     GLuint _id;
     TextureArray _textures;
 };

@@ -3,12 +3,17 @@
 #include "renderer/Shader.hpp"
 #include "utils/CheckGLError.hpp"
 #include "renderer/FrameBuffer.hpp"
+#include "renderer/DrawQuad.hpp"
 
 #include "kiwi/core/all.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#include "nodes/TimeNode.hpp"
+#include "nodes/ColorNode.hpp"
+#include "nodes/RayMarchingNode.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -24,11 +29,22 @@ namespace renderer{
   Renderer::~Renderer(){
   }
 
+  void Renderer::setWindowDimensions (unsigned int x, unsigned int y) 
+  {
+    window.x = x;
+    window.y = y;
+    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)x, (float)y);
+  }
+
+
   void Renderer::init(){
       
     CHECKERROR
     
-    createPlane();
+    //createPlane();
+    InitQuad();
+    
+
 
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
 
@@ -42,6 +58,11 @@ namespace renderer{
     viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
     winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
     *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
+
+    nodes::RegisterTimeNode();
+    timeNode = nodes::CreateTimeNode();
+    winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
+    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)window.x, (float)window.y);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -60,7 +81,7 @@ namespace renderer{
         {"groundColor",     { Shader::UNIFORM | Shader::FLOAT3} },
         {"buildingsColor",  { Shader::UNIFORM | Shader::FLOAT3} },
         {"redColor",        { Shader::UNIFORM | Shader::FLOAT3} },
-        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"shadowHardness",  { Shader::UNIFORM | Shader::FLOAT} },
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
@@ -72,23 +93,9 @@ namespace renderer{
     CHECKERROR
     raymarchingShader->build( vs, fs, marcherLoc );
 
-    
-    //RegisterShaderNode("RayMarcher", *raymarchingShader );
-    kiwi::core::NodeLayoutDescriptor raymacherLayout; 
-    raymacherLayout.inputs = {
-        {"skyColor", vec3TypeInfo, kiwi::READ },
-        {"groundColor", vec3TypeInfo, kiwi::READ },
-        {"buildingsColor", vec3TypeInfo, kiwi::READ },
-        {"shadowColor", vec3TypeInfo, kiwi::READ },
-        {"viewMatrix", mat4TypeInfo, kiwi::READ },
-        {"fuffaTime", uintTypeInfo, kiwi::READ },
-        {"windowSize", vec2TypeInfo, kiwi::READ }
-    };
-    raymacherLayout.outputs = {
-        {"color", textureTypeInfo, kiwi::READ },
-        {"normals", textureTypeInfo, kiwi::READ },
-        {"godRays", textureTypeInfo, kiwi::READ }
-    };
+    nodes::RegisterRayMarchingNode(raymarchingShader);
+    rayMarchingNode = nodes::CreateRayMarchingNode();
+
 
     CHECKERROR
     vs.clear();
@@ -108,38 +115,28 @@ namespace renderer{
     postEffectShader->build( vs, fs, postFxLoc );
 
     CHECKERROR
+
+    skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+    assert( timeNode );
+    //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
+    assert( timeNode->output() >> rayMarchingNode->input(6) );
+    assert( winSizeNode->output() >> rayMarchingNode->input(9) );
   }
+
+
+
 
   void Renderer::drawScene(){
 
     CHECKERROR
     if( _frameBuffer == 0 ) return;
-    
-    //glEnable(GL_TEXTURE_2D);
-    _frameBuffer->bind();
-    
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    
-    raymarchingShader->bind();
-    raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
-    raymarchingShader->uniform3f("buildingsColor", 1.0, 1.0, 1.0 );
-    raymarchingShader->uniform3f("groundColor", 1.0, 1.0, 1.0 );
-    raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
-    raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
-    raymarchingShader->uniform2f("windowSize", window.x, window.y );
-    raymarchingShader->uniform1f("fuffaTime", fuffaTime );
-    raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
-    raymarchingShader->uniform1f("shadowHardness", 7.0f );
-    fuffaTime++;
 
-    glBindVertexArray(vaoID[0]);
-    CHECKERROR
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    CHECKERROR
-#ifdef DEBUG
-    glFinish();
-#endif
+    timeNode->update();
+
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    rayMarchingNode->update();
+
 
     glBindVertexArray(0);
 
@@ -153,32 +150,25 @@ namespace renderer{
     postEffectShader->uniform1f("fuffaTime", fuffaTime );
     postEffectShader->uniform1i("colourTexture", 0 );
     postEffectShader->uniform1i("normalsTexture", 1 );
-    postEffectShader->uniform1i("godRaysTexture", 2 );
 
     CHECKERROR
     
-    //  Putting data in the uniforms
-    //glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
-    //glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
-
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    _frameBuffer->texture(0).bind();
+    //_frameBuffer->texture(0).bind();
+    (*rayMarchingNode->output(1).dataAs<Texture2D*>())->bind();
     CHECKERROR
 
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
     //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    _frameBuffer->texture(1).bind();
+    //_frameBuffer->texture(1).bind();
+    (*rayMarchingNode->output(2).dataAs<Texture2D*>())->bind();
     CHECKERROR
     
-    //  Binding Normals' Texture
-    glActiveTexture(GL_TEXTURE2);
-    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    _frameBuffer->texture(2).bind();
-    CHECKERROR
-
+    DrawQuad();
+    /*
     glBindVertexArray(vaoID[0]);
 CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
@@ -187,7 +177,7 @@ CHECKERROR
 
     glBindVertexArray(0);
 CHECKERROR
-    
+    */
     //glActiveTexture(GL_TEXTURE1);
     CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -205,43 +195,8 @@ CHECKERROR
     postEffectShader->unbind();
     CHECKERROR
   }
-  void Renderer::createPlane()
-  {
-    if (!GLEW_ARB_vertex_array_object)
-      std::cerr << "ARB_vertex_array_object not available." << std::endl;
-
-    GLfloat vertices[12] = {
-      -1.0, -1.0, -1.0,
-      -1.0, 1.0, -1.0,
-      1.0, -1.0, -1.0,
-      1.0, 1.0, -1.0
-    };
 
 
-    GLuint indices[6]={0,1,2,1,2,3};
-
-    glGenVertexArrays(1, &vaoID[0]);
-
-    glBindVertexArray(vaoID[0]);
-
-
-    // Generate and bind Vertex Buffer Objects
-    glGenBuffers(1, &vboID[0]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-
-
-    // Load the buffer with the vertices and set its attributes
-    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-
-    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-  }
 
   void Renderer::createBuffers()
   {
@@ -252,12 +207,12 @@ CHECKERROR
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    _frameBuffer = new FrameBuffer(3, window.x, window.y);
+    _frameBuffer = (FrameBuffer*)1;
 
   }
 
-  void Renderer::freeBuffers(){
-    if( _frameBuffer != 0 )
-        delete _frameBuffer;
+  void Renderer::freeBuffers()
+  {
+
   }
 }

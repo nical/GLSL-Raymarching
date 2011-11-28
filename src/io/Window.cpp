@@ -4,6 +4,7 @@
 
 #include "io/Window.hpp"
 #include "renderer/Renderer.hpp"
+#include "renderer/FrameBuffer.hpp"
 
 
 
@@ -75,9 +76,11 @@ namespace io{
       cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
+    
     if (_renderer) {
       _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     }
+    renderer::ResizeFrameBuffers(Width,Height);
     glViewport(0, 0, CurrentWidth, CurrentHeight);
 
   }

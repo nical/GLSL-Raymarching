@@ -7,6 +7,7 @@
 
 namespace renderer{
   class Renderer;
+  class FBOManager;
 }
 
 namespace io{

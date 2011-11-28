@@ -1,6 +1,7 @@
 #ifndef RENDERER_HPP_INCLUDED
 #define RENDERER_HPP_INCLUDED
 
+#include "GL/glew.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/projection.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -26,12 +27,9 @@ public:
   void init();
   void drawScene();
 
-  void setWindowDimensions (unsigned int x, unsigned int y) {
-    window.x = x;
-    window.y = y;
-    freeBuffers();
-    createBuffers();
-  }
+  void setWindowDimensions (unsigned int x, unsigned int y);
+
+  void drawQuad();
 
   void createBuffers();
 
@@ -47,7 +45,15 @@ private:
 
   kiwi::core::Node * viewMatNode; 
   kiwi::core::Node * winSizeNode;
-  kiwi::core::Node * TimeNode;
+  kiwi::core::Node * timeNode;
+  kiwi::core::Node * skyColorNode;
+  kiwi::core::Node * groundColorNode;
+  kiwi::core::Node * buildingsColorNode;
+  kiwi::core::Node * redColorNode;
+  
+  kiwi::core::Node * rayMarchingNode;
+  kiwi::core::Node * radialBlurNode;
+  kiwi::core::Node * edgeDetectionNode;
 
   kiwi::core::Pipeline * renderPipeline;
 
@@ -58,7 +64,7 @@ private:
   unsigned int vboID[1];
   unsigned int bufID[1];
 
-  float fuffaTime;
+  GLuint fuffaTime;
 
   void freeBuffers();
   void createPlane();

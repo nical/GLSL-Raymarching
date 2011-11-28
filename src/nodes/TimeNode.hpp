@@ -8,7 +8,10 @@ namespace kiwi{ namespace core{ class Node; }}
 
 namespace nodes{
 
+void RegisterTimeNode();
 kiwi::core::Node * CreateTimeNode();
+
+
 
 }//namespace
 

@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <iostream>
 
+#include "glm/glm.hpp"
+
 #include "kiwi/core/NodeUpdater.hpp"
 #include "kiwi/core/Commons.hpp"
 
@@ -110,11 +112,23 @@ public:
         glUniform2f(_locations[name].location,v1,v2);
     }
 
+    void uniformVec2(string name, const glm::vec2& v)
+    {
+        uniform2f(name, v[0], v[1]);
+    }
+
+
+
     void uniform3f(string name, GLfloat v1, GLfloat v2, GLfloat v3)
     {
         assert( hasLocation(name) );
         //if(_state != BINDED) return;
         glUniform3f(_locations[name].location,v1,v2,v3);
+    }
+    
+    void uniformVec3(string name, const glm::vec3& v)
+    {
+        uniform3f(name, v[0], v[1], v[2] );
     }
 
     void uniformMatrix4fv(string name, GLfloat* ptr)

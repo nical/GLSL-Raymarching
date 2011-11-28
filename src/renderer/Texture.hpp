@@ -27,6 +27,12 @@ public:
         glBindTexture(TextureType, _id);
     }
 
+    void regenerate()
+    {
+        glDeleteTextures(1,&_id);
+        glGenTextures(1, &_id);
+    }
+
     static void unbind()
     {
         glBindTexture(TextureType, 0);
