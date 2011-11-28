@@ -3,8 +3,34 @@
 #include <assert.h>
 #include <iostream>
 #include "utils/CheckGLError.hpp"
+#include <vector>
 
 namespace renderer{
+
+static std::vector<FrameBuffer*> s_frameBuffers;
+
+void ResizeFrameBuffers(int w, int h)
+{
+    for(unsigned int i = 0; i < s_frameBuffers.size(); ++i)
+        s_frameBuffers[i]->resize(w,h);
+}
+
+void AddFrameBuffer( FrameBuffer* fbo )
+{
+    s_frameBuffers.push_back( fbo );
+}
+
+void DeleteFrameBuffer( FrameBuffer* fbo )
+{
+    for(int i = 0; i < s_frameBuffers.size(); ++i)
+    {
+        if(s_frameBuffers[i] == fbo)
+        {
+            s_frameBuffers[i] = s_frameBuffers[s_frameBuffers.size()-1];
+            s_frameBuffers.resize(s_frameBuffers.size()-1);
+        }
+    }
+}
 
 GLenum getGLColorAttachement( int i )
 {
@@ -23,6 +49,7 @@ GLenum getGLColorAttachement( int i )
 
 FrameBuffer::FrameBuffer( int nbTextures, int fbwidth, int fbheight)
 {
+    AddFrameBuffer(this);
     init(nbTextures,fbwidth,fbheight);
 }
 
@@ -97,6 +124,7 @@ void FrameBuffer::resize(int w, int h)
 
 FrameBuffer::~FrameBuffer()
 {
+    DeleteFrameBuffer(this);
     destroy();
 }
 
