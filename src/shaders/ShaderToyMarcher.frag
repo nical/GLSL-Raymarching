@@ -1,6 +1,6 @@
 // This is a snapshot of the GLSL ray marching renderer
 // Michele Bianchi and I (Nicolas Silva) are working on,
-// adapted to webgl
+// adapted to webgl (it's a school project).
 //
 // Just copy paste it on iq's ShaderToy (http://www.iquilezles.org/apps/shadertoy/) to see it working.
 //
