@@ -76,6 +76,7 @@ namespace io{
       cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
+    
     if (_renderer) {
       _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     }

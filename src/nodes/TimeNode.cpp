@@ -16,7 +16,7 @@ static const NodeTypeInfo * _nodeTypeInfo = 0;
 typedef DynamicNodeUpdater::DataArray DataArray;
 bool TimerNodeUpdate(const DataArray& inputs, const DataArray& outputs)
 {
-    *outputs[0]->value<GLuint>() += 1;
+    *outputs[0]->value<GLfloat>() += 1;
 }
 
 void RegisterTimeNode()

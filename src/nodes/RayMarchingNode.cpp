@@ -16,7 +16,7 @@
 using namespace renderer;
 using namespace kiwi;
 using namespace kiwi::core;
-
+using namespace std;
 
 
 namespace nodes{
@@ -69,20 +69,23 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
     } else _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
     
     if ( inputs[6] ){
-        _raymarchingShader->uniformVec2("windowSize", *inputs[6]->value<glm::vec2>() );
-    } else _raymarchingShader->uniform2f("windowSize", 400, 400 );
-    
-    if ( inputs[7] ){
-        _raymarchingShader->uniform1f("fuffaTime", *inputs[7]->value<GLfloat>() );
+        _raymarchingShader->uniform1f("fuffaTime", *inputs[6]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("fuffaTime", time);
     
-    if ( inputs[8] ){
-        _raymarchingShader->uniform1f("fovyCoefficient", *inputs[8]->value<GLfloat>() );
+    if ( inputs[7] ){
+        _raymarchingShader->uniform1f("fovyCoefficient", *inputs[7]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
     
-    if ( inputs[9] ){
-        _raymarchingShader->uniform1f("shadowHardness", *inputs[9]->value<GLfloat>() );
+    if ( inputs[8] ){
+        _raymarchingShader->uniform1f("shadowHardness", *inputs[8]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("shadowHardness", 7.0f );
+
+    if ( inputs[9] ){
+        _raymarchingShader->uniformVec2("windowSize", *inputs[9]->value<glm::vec2>() );
+        auto temp = *inputs[9]->value<glm::vec2>();
+    } else _raymarchingShader->uniform2f("windowSize", 400, 400 );
+    
+
 
     renderer::DrawQuad();
 
@@ -96,7 +99,7 @@ void RegisterRayMarchingNode( Shader * shader )
     _raymarchingShader = shader;
     //RegisterShaderNode("RayMarcher", *raymarchingShader );
     auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
-    auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
+    auto floatTypeInfo = kiwi::core::DataTypeManager::TypeOf("Float");
     auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
     auto vec3TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec3");
     auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
@@ -116,9 +119,9 @@ void RegisterRayMarchingNode( Shader * shader )
         {"sphereColor", vec3TypeInfo, kiwi::READ | OPT },
         {"shadowColor", vec3TypeInfo, kiwi::READ | OPT },
         {"viewMatrix", mat4TypeInfo, kiwi::READ | OPT },
-        {"time", uintTypeInfo, kiwi::READ | OPT },
-        {"shadowHardness", uintTypeInfo, kiwi::READ | OPT },
-        {"fovyCoefficient", uintTypeInfo, kiwi::READ | OPT },
+        {"time", floatTypeInfo, kiwi::READ | OPT },
+        {"shadowHardness", floatTypeInfo, kiwi::READ | OPT },
+        {"fovyCoefficient", floatTypeInfo, kiwi::READ | OPT },
         {"windowSize", vec2TypeInfo, kiwi::READ | OPT }
     };
     raymacherLayout.outputs = {

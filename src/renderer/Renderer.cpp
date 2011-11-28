@@ -29,6 +29,14 @@ namespace renderer{
   Renderer::~Renderer(){
   }
 
+  void Renderer::setWindowDimensions (unsigned int x, unsigned int y) 
+  {
+    window.x = x;
+    window.y = y;
+    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)x, (float)y);
+  }
+
+
   void Renderer::init(){
       
     CHECKERROR
@@ -53,6 +61,8 @@ namespace renderer{
 
     nodes::RegisterTimeNode();
     timeNode = nodes::CreateTimeNode();
+    winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
+    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)window.x, (float)window.y);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -107,8 +117,10 @@ namespace renderer{
     CHECKERROR
 
     skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
-    
+    assert( timeNode );
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
+    assert( timeNode->output() >> rayMarchingNode->input(6) );
+    assert( winSizeNode->output() >> rayMarchingNode->input(9) );
   }
 
 
@@ -119,7 +131,7 @@ namespace renderer{
     CHECKERROR
     if( _frameBuffer == 0 ) return;
 
-
+    timeNode->update();
 
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -186,45 +198,6 @@ CHECKERROR
 
 
 
-
-  void Renderer::createPlane()
-  {
-    if (!GLEW_ARB_vertex_array_object)
-      std::cerr << "ARB_vertex_array_object not available." << std::endl;
-
-    GLfloat vertices[12] = {
-      -1.0, -1.0, -1.0,
-      -1.0, 1.0, -1.0,
-      1.0, -1.0, -1.0,
-      1.0, 1.0, -1.0
-    };
-
-
-    GLuint indices[6]={0,1,2,1,2,3};
-
-    glGenVertexArrays(1, &vaoID[0]);
-
-    glBindVertexArray(vaoID[0]);
-
-
-    // Generate and bind Vertex Buffer Objects
-    glGenBuffers(1, &vboID[0]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);
-
-
-    // Load the buffer with the vertices and set its attributes
-    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-
-    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-  }
-
   void Renderer::createBuffers()
   {
 
@@ -234,12 +207,12 @@ CHECKERROR
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    _frameBuffer = new FrameBuffer(3, window.x, window.y);
+    _frameBuffer = (FrameBuffer*)1;
 
   }
 
-  void Renderer::freeBuffers(){
-    if( _frameBuffer != 0 )
-        delete _frameBuffer;
+  void Renderer::freeBuffers()
+  {
+
   }
 }

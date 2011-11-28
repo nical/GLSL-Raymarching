@@ -5,6 +5,8 @@
 #include "utils/CheckGLError.hpp"
 #include <vector>
 
+using namespace std;
+
 namespace renderer{
 
 static std::vector<FrameBuffer*> s_frameBuffers;
@@ -55,6 +57,8 @@ FrameBuffer::FrameBuffer( int nbTextures, int fbwidth, int fbheight)
 
 void FrameBuffer::init( int nbTextures, int fbwidth, int fbheight)
 {
+    cout << "FrameBuffer::init("<< nbTextures <<", "<< fbwidth << ", "<<fbheight <<")"<< endl;
+
     _nbTex = nbTextures;
     _textures.clear();
     CHECKERROR
@@ -118,8 +122,24 @@ void FrameBuffer::destroy()
 
 void FrameBuffer::resize(int w, int h)
 {
-    destroy();
-    init(_nbTex,w,h);
+    //destroy();
+    //init(_nbTex,w,h);
+    //
+    for( int i = 0; i < _textures.size(); ++i)
+    {
+        //GLuint oldTexId = _textures[i]->id();
+        //glDeleteTextures(1, &oldTexId );
+        glBindTexture( GL_TEXTURE_2D, _textures[i]->id() );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if ( i == _textures.size()-1 ) // depth texture
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+        else
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    }
+    CHECKERROR
 }
 
 FrameBuffer::~FrameBuffer()

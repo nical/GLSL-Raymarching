@@ -27,10 +27,7 @@ public:
   void init();
   void drawScene();
 
-  void setWindowDimensions (unsigned int x, unsigned int y) {
-    window.x = x;
-    window.y = y;
-  }
+  void setWindowDimensions (unsigned int x, unsigned int y);
 
   void drawQuad();
 
