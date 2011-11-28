@@ -159,14 +159,9 @@ namespace renderer{
     postEffectShader->uniform1f("fuffaTime", fuffaTime );
     postEffectShader->uniform1i("colourTexture", 0 );
     postEffectShader->uniform1i("normalsTexture", 1 );
-    postEffectShader->uniform1i("godRaysTexture", 2 );
 
     CHECKERROR
     
-    //  Putting data in the uniforms
-    //glUniform1i(postEffectShader->getLocation("colourTexture"), 0);
-    //glUniform1i(postEffectShader->getLocation("normalsTexture"), 1);
-
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, texColour[0]);
@@ -179,12 +174,6 @@ namespace renderer{
     _frameBuffer->texture(1).bind();
     CHECKERROR
     
-    //  Binding Normals' Texture
-    glActiveTexture(GL_TEXTURE2);
-    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    _frameBuffer->texture(2).bind();
-    CHECKERROR
-
     glBindVertexArray(vaoID[0]);
 CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);

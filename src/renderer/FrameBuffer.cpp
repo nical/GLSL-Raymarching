@@ -23,6 +23,13 @@ GLenum getGLColorAttachement( int i )
 
 FrameBuffer::FrameBuffer( int nbTextures, int fbwidth, int fbheight)
 {
+    init(nbTextures,fbwidth,fbheight);
+}
+
+void FrameBuffer::init( int nbTextures, int fbwidth, int fbheight)
+{
+    _nbTex = nbTextures;
+    _textures.clear();
     CHECKERROR
     for( int i = 0; i < nbTextures+1; ++i)
     {
@@ -69,13 +76,28 @@ FrameBuffer::FrameBuffer( int nbTextures, int fbwidth, int fbheight)
       std::cout << "Ok, this is a problem..." << std::endl;
     }
     CHECKERROR
+
+
+}
+
+void FrameBuffer::destroy()
+{
+     for( int i = 0; i < _textures.size(); ++i )
+        delete _textures[i];
+
+    glDeleteFramebuffers(1, &_id);
+}
+
+
+void FrameBuffer::resize(int w, int h)
+{
+    destroy();
+    init(_nbTex,w,h);
 }
 
 FrameBuffer::~FrameBuffer()
 {
-    for( int i = 0; i < _textures.size(); ++i )
-        delete _textures[i];
-    glDeleteFramebuffers(1, &_id);
+    destroy();
 }
 
 
