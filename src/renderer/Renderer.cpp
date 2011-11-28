@@ -132,10 +132,10 @@ namespace renderer{
     if( _frameBuffer == 0 ) return;
     
     //glEnable(GL_TEXTURE_2D);
-    _frameBuffer->bind();
+    //_frameBuffer->bind();
     
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    
+/*    
     raymarchingShader->bind();
     raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
     raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
@@ -148,7 +148,8 @@ namespace renderer{
     raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
     raymarchingShader->uniform1f("shadowHardness", 7.0f );
     fuffaTime++;
-/*
+*/
+    /*
     glBindVertexArray(vaoID[0]);
     CHECKERROR
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -157,7 +158,10 @@ namespace renderer{
     glFinish();
 #endif
 */
-    DrawQuad();
+    assert( rayMarchingNode->input(0).isOptional() );
+    rayMarchingNode->update();
+
+    //DrawQuad();
 
     glBindVertexArray(0);
 
@@ -177,13 +181,15 @@ namespace renderer{
     //  Binding Colour Texture
     glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    _frameBuffer->texture(0).bind();
+    //_frameBuffer->texture(0).bind();
+    (*rayMarchingNode->output(1).dataAs<Texture2D*>())->bind();
     CHECKERROR
 
     //  Binding Normals' Texture
     glActiveTexture(GL_TEXTURE1);
     //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    _frameBuffer->texture(1).bind();
+    //_frameBuffer->texture(1).bind();
+    (*rayMarchingNode->output(2).dataAs<Texture2D*>())->bind();
     CHECKERROR
     
     DrawQuad();

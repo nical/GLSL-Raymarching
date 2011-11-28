@@ -11,6 +11,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include <iostream>
 
 using namespace renderer;
 using namespace kiwi;
@@ -29,7 +30,12 @@ enum{ FBO_INDEX = 0, TEX0_INDEX = 1, TEX1_INDEX=2 };
 typedef DynamicNodeUpdater::DataArray DataArray;
 bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
 {
-    if(_raymarchingShader == 0) return false;
+    //std::cout<<"RayMarcherNodeUpdate\n";
+    if(_raymarchingShader == 0)
+    {
+        std::cout << "Error: shader not set\n";
+        return false;
+    }
 
     auto viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
     float time = 1.0;
@@ -48,6 +54,8 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
     _raymarchingShader->uniform1f("fuffaTime", time);
     _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
     _raymarchingShader->uniform1f("shadowHardness", 7.0f );
+
+    renderer::DrawQuad();
 
     FrameBuffer::unbind();
     return true;
@@ -74,7 +82,7 @@ void RegisterRayMarchingNode( Shader * shader )
         {"shadowColor", vec3TypeInfo, kiwi::READ | OPT },
         {"viewMatrix", mat4TypeInfo, kiwi::READ | OPT },
         {"fuffaTime", uintTypeInfo, kiwi::READ | OPT },
-        {"windowSize", vec2TypeInfo, kiwi::READ }
+        {"windowSize", vec2TypeInfo, kiwi::READ | OPT }
     };
     raymacherLayout.outputs = {
         {"fbo", frameBufferTypeInfo, kiwi::READ },
@@ -92,6 +100,9 @@ Node * CreateRayMarchingNode()
     auto node = _marcherTypeInfo->newInstance();
     auto fbo = new FrameBuffer(2,400,400);
     *node->output(0).dataAs<FrameBuffer*>() = fbo;
+    
+    assert( *node->output(0).dataAs<FrameBuffer*>() == fbo );
+    
     *node->output(1).dataAs<Texture2D*>() = &fbo->texture(0);
     *node->output(2).dataAs<Texture2D*>() = &fbo->texture(1);
 
