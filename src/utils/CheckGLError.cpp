@@ -5,7 +5,6 @@
 
 using namespace std;
 
-namespace utils{
 bool gl_check_error(int line, const char* comment)
 {
     GLuint err = glGetError();
@@ -17,4 +16,3 @@ bool gl_check_error(int line, const char* comment)
     return true;
 }
 
-}//namespace

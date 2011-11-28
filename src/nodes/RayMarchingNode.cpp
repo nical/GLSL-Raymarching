@@ -4,7 +4,7 @@
 #include "renderer/Shader.hpp"
 #include "renderer/DrawQuad.hpp"
 #include "renderer/FrameBuffer.hpp"
-
+#include "utils/CheckGLError.hpp"
 #include "kiwi/core/all.hpp"
 #include "kiwi/core/DynamicNodeUpdater.hpp"
 
@@ -23,14 +23,12 @@ namespace nodes{
 
 static const NodeTypeInfo * _marcherTypeInfo = 0;
 static renderer::Shader * _raymarchingShader = 0;
-static renderer::FrameBuffer * _frameBuffer = 0;
 
 enum{ FBO_INDEX = 0, TEX0_INDEX = 1, TEX1_INDEX=2 };
 
 typedef DynamicNodeUpdater::DataArray DataArray;
 bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
 {
-    //std::cout<<"RayMarcherNodeUpdate\n";
     if(_raymarchingShader == 0)
     {
         std::cout << "Error: shader not set\n";
@@ -41,19 +39,50 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
     float time = 1.0;
 
     (*outputs[FBO_INDEX]->value<FrameBuffer*>())->bind();
-    //_frameBuffer->bind();
 
     _raymarchingShader->bind();
-    _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    _raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
-    _raymarchingShader->uniform3f("buildingsColor", 1.0, 1.0, 1.0 );
-    _raymarchingShader->uniform3f("groundColor", 1.0, 1.0, 1.0 );
-    _raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
-    _raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
-    _raymarchingShader->uniform2f("windowSize", 400, 400 );
-    _raymarchingShader->uniform1f("fuffaTime", time);
-    _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
-    _raymarchingShader->uniform1f("shadowHardness", 7.0f );
+    
+    if ( inputs[0] ){
+        CHECKERROR
+        _raymarchingShader->uniformVec3("skyColor", *inputs[0]->value<glm::vec3>() );
+        CHECKERROR
+    } else _raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
+
+    if ( inputs[1] ){
+        _raymarchingShader->uniformVec3("buildingsColor", *inputs[1]->value<glm::vec3>() );
+    } else _raymarchingShader->uniform3f("buildingsColor", 0.9, 1.0, 1.0 );
+
+    if ( inputs[2] ){
+        _raymarchingShader->uniformVec3("groundColor", *inputs[2]->value<glm::vec3>() );
+    } else _raymarchingShader->uniform3f("groundColor", 1.0, 1.0, 1.0 );
+
+    if ( inputs[3] ){
+        _raymarchingShader->uniformVec3("redColor", *inputs[3]->value<glm::vec3>() );
+    } else _raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
+    
+    if ( inputs[4] ){
+        _raymarchingShader->uniformVec3("shadowColor", *inputs[4]->value<glm::vec3>() );
+    } else _raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
+    
+    if ( inputs[5] ){
+        _raymarchingShader->uniformMatrix4fv("viewMatrix", &(*inputs[5]->value<glm::mat4>())[0][0] );
+    } else _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
+    
+    if ( inputs[6] ){
+        _raymarchingShader->uniformVec2("windowSize", *inputs[6]->value<glm::vec2>() );
+    } else _raymarchingShader->uniform2f("windowSize", 400, 400 );
+    
+    if ( inputs[7] ){
+        _raymarchingShader->uniform1f("fuffaTime", *inputs[7]->value<GLfloat>() );
+    } else _raymarchingShader->uniform1f("fuffaTime", time);
+    
+    if ( inputs[8] ){
+        _raymarchingShader->uniform1f("fovyCoefficient", *inputs[8]->value<GLfloat>() );
+    } else _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
+    
+    if ( inputs[9] ){
+        _raymarchingShader->uniform1f("shadowHardness", *inputs[9]->value<GLfloat>() );
+    } else _raymarchingShader->uniform1f("shadowHardness", 7.0f );
 
     renderer::DrawQuad();
 
@@ -73,15 +102,23 @@ void RegisterRayMarchingNode( Shader * shader )
     auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
     auto frameBufferTypeInfo = kiwi::core::DataTypeManager::TypeOf("FrameBuffer");
     
+    assert( mat4TypeInfo );
+    assert( vec2TypeInfo );
+    assert( vec3TypeInfo );
+    assert( textureTypeInfo );
+    assert( frameBufferTypeInfo );
 
     NodeLayoutDescriptor raymacherLayout; 
     raymacherLayout.inputs = {
         {"skyColor", vec3TypeInfo, kiwi::READ | OPT },
-        {"groundColor", vec3TypeInfo, kiwi::READ | OPT },
         {"buildingsColor", vec3TypeInfo, kiwi::READ | OPT },
+        {"groundColor", vec3TypeInfo, kiwi::READ | OPT },
+        {"sphereColor", vec3TypeInfo, kiwi::READ | OPT },
         {"shadowColor", vec3TypeInfo, kiwi::READ | OPT },
         {"viewMatrix", mat4TypeInfo, kiwi::READ | OPT },
-        {"fuffaTime", uintTypeInfo, kiwi::READ | OPT },
+        {"time", uintTypeInfo, kiwi::READ | OPT },
+        {"shadowHardness", uintTypeInfo, kiwi::READ | OPT },
+        {"fovyCoefficient", uintTypeInfo, kiwi::READ | OPT },
         {"windowSize", vec2TypeInfo, kiwi::READ | OPT }
     };
     raymacherLayout.outputs = {
@@ -98,6 +135,15 @@ void RegisterRayMarchingNode( Shader * shader )
 Node * CreateRayMarchingNode()
 {
     auto node = _marcherTypeInfo->newInstance();
+
+    assert(node->inputs().size() == 10 );
+    assert(node->outputs().size() == 3 );
+
+    assert(node->input(0).dataType() == kiwi::core::DataTypeManager::TypeOf("Vec3") );
+    assert(node->input(1).dataType() == kiwi::core::DataTypeManager::TypeOf("Vec3") );
+    assert(node->input(2).dataType() == kiwi::core::DataTypeManager::TypeOf("Vec3") );
+    assert(node->input(3).dataType() == kiwi::core::DataTypeManager::TypeOf("Vec3") );
+
     auto fbo = new FrameBuffer(2,400,400);
     *node->output(0).dataAs<FrameBuffer*>() = fbo;
     

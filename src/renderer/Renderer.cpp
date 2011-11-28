@@ -86,22 +86,6 @@ namespace renderer{
     nodes::RegisterRayMarchingNode(raymarchingShader);
     rayMarchingNode = nodes::CreateRayMarchingNode();
 
-    //RegisterShaderNode("RayMarcher", *raymarchingShader );
-    kiwi::core::NodeLayoutDescriptor raymacherLayout; 
-    raymacherLayout.inputs = {
-        {"skyColor", vec3TypeInfo, kiwi::READ },
-        {"groundColor", vec3TypeInfo, kiwi::READ },
-        {"buildingsColor", vec3TypeInfo, kiwi::READ },
-        {"shadowColor", vec3TypeInfo, kiwi::READ },
-        {"viewMatrix", mat4TypeInfo, kiwi::READ },
-        {"fuffaTime", uintTypeInfo, kiwi::READ },
-        {"windowSize", vec2TypeInfo, kiwi::READ }
-    };
-    raymacherLayout.outputs = {
-        {"color", textureTypeInfo, kiwi::READ },
-        {"normals", textureTypeInfo, kiwi::READ },
-        {"godRays", textureTypeInfo, kiwi::READ }
-    };
 
     CHECKERROR
     vs.clear();
@@ -121,6 +105,10 @@ namespace renderer{
     postEffectShader->build( vs, fs, postFxLoc );
 
     CHECKERROR
+
+    skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+    
+    //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
   }
 
 
@@ -130,38 +118,13 @@ namespace renderer{
 
     CHECKERROR
     if( _frameBuffer == 0 ) return;
-    
-    //glEnable(GL_TEXTURE_2D);
-    //_frameBuffer->bind();
-    
+
+
+
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-/*    
-    raymarchingShader->bind();
-    raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
-    raymarchingShader->uniform3f("buildingsColor", 1.0, 1.0, 1.0 );
-    raymarchingShader->uniform3f("groundColor", 1.0, 1.0, 1.0 );
-    raymarchingShader->uniform3f("redColor", 1.0, 0.1, 0.1 );
-    raymarchingShader->uniform3f("skyColor", 0.9, 1.0, 1.0 );
-    raymarchingShader->uniform2f("windowSize", window.x, window.y );
-    raymarchingShader->uniform1f("fuffaTime", fuffaTime );
-    raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
-    raymarchingShader->uniform1f("shadowHardness", 7.0f );
-    fuffaTime++;
-*/
-    /*
-    glBindVertexArray(vaoID[0]);
-    CHECKERROR
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    CHECKERROR
-#ifdef DEBUG
-    glFinish();
-#endif
-*/
-    assert( rayMarchingNode->input(0).isOptional() );
+
     rayMarchingNode->update();
 
-    //DrawQuad();
 
     glBindVertexArray(0);
 
