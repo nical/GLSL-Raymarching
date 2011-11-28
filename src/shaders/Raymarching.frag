@@ -1,7 +1,7 @@
 #version 330
 #define MAX_STEPS 200
 
-out vec4 out_Colour[2];
+out vec4 out_Colour[3];
 
 uniform float fuffaTime;
 uniform vec2 windowSize;
@@ -52,28 +52,6 @@ vec3 DistanceRepetition(in vec3 point, in vec3 repetition ) {
 }
 
 
-/*
-float Building1Distance(in vec3 point)
-{
-    vec3 size = vec3(2.0, 3.0, 2.0);
-    float tempz = point.z;
-    float tempx = point.x;
-    point.z = mod (point.z, 17.0)-8.5;
-    point.x = mod (point.x, 27.0)-13.5;
-    //point = DistanceRepetition(point, vec3(17.0, 0.0, 27.0));
-    size.y = 12.0 + 3* (
-            + sin( floor(tempx/27.0) )
-            + cos( 3.0*floor(tempx/27.0))
-            + sin( 2*floor(tempz/17.0) )
-            + cos( 4.0*floor(tempz/17.0))
-    );
-    size.y = 2.0;
-    //size.y = 2.0 + abs(cos());
-    point -= vec3(5.0, 3.0, 3.0); // center
-    return length(max(abs(point)-size, 0.0));
-    
-}
-*/
 float Rand2D(float x, float y)
 {
     return 0.5 + (1.0/8.0) * (
@@ -152,65 +130,7 @@ void applyFog( in float distance, inout vec3 rgb ){
     vec3 fogColor = vec3(0.9,0.95,1);
     rgb = mix( skyColor, rgb, fogAmount );
 }
-/*
-vec3 AmbiantOcclusion2( in vec3 position, in vec3 direction )
-{
-    vec3 newPos = position + direction * 0.5;
-    float sphereDist = 2*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 0.5 );
-    float planeDist = 2*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 0.5 );
-    float building1Dist = 2*clamp( Building1Distance(newPos) , 0, 0.5 );
-    newPos += direction*2;
-    float sphereDist2 = 0.5*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 2.5 );
-    float planeDist2 = 0.5*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 2.5 );
-    float building1Dist2 = 0.5*clamp( Building1Distance(newPos) , 0, 2.5 );
-    newPos += direction*2;
-    float sphereDist3 = 0.2*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 4.5 );
-    float planeDist3 = 0.2*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 4.5 );
-    float building1Dist3 = 0.2*clamp( Building1Distance(newPos) , 0, 4.5 );
-    newPos += direction*3;
-    float sphereDist4 = 0.15*clamp( SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0), 0, 7.5 );
-    float planeDist4 = 0.15*clamp( PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0) , 0, 7.5 );
-    float building1Dist4 = 0.15*clamp( Building1Distance(newPos) , 0, 7.5 );
 
-    float sphereFactor = (sphereDist + 0.5 * sphereDist2 + 0.25 * sphereDist3 + 0.10 * sphereDist4);
-
-    return
-        (
-          vec3(0.9,0.7,0.5) * (planeDist + 0.5 * planeDist2 + 0.25 * planeDist3 + 0.10 * planeDist4)
-        + vec3(0.9,0.7,0.5) * (building1Dist + 0.5 * building1Dist2 + 0.25 * building1Dist3 + 0.10 * building1Dist4)
-        - vec3(-0.3,1.0,1.0) * (1-sphereFactor)
-        ) * 0.2;
-}
-
-float AmbiantOcclusion( in vec3 position, in vec3 direction )
-{
-    vec3 newPos = position + direction * 0.5;
-    float sphereDist = SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0);
-    float planeDist = PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0);
-    float building1Dist1 = Building1Distance(newPos);
-    newPos += direction*2;
-    float sphereDist2 = SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0);
-    float planeDist2 = PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0);
-    float building1Dist2 = Building1Distance(newPos);
-    newPos += direction*2;
-    float sphereDist3 = SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0);
-    float planeDist3 = PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0);
-    float building1Dist3 = Building1Distance(newPos);
-    newPos += direction*3;
-    float sphereDist4 = SphereDistance(newPos, vec3(0.0, 3.0, 5.0), 5.0);
-    float planeDist4 = PlaneDistance(newPos, vec3(0.0, 1.0, 0.0), 0.0);
-    float building1Dist4 = Building1Distance(newPos);
-
-    float occlusion =(
-        1-min(min( sphereDist, planeDist ), building1Dist1) * 0.5
-        + (3- min(building1Dist2,min( sphereDist2, planeDist2 )))*0.25
-        + (5- min(building1Dist3,min( sphereDist3, planeDist3 )))*0.15
-        + (8- min(building1Dist3,min( sphereDist3, planeDist3 )))*0.10
-    )/3.0;
-
-    return clamp(1.0-occlusion,0.0,1.0)*0.6+0.4 ;
-}
-*/
 float RedDistance(in vec3 position)
 {
     return SphereDistance(position, vec3(0.0, 3.0, 5.0), 5.0);
@@ -218,11 +138,10 @@ float RedDistance(in vec3 position)
 
 float BuildingsDistance(in vec3 position)
 {
-    //return min(
-//          RandomBuildingDistance(position, vec3(20, 0, 36), 9)
-//        , RandomBuildingDistance(position, vec3(37, 0, 33), 12)
-//        );
-    return CubeRepetition(position, vec3(20.0, 0.0, 20.0));
+    return min(
+      CubeRepetition(position, vec3(17.0, 0.0, 20.0))
+      , CubeRepetition(position+vec3(350.0,-2.0,0.0), vec3(23.0, 0.0, 23.0))
+    );
 }   
 
 float GroundDistance(in vec3 position)
@@ -357,12 +276,11 @@ void main(void)
     int material;
     vec3 hitPosition = RayMarch(position, direction, material);
     
-    vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
-    colour[2] = vec4(vec3(0.0), 1.0);
     
     vec3 hitColor;
     if( material != SKY_MTL ) // has hit something
     {
+        vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
         vec3 lightVector = normalize(lightpos - hitPosition);
         // soft shadows
         float shadow = Softshadow(hitPosition, lightVector, 0.1, 50.0, shadowHardness);
@@ -385,16 +303,13 @@ void main(void)
         
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
         out_Colour[1].a = hitPosition.z/300.0;
-        if (length(hit.position) - length(lightpos) <= lightDimension && hit.position.z < lightpos.z){
-          out_Colour[2] = vec4(vec3(0.0), 1.0);
-        }
+        
     }
     else // sky
     {
         vec3 hitColor = skyColor;
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
-        out_Colour[2] = vec4(hitColor, 1.0);
     }
 
 }
