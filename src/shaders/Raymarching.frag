@@ -3,7 +3,7 @@
 
 out vec4 out_Colour[3];
 
-uniform float fuffaTime;
+uniform float time;
 uniform vec2 windowSize;
 uniform mat4 viewMatrix;
 uniform vec3 shadowColor;
@@ -257,7 +257,7 @@ void PinHoleCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out
 {
     screenPos.x *= ratio;
     direction = normalize(vec3(screenPos.x,screenPos.y, fovy));
-    position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
+    position = vec3(5*sin(time*0.01), 25.0, time);
 }
 
 void FishEyeCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out vec3 position, out vec3 direction )
@@ -270,7 +270,7 @@ void FishEyeCamera( vec2 screenPos, float ratio, float fovy, mat4 transform, out
         , -cos(screenPos.y+PI*0.5)
         ,  sin(screenPos.y+PI*0.5)*cos(screenPos.x)
     );
-    position = vec3(5*sin(fuffaTime*0.01), 25.0, fuffaTime);
+    position = vec3(5*sin(time*0.01), 25.0, time);
 }
 
 float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float samples) {
@@ -300,7 +300,7 @@ void main(void)
     vec3 hitColor;
     if( material != SKY_MTL ) // has hit something
     {
-        vec3 lightpos = vec3(50.0 * sin(fuffaTime*0.01), 10 + 40.0 * abs(cos(fuffaTime*0.01)), (fuffaTime) + 100.0 );
+        vec3 lightpos = vec3(50.0 * sin(time*0.01), 10 + 40.0 * abs(cos(time*0.01)), (time) + 100.0 );
         vec3 lightVector = normalize(lightpos - hitPosition);
         // soft shadows
         float shadow = Softshadow(hitPosition, lightVector, 0.1, 50.0, shadowHardness);

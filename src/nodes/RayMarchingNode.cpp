@@ -69,8 +69,8 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
     } else _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
     
     if ( inputs[6] ){
-        _raymarchingShader->uniform1f("fuffaTime", *inputs[6]->value<GLfloat>() );
-    } else _raymarchingShader->uniform1f("fuffaTime", time);
+        _raymarchingShader->uniform1f("time", *inputs[6]->value<GLfloat>() );
+    } else _raymarchingShader->uniform1f("time", time);
     
     if ( inputs[7] ){
         _raymarchingShader->uniform1f("fovyCoefficient", *inputs[7]->value<GLfloat>() );

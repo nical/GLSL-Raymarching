@@ -81,7 +81,7 @@ namespace renderer{
         {"groundColor",     { Shader::UNIFORM | Shader::FLOAT3} },
         {"buildingsColor",  { Shader::UNIFORM | Shader::FLOAT3} },
         {"redColor",        { Shader::UNIFORM | Shader::FLOAT3} },
-        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"shadowHardness",  { Shader::UNIFORM | Shader::FLOAT} },
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
