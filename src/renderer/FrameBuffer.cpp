@@ -125,10 +125,16 @@ void FrameBuffer::resize(int w, int h)
     //destroy();
     //init(_nbTex,w,h);
     //
+    cout << "resize " << w <<" "<<h<<endl;
+    glDeleteFramebuffers(1, &_id);
+    glGenFramebuffers(1, &_id);
+    glBindFramebuffer(GL_FRAMEBUFFER, _id);
     for( int i = 0; i < _textures.size(); ++i)
     {
         //GLuint oldTexId = _textures[i]->id();
         //glDeleteTextures(1, &oldTexId );
+        Texture2D::unbind();
+        _textures[i]->regenerate();
         glBindTexture( GL_TEXTURE_2D, _textures[i]->id() );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -138,6 +144,19 @@ void FrameBuffer::resize(int w, int h)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+
+        GLenum* attachements = new GLenum[_textures.size()-1];
+        for( int i = 0; i < _textures.size()-1; ++i )
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, getGLColorAttachement(i), GL_TEXTURE_2D, _textures[i]->id(), 0);
+            attachements[i] = getGLColorAttachement(i);
+        }
+
+        CHECKERROR
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _textures[_textures.size()-1]->id(), 0);
+        CHECKERROR
+        glDrawBuffers(_textures.size()-1, &attachements[0]);
+        CHECKERROR
     }
     CHECKERROR
 }
