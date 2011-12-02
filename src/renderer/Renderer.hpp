@@ -64,8 +64,6 @@ private:
   unsigned int vboID[1];
   unsigned int bufID[1];
 
-  GLuint fuffaTime;
-
   void freeBuffers();
   void createPlane();
 };

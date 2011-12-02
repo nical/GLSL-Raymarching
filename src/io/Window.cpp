@@ -11,6 +11,11 @@
 #include <QApplication>
 #include <QGLFormat>
 #include <QTimer>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QWidget>
+#include <QGraphicsItem>
 
 #include <iostream>
 
@@ -26,6 +31,63 @@ namespace io{
   int WindowHandle = 0;
 
   static renderer::Renderer* _renderer;
+
+
+
+QDialog * GraphicsScene::createDialog( const QString &windowTitle) const
+{
+    QDialog *dialog = new QDialog(0,
+        Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+
+    dialog->setWindowOpacity(0.8);
+    dialog->setWindowTitle(windowTitle);
+    dialog->setLayout(new QVBoxLayout);
+
+    return dialog;
+}
+
+GraphicsScene::GraphicsScene()
+{
+     QWidget *instructions = createDialog(tr("Instructions"));
+    instructions->layout()->addWidget(new QLabel(
+        tr("Use mouse wheel to zoom model, and click and "
+           "drag to rotate model")));
+    instructions->layout()->addWidget(new QLabel(
+        tr("Move the sun around to change the light "
+           "position")));
+    addWidget(instructions);
+
+    QPointF pos(10, 10);
+    foreach (QGraphicsItem *item, items()) {
+        item->setFlag(QGraphicsItem::ItemIsMovable);
+        item->setCacheMode(
+            QGraphicsItem::DeviceCoordinateCache);
+    
+        const QRectF rect = item->boundingRect();
+        item->setPos(pos.x() - rect.x(), pos.y() - rect.y());
+        pos += QPointF(0, 10 + rect.height());
+    }
+}
+
+
+void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
+{
+    if (painter->paintEngine()->type() != QPaintEngine::OpenGL)
+    {
+        qWarning("OpenGLScene: drawBackground needs a "
+                 "QGLWidget to be set as viewport on the "
+                 "graphics view");
+        //setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers)));
+        //return;
+    }
+
+    glClearColor(1.0, 0.0, 0.0, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    QTimer::singleShot(20, this, SLOT(update()));
+}
+
+
 
   GLWidget::GLWidget(const QGLFormat& format, QWidget *parent)
     : QGLWidget( format, parent)

@@ -29,6 +29,19 @@ int main(int argc, char* argv[])
     InitKiwi();
     QApplication raymarcher( argc, argv );
 
+    QGLFormat glFormat;
+    glFormat.setVersion( 3, 3 );
+    //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
+    glFormat.setAlpha( true );
+    glFormat.setSampleBuffers( true );
+
+
+    io::GraphicsView view;
+    view.setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers)));
+    view.setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
+    view.setScene(new io::GraphicsScene);
+    view.show();
+    /*
     // Specify an OpenGL 3.3 format using the Core profile.
     // That is, no old-school fixed pipeline functionality
     QGLFormat glFormat;
@@ -42,7 +55,7 @@ int main(int argc, char* argv[])
     io::GLWidget glsection (glFormat);
     glsection.show();
     glsection.setRenderer(_renderer);
-
+    */
 	return (raymarcher.exec());
 }
 

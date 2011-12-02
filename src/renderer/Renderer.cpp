@@ -66,8 +66,6 @@ namespace renderer{
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    fuffaTime = 0;
-
     // shaders
 
     CHECKERROR
@@ -147,7 +145,7 @@ namespace renderer{
 
     postEffectShader->bind();
     postEffectShader->uniform2f("windowSize", window.x, window.y );
-    postEffectShader->uniform1f("fuffaTime", fuffaTime );
+    postEffectShader->uniform1f("time", 0 );
     postEffectShader->uniform1i("colourTexture", 0 );
     postEffectShader->uniform1i("normalsTexture", 1 );
 
