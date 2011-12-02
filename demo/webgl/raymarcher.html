@@ -3,7 +3,7 @@
 	<head> 
 		<meta charset="utf-8"> 
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<title>WebGL Boilerplate</title> 
+		<title>GLSL raymarcher</title> 
 		
 		<style> 
 			body {
@@ -247,6 +247,11 @@ float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float sampl
   return occlusion;
 }
 
+float darkenCorners(in vec2 screenPos)
+{
+    return 1.1-clamp(1.5*dot(screenPos,screenPos)+0.045, 0.1, 1.0);
+}
+
 void main(void)
 {
     float ratio = resolution.x / resolution.y;
@@ -299,6 +304,8 @@ void main(void)
         vec3 hitColor = mix(skyColor, vec3(0.3,0.3,0.7), shade);
         gl_FragColor = vec4(hitColor, 1.0);
     }
+
+    gl_FragColor *= darkenCorners(screenPos);
 
 }
  
