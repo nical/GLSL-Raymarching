@@ -121,11 +121,13 @@ namespace io{
     QGraphicsView::resizeEvent(event);
   }
 
-  OpenGLScene::OpenGLScene(renderer::Renderer* r){
+  OpenGLScene::OpenGLScene(renderer::Renderer* r, QGLWidget* blah){
     shaderInitialised = false;
     connect(&redrawClock, SIGNAL(timeout()), this, SLOT(update()));
     redrawClock.start(20);
     _renderer = r;
+    hax = blah;
+    blah->setContext( new QGLContext( QGLFormat(), blah ) );
   }
 
   void OpenGLScene::drawBackground(QPainter *painter, const QRectF &) {
@@ -136,6 +138,9 @@ namespace io{
                  "graphics view");
         return;
     }
+
+    //hax->makeCurrent();
+
 
     if (!shaderInitialised){
       GLenum GlewInitResult = glewInit();
@@ -163,6 +168,7 @@ namespace io{
     }
 
     if (_renderer->getHeight() != height() || _renderer->getWidth() != width()){
+      //hax->makeCurrent();
       if (_renderer) {
         _renderer->setWindowDimensions(width(), height());
       }

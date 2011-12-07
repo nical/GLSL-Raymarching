@@ -51,13 +51,15 @@ namespace io{
       Q_OBJECT
 
     public:
-      OpenGLScene(renderer::Renderer* r);
+      OpenGLScene(renderer::Renderer* r, QGLWidget* blah);
 
       void drawBackground(QPainter *painter, const QRectF &rect);
 
     private:
 
       bool shaderInitialised;
+
+      QGLWidget* hax;
 
       QTimer  redrawClock;
   };

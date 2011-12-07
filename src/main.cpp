@@ -45,9 +45,11 @@ int main(int argc, char* argv[])
 
     io::GraphicsView view;
 
-    view.setViewport(new QGLWidget(/*QGLFormat(QGL::SampleBuffers)*/));
+    QGLWidget* fuffa = new QGLWidget();
+
+    view.setViewport(fuffa);
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setScene(new io::OpenGLScene(_renderer));
+    view.setScene(new io::OpenGLScene(_renderer, fuffa));
     view.show();
     view.resize(WIDTH, HEIGHT);
 
