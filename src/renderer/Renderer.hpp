@@ -11,8 +11,8 @@
 namespace renderer{
   class Shader;
   class FrameBuffer;
-  
-class Renderer 
+
+class Renderer
 {
 public:
 
@@ -33,9 +33,12 @@ public:
 
   void createBuffers();
 
+  int getWidth() const { return window.x; };
+  int getHeight() const { return window.y; };
+
 private:
   FrameBuffer* _frameBuffer;
-  
+
   struct {
     unsigned int x;
     unsigned int y;
@@ -43,14 +46,14 @@ private:
 
   glm::mat4 viewMatrix;
 
-  kiwi::core::Node * viewMatNode; 
+  kiwi::core::Node * viewMatNode;
   kiwi::core::Node * winSizeNode;
   kiwi::core::Node * timeNode;
   kiwi::core::Node * skyColorNode;
   kiwi::core::Node * groundColorNode;
   kiwi::core::Node * buildingsColorNode;
   kiwi::core::Node * redColorNode;
-  
+
   kiwi::core::Node * rayMarchingNode;
   kiwi::core::Node * radialBlurNode;
   kiwi::core::Node * edgeDetectionNode;

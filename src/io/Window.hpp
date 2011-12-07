@@ -2,8 +2,11 @@
 #ifndef IO_WINDOW_HPP
 #define IO_WINDOW_HPP
 #include <QApplication>
+#include <QGraphicsScene>
+#include <QGLWidget>
 #include <QGLFormat>
 #include <QTimer>
+#include <QtGui>
 
 namespace renderer{
   class Renderer;
@@ -33,6 +36,30 @@ namespace io{
       void resizeGL(int width, int height);
       //void mousePressEvent(QMouseEvent *event);
       //void mouseMoveEvent(QMouseEvent *event);
+  };
+
+  class GraphicsView : public QGraphicsView {
+
+    public:
+        GraphicsView();
+
+    protected:
+        void resizeEvent(QResizeEvent *event);
+  };
+
+  class OpenGLScene : public QGraphicsScene {
+      Q_OBJECT
+
+    public:
+      OpenGLScene(renderer::Renderer* r);
+
+      void drawBackground(QPainter *painter, const QRectF &rect);
+
+    private:
+
+      bool shaderInitialised;
+
+      QTimer  redrawClock;
   };
 
 }//namespace

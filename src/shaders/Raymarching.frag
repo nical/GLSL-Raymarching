@@ -209,7 +209,7 @@ float Softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt
 vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
 {
     //float nextDistance = 1.0;
-    vec3 startingPosition = position;
+    /*vec3 startingPosition = position;
     for( float distanceMarched = 0; distanceMarched < MAX_DISTANCE; )
     {
       float nextDistance = DistanceField(position,mtl);
@@ -221,7 +221,7 @@ vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
         //penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
         distanceMarched += nextDistance;
         position = startingPosition + (distanceMarched * direction);
-    }/*
+    }*/
     for (int i = 0; i < MAX_STEPS ; ++i)
     {
         float nextDistance = DistanceField(position,mtl);
@@ -231,7 +231,7 @@ vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
             return position;
         }
         position += direction * nextDistance;
-    }*/
+    }
     // out of steps
     if (direction.y < 0.0 )
     {

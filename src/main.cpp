@@ -10,6 +10,9 @@
 #include "renderer/Shader.hpp"
 #include <QApplication>
 #include <QGLFormat>
+#include <QtGui>
+#include <QGLWidget>
+
 
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"
 #define WIDTH     400
@@ -31,17 +34,26 @@ int main(int argc, char* argv[])
 
     // Specify an OpenGL 3.3 format using the Core profile.
     // That is, no old-school fixed pipeline functionality
-    QGLFormat glFormat;
-    glFormat.setVersion( 3, 3 );
+    //QGLFormat glFormat;
+    //glFormat.setVersion( 3, 3 );
     //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
-    glFormat.setAlpha( true );
-    glFormat.setSampleBuffers( true );
+    //glFormat.setAlpha( true );
+    //glFormat.setSampleBuffers( true );
 
     glewExperimental = GL_TRUE;
     renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
-    io::GLWidget glsection (glFormat);
-    glsection.show();
-    glsection.setRenderer(_renderer);
+
+    io::GraphicsView view;
+
+    view.setViewport(new QGLWidget(/*QGLFormat(QGL::SampleBuffers)*/));
+    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view.setScene(new io::OpenGLScene(_renderer));
+    view.show();
+    view.resize(WIDTH, HEIGHT);
+
+    //io::GLWidget glsection (glFormat);
+    //glsection.show();
+    //glsection.setRenderer(_renderer);
 
 	return (raymarcher.exec());
 }
