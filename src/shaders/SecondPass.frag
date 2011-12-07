@@ -36,7 +36,7 @@ bool useNoise = true; //use noise instead of pattern for sample dithering
 float noiseAmount = 0.00001; //noise amount
 
 bool useDepthBlur = false; //blur the depth buffer?
-float depthBlurSize = 1.0; //depthblursize
+float depthBlurSize = 2.0; //depthblursize
 
 //  Function used to generate either noise or patterns for dithering
 vec2 noiseGeneration (in vec2 coord){
@@ -211,17 +211,17 @@ void main (void){
 
     float zDistance = texture2D(normalsTexture, texelCoord).a;
 
-    if (gl_FragCoord.x < (windowSize.x * 1.5) ) {
+    //if (gl_FragCoord.x < (windowSize.x * 0.5) ) {
       //out_Color = texture2D(colourTexture, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
         out_Color = vec4(DOF(zDistance, texelCoord), 1.0);
-    } else {
+    //} else {
       //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).rgb, 1.0);
-      //out_Color = vec4(texture2D(normalsTexture, texelCoord).aaa, 1.0);
-      out_Color = texture2D(colourTexture, texelCoord);
-      out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, clamp(mix(1.0, 0.0, zDistance/300.0), 0.0, 1.0)), edgeDetection(gl_FragCoord.xy));
+      //out_Color = vec4(texture2D(normalsTexture, texelCoord).aaa/300.0, 1.0);
+      //out_Color = texture2D(colourTexture, texelCoord);
+      //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, clamp(mix(1.0, 0.0, zDistance/300.0), 0.0, 1.0)), edgeDetection(gl_FragCoord.xy));
       //out_Color = vec4(texture2D(godRaysTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).aaa, 1.0);
-    }
-    //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
+    //}
+    //out_Color = texture2D(colourTexture, texelCoord);
 }

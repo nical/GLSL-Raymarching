@@ -28,7 +28,7 @@ namespace io{
   static renderer::Renderer* _renderer;
 
   GLWidget::GLWidget(const QGLFormat& format, QWidget *parent)
-    : QGLWidget( format, parent)
+    : QGLWidget( /*format,*/ parent)
   {
     connect(&redrawClock, SIGNAL(timeout()), this, SLOT(update()));
     redrawClock.start(20);

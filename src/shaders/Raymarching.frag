@@ -1,5 +1,6 @@
 #version 330
 #define MAX_STEPS 200
+#define MAX_DISTANCE 600.0
 
 out vec4 out_Colour[3];
 
@@ -24,6 +25,7 @@ uniform float shadowHardness;
 #define GROUND_MTL 1
 #define BUILDINGS_MTL 2
 #define RED_MTL 3
+#define DEBUG_MTL 4
 
 vec3 debugColor;
 
@@ -206,17 +208,30 @@ float Softshadow( in vec3 landPoint, in vec3 lightVector, float mint, float maxt
 
 vec3 RayMarch(in vec3 position, in vec3 direction, out int mtl)
 {
-    float nextDistance = 1.0;
+    //float nextDistance = 1.0;
+    vec3 startingPosition = position;
+    for( float distanceMarched = 0; distanceMarched < MAX_DISTANCE; )
+    {
+      float nextDistance = DistanceField(position,mtl);
+
+        if( nextDistance < 0.001 ){
+            return position;
+        }
+        //float penuAttenuation = mix (1.0, 0.0, t/maxt);
+        //penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
+        distanceMarched += nextDistance;
+        position = startingPosition + (distanceMarched * direction);
+    }/*
     for (int i = 0; i < MAX_STEPS ; ++i)
     {
-        nextDistance = DistanceField(position,mtl);
+        float nextDistance = DistanceField(position,mtl);
 
         if ( nextDistance < 0.001)
         {
             return position;
         }
         position += direction * nextDistance;
-    }
+    }*/
     // out of steps
     if (direction.y < 0.0 )
     {
@@ -237,6 +252,7 @@ vec3 MaterialColor( int mtl )
         case BUILDINGS_MTL : return buildingsColor;
         case GROUND_MTL : return groundColor;
         case RED_MTL : return redColor;
+        case DEBUG_MTL : return vec3 (1.0, 0.0, 1.0);
     }
     return vec3(1.0,0.0,1.0); // means error
 }
@@ -314,21 +330,21 @@ void main(void)
         if(material == BUILDINGS_MTL){
           mtlColor = mix(shadowColor, mtlColor, clamp(hitPosition.y/7.0, 0.0, 1.0));
         }
-        hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6) - debugColor;
+        hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6);// - debugColor;
         vec3 hitNormal = ComputeNormal(hitPosition, 0);
         float AO = AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0);
-        hitColor = mix(shadowColor, hitColor, AO);
+        hitColor = mix(shadowColor, hitColor, clamp(AO, 0.0, 1.0));
 
-        applyFog( length(position-hitPosition), hitColor);
+        //applyFog( length(position-hitPosition), hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
         out_Colour[2].a = 0.0;
 
 
-        hitPosition.z -= position.z;
+        //hitPosition.z -= position.z;
 
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
-        out_Colour[1].a = hitPosition.z;
+        out_Colour[1].a = length(hitPosition - position);
     }
     else // sky
     {
