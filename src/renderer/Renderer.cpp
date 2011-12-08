@@ -102,7 +102,7 @@ namespace renderer{
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
     utils::LoadTextFile("shaders/SecondPass.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
