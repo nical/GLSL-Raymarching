@@ -7,13 +7,19 @@ class QGraphicsView;
 
 namespace io{
 
+class NodeView;
 
 class Compositor
 {
 public:
-    Compositor( QGraphicsView * v );
     ~Compositor();
+
+    static void Create( QGraphicsView * v );
+    static Compositor& Instance();
+    void add(NodeView * nv);
 private:
+    Compositor( QGraphicsView * v );
+
     QGraphicsView * _view;
     QGraphicsScene _scene;
 };

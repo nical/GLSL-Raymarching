@@ -7,6 +7,7 @@
 #include <QGraphicsDropShadowEffect>
 
 #include "kiwi/core/NodeTypeManager.hpp"
+#include "kiwi/view/NodeView.hpp"
 
 class QPointF;
 
@@ -14,17 +15,19 @@ namespace io{
 
 class PortView;
 
-class NodeView : public QGraphicsItem
+class NodeView : public QGraphicsItem, public kiwi::view::NodeView
 {
 public:
     typedef std::vector<PortView*> PortArray;
     typedef const kiwi::core::NodeTypeInfo TypeInfo;
 
-    explicit NodeView(const QPointF& position, const kiwi::core::NodeTypeInfo* info );
+    explicit NodeView(const QPointF& position, kiwi::core::Node * n );
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
     void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
+
+    TypeInfo * type();
 
     QRectF boundingRect() const
     {
@@ -48,12 +51,26 @@ public:
 
     float inputsY() const
     {
-        return pos().y() + 50.0;
+        return pos().y() + headerHeight();
+    }
+
+    float headerHeight() const
+    {
+        return 30.0;
     }
 
     float outputsY() const
     {
-        return pos().y() + 50.0 + _inputs.size() * portsSpacing();
+        return pos().y() + headerHeight() + _inputs.size() * portsSpacing();
+    }
+
+    const PortArray& inputs() const
+    {
+        return _inputs;
+    }
+    const PortArray& outputs() const
+    {
+        return _outputs;
     }
 
     QPointF relativeInputPos(int i) const;
@@ -65,7 +82,6 @@ public:
 private:
     QGraphicsDropShadowEffect _dropShadow;
     QRectF _rect;
-    TypeInfo * _info;
     PortArray _inputs;
     PortArray _outputs;
 };

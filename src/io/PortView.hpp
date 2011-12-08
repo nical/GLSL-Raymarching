@@ -6,15 +6,17 @@
 namespace io{
 
 class NodeView;
+class LinkView;
 
 class PortView : public QGraphicsItem
 {
 public:
     enum{ INPUT, OUTPUT };
     enum{ IDLE = 0, DRAG };
+    typedef std::vector<LinkView*> LinkArray;
 
     PortView( int inputOrOutput, NodeView* nv, int idx );
-
+    ~PortView();
     int index() const
     {
         return _index;
@@ -30,6 +32,14 @@ public:
         return _state;
     }
 
+    bool isCompatible( PortView * p );
+    bool connect( PortView * p );
+
+    const LinkArray& connections() const
+    {
+        return _connections;
+    }
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QRectF boundingRect() const;
 
@@ -39,6 +49,7 @@ private:
     int _alpha;
     int _io;
     int _state;
+    LinkArray _connections;
 };
 
 }//namespace

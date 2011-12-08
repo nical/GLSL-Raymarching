@@ -63,14 +63,13 @@ int main(int argc, char* argv[])
 
     auto kiwiGraphicsView = mainUi->findChild<QGraphicsView*>("kiwiGraphicsView");
     assert( kiwiGraphicsView );
+    io::Compositor::Create( kiwiGraphicsView );
 
 
     mainUi->show();
     mainUi->resize(600,400);
 
     glsection.setRenderer(_renderer);
-
-    io::Compositor compositor( kiwiGraphicsView );
 
     return raymarcher.exec();
 }

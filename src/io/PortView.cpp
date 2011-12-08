@@ -2,6 +2,9 @@
 
 #include <QPainter>
 #include <QRectF>
+#include <QGraphicsScene>
+
+#include "io/LinkView.hpp"
 
 namespace io{
 
@@ -13,6 +16,11 @@ PortView::PortView( int iotype, NodeView* nv, int idx )
     _alpha = 255;
     _io = iotype;
     _state = IDLE;
+}
+
+PortView::~PortView()
+{
+     if( scene() ) scene()->removeItem( this );
 }
 
 void PortView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -31,6 +39,24 @@ void PortView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 QRectF PortView::boundingRect() const
 {
     return QRectF( -5, -5, 20, 20 );
+}
+
+bool PortView::isCompatible(PortView *p)
+{
+    return true;
+}
+
+bool PortView::connect(PortView *p)
+{
+    if( !isCompatible(p) ) return false;
+
+    LinkView * link = 0;
+    if(_io == OUTPUT)
+        link = new LinkView(this,p);
+    else
+        link = new LinkView(p,this);
+
+    scene()->addItem(link);
 }
 
 }//namespace

@@ -14,6 +14,8 @@
 #include "nodes/TimeNode.hpp"
 #include "nodes/ColorNode.hpp"
 #include "nodes/RayMarchingNode.hpp"
+#include "io/Compositor.hpp"
+#include "io/NodeView.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -113,6 +115,13 @@ namespace renderer{
     postEffectShader->build( vs, fs, postFxLoc );
 
     CHECKERROR
+
+
+    auto nv1 = new io::NodeView(QPointF(0,0), rayMarchingNode);
+    auto nv2 = new io::NodeView(QPointF(0,0), timeNode);
+
+    io::Compositor::Instance().add( nv1 );
+    io::Compositor::Instance().add( nv2 );
 
     skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
     assert( timeNode );
