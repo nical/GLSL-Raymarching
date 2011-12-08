@@ -57,6 +57,7 @@ bool PortView::connect(PortView *p)
         link = new LinkView(p,this);
 
     scene()->addItem(link);
+    link->setZValue( -100 );
 }
 
 }//namespace

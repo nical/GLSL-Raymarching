@@ -8,6 +8,7 @@ namespace io{
 
 LinkView::LinkView(PortView* outputPort, PortView* inputPort)
 {
+    setCacheMode( QGraphicsItem::NoCache );
     _inPort = inputPort;
     _outPort = outputPort;
 }
@@ -25,7 +26,6 @@ void LinkView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                  , _inPort->pos().x(), _inPort->pos().y() );
     painter->setPen( QPen(Qt::blue, 3) );
     painter->drawPath( path );
-    painter->drawRect( boundingRect() );
 }
 
 QRectF LinkView::boundingRect() const
@@ -36,6 +36,7 @@ QRectF LinkView::boundingRect() const
 
 void LinkView::updatePos()
 {
+    prepareGeometryChange();
     setPos( _outPort->pos() );
 }
 

@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
 
     auto kiwiGraphicsView = mainUi->findChild<QGraphicsView*>("kiwiGraphicsView");
     assert( kiwiGraphicsView );
+    kiwiGraphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
     io::Compositor::Create( kiwiGraphicsView );
 
 
