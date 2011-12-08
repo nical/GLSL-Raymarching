@@ -1,4 +1,5 @@
-CONFIG += qt
+CONFIG += qt \
+            uitools
 QT += opengl
 HEADERS +=  src/io/Window.hpp \
             src/utils/LoadFile.hpp \
@@ -30,3 +31,6 @@ QMAKE_CXXFLAGS += -std=c++0x -pg -g
 LIBS += -lGLEW ./extern/kiwi/libkiwicpp.a
 DESTDIR = ./bin/
 TARGET = GLSLraymarcher
+
+FORMS += \
+    mainwindow.ui

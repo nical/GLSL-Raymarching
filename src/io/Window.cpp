@@ -43,7 +43,7 @@ namespace io{
   }
 
   QSize GLWidget::sizeHint() const {
-    return QSize(400, 400);
+    return QSize(400, 400);  // TODO look at this ion case of size related pbs.
   }
 
   void GLWidget::initializeGL() {
