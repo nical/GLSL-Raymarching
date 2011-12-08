@@ -3,6 +3,7 @@
 //#include <GL/gl.h>
 #include <stdlib.h>
 #include <string.h>
+#include "io/Compositor.hpp"
 #include "io/Window.hpp"
 #include "renderer/Renderer.hpp"
 #include <assert.h>
@@ -56,13 +57,20 @@ int main(int argc, char* argv[])
     auto renderFrame = mainUi->findChild<QFrame*>("renderFrame");
     assert(renderFrame);
     QGridLayout renderFrameLayout;
+    renderFrameLayout.setMargin(0);
     renderFrameLayout.addWidget( &glsection  );
     renderFrame->setLayout( &renderFrameLayout );
+
+    auto kiwiGraphicsView = mainUi->findChild<QGraphicsView*>("kiwiGraphicsView");
+    assert( kiwiGraphicsView );
+
 
     mainUi->show();
     mainUi->resize(600,400);
 
     glsection.setRenderer(_renderer);
+
+    io::Compositor compositor( kiwiGraphicsView );
 
     return raymarcher.exec();
 }
