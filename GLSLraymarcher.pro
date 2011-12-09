@@ -15,7 +15,9 @@ HEADERS +=  src/io/Window.hpp \
     src/io/NodeView.hpp \
     src/io/Compositor.hpp \
     src/io/PortView.hpp \
-    src/io/LinkView.hpp
+    src/io/LinkView.hpp \
+    src/io/DragPortView.hpp \
+    src/io/ZoomAdapter.hpp
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
             src/io/Window.cpp \
@@ -32,7 +34,9 @@ SOURCES +=  src/main.cpp \
     src/io/NodeView.cpp \
     src/io/Compositor.cpp \
     src/io/PortView.cpp \
-    src/io/LinkView.cpp
+    src/io/LinkView.cpp \
+    src/io/DragPortView.cpp \
+    src/io/ZoomAdapter.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pg -g
             

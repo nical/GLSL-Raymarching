@@ -54,7 +54,7 @@ private:
       ~GLWidget();
 
       QSize minimumSizeHint() const;
-      QSize sizeHint() const;
+      //QSize sizeHint() const;
 
       void setRenderer (renderer::Renderer* r);
 

@@ -92,11 +92,11 @@ const kiwi::core::NodeTypeInfo * NodeView::type()
 
 QPointF NodeView::relativeInputPos(int i) const
 {
-    return QPointF( 0.0, inputsY() + i * portsSpacing() );
+    return QPointF( 0.0, headerHeight() + i * portsSpacing() );
 }
 QPointF NodeView::relativeOutputPos(int i) const
 {
-    return QPointF( _rect.width(), outputsY() + i * portsSpacing() );
+    return QPointF( _rect.width(), headerHeight() + _inputs.size() * portsSpacing() + i * portsSpacing() );
 }
 
 void NodeView::mouseMoveEvent( QGraphicsSceneMouseEvent* event )

@@ -103,11 +103,11 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
   QSize GLWidget::minimumSizeHint() const {
     return QSize(50, 50);
   }
-
+/*
   QSize GLWidget::sizeHint() const {
     return QSize(400, 400);  // TODO look at this ion case of size related pbs.
   }
-
+*/
   void GLWidget::initializeGL() {
 
     GLenum GlewInitResult = glewInit();
@@ -134,8 +134,6 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
 
   void GLWidget::resizeGL(int Width, int Height)
   {
-
-      cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
     

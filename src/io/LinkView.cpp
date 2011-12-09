@@ -8,7 +8,7 @@ namespace io{
 
 LinkView::LinkView(PortView* outputPort, PortView* inputPort)
 {
-    setCacheMode( QGraphicsItem::NoCache );
+    //setCacheMode( QGraphicsItem::NoCache );
     _inPort = inputPort;
     _outPort = outputPort;
 }

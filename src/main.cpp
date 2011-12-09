@@ -5,6 +5,7 @@
 #include <string.h>
 #include "io/Compositor.hpp"
 #include "io/Window.hpp"
+#include "io/ZoomAdapter.hpp"
 #include "renderer/Renderer.hpp"
 #include <assert.h>
 #include "kiwi/core/all.hpp"
@@ -16,10 +17,14 @@
 #include <QWidget>
 #include <QFrame>
 #include <assert.h>
+#include <QGraphicsView>
+#include <QTransform>
+#include <QSlider>
+
 
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"
-#define WIDTH     400
-#define HEIGHT    400
+#define WIDTH     600
+#define HEIGHT    282
 #include <iostream>
 
 void Initialize(int, char*[]);
@@ -28,6 +33,8 @@ void ResizeFunction(int, int);
 void RenderFunction(void);
 
 void InitKiwi();
+
+
 
 int main(int argc, char* argv[])
 {
@@ -42,7 +49,7 @@ int main(int argc, char* argv[])
     glFormat.setSampleBuffers( true );
 
     glewExperimental = GL_TRUE;
-    renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
+
     io::GLWidget glsection (glFormat);
     //glsection.show();
 
@@ -54,7 +61,7 @@ int main(int argc, char* argv[])
     QWidget *mainUi = loader.load(&uiFile);
     uiFile.close();
 
-    auto renderFrame = mainUi->findChild<QFrame*>("renderFrame");
+    QFrame* renderFrame = mainUi->findChild<QFrame*>("renderFrame");
     assert(renderFrame);
     QGridLayout renderFrameLayout;
     renderFrameLayout.setMargin(0);
@@ -64,13 +71,20 @@ int main(int argc, char* argv[])
     auto kiwiGraphicsView = mainUi->findChild<QGraphicsView*>("kiwiGraphicsView");
     assert( kiwiGraphicsView );
     kiwiGraphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
+    kiwiGraphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     io::Compositor::Create( kiwiGraphicsView );
 
 
     mainUi->show();
-    mainUi->resize(600,400);
-
+    //mainUi->resize(600,400);
+    renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
     glsection.setRenderer(_renderer);
+
+    mainUi->resize(600,400);
+    QSlider* zoomSlider = mainUi->findChild<QSlider*>("kiwiZoomSlider");
+    assert(zoomSlider);
+    io::ZoomAdapter za( kiwiGraphicsView );
+    QObject::connect(zoomSlider, SIGNAL(valueChanged(int)),&za, SLOT(zoomChanged(int)) );
 
     return raymarcher.exec();
 }

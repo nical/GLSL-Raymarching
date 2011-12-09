@@ -49,7 +49,7 @@ private:
   kiwi::core::Node * skyColorNode;
   kiwi::core::Node * groundColorNode;
   kiwi::core::Node * buildingsColorNode;
-  kiwi::core::Node * redColorNode;
+  kiwi::core::Node * sphereColorNode;
   
   kiwi::core::Node * rayMarchingNode;
   kiwi::core::Node * radialBlurNode;

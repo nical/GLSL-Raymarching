@@ -11,6 +11,7 @@ namespace io{
 
 PortView::PortView( int iotype, NodeView* nv, int idx )
 {
+    setFlags(QGraphicsItem::ItemIsSelectable);
     _index = idx;
     _nodeView = nv;
     _alpha = 255;
@@ -26,11 +27,12 @@ PortView::~PortView()
 void PortView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     if( isSelected() ){
-        painter->setPen( QPen(QColor(50,50,100, _alpha),2) );
+        painter->setPen( QPen(QColor(200,100,30, _alpha),2) );
+        painter->setBrush( QColor(255,255,255, _alpha) );
     }else{
-        painter->setPen( QPen(QColor(100,100,100, _alpha),2) );
+        painter->setPen( QPen(QColor(0,0,0, _alpha),2) );
+        painter->setBrush( QColor(5,255,50, _alpha) );
     }
-    painter->setBrush( QColor(255,255,255, _alpha) );
     painter->drawEllipse( -5, -5, 10, 10 );
 
     _alpha = 255;

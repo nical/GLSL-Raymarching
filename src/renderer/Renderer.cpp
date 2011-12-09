@@ -118,13 +118,34 @@ namespace renderer{
     CHECKERROR
 
 
-    auto nv1 = new io::NodeView(QPointF(0,0), rayMarchingNode);
-    auto nv2 = new io::NodeView(QPointF(0,0), timeNode);
+            /*
+          kiwi::core::Node * viewMatNode;
+          kiwi::core::Node * winSizeNode;
+          kiwi::core::Node * timeNode;
+          kiwi::core::Node * skyColorNode;
+          kiwi::core::Node * groundColorNode;
+          kiwi::core::Node * buildingsColorNode;
+          kiwi::core::Node * redColorNode;
+*/
 
+
+    skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
+    groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
+    buildingsColorNode = nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) );
+    sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+
+    auto nv1 = new io::NodeView(QPointF(0,0), rayMarchingNode);
+    auto nv2 = new io::NodeView(QPointF(-300,0), timeNode);
+
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 100), skyColorNode ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 150), groundColorNode ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 200), buildingsColorNode ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 250), sphereColorNode ) );
     io::Compositor::Instance().add( nv1 );
     io::Compositor::Instance().add( nv2 );
 
-    skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+
+
     assert( timeNode );
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     nv2->outputs()[0]->connect( nv1->inputs()[0] );
