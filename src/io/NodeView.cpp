@@ -7,6 +7,8 @@
 
 #include "kiwi/core/NodeTypeManager.hpp"
 #include "kiwi/core/Node.hpp"
+#include "kiwi/core/InputPort.hpp"
+#include "kiwi/core/OutputPort.hpp"
 
 #include "io/PortView.hpp"
 #include "io/LinkView.hpp"
@@ -132,5 +134,86 @@ void NodeView::addToScene(QGraphicsScene * s)
             s->addItem( *it );
     }
 }
+
+int NodeView::indexOf( PortView* pv, int inputOrOutout ) const
+{
+    if( inputOrOutout != PortView::OUTPUT )
+        for(int i = 0; i < _inputs.size(); ++i)
+            if( _inputs[i] == pv )
+                return i;
+    if( inputOrOutout != PortView::INPUT)
+        for(int i = 0; i < _outputs.size(); ++i)
+            if( _outputs[i] == pv )
+                return i;
+    return -1;
+}
+
+
+
+void NodeView::outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* to)
+{
+    int in_i = port->index();
+    int out_i = to->index();
+
+    if( (in_i < 0) || (out_i < 0) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
+        return;
+    }
+    if( (in_i >= _inputs.size()) || (out_i >= _outputs.size()) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
+        return;
+    }
+
+    if( (!port->node()->view()) || (!to->node()->view()))
+    {
+        std::cerr << "io::NodeView::outputConnected - error: missing view\n";
+        return;
+    }
+
+
+    auto io_nv = dynamic_cast<io::NodeView*>(to->node()->view());
+    assert( io_nv );
+
+    _outputs[out_i]->connect(io_nv->inputViews()[in_i] );
+}
+
+void NodeView::inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* to)
+{
+    int in_i = port->index();
+    int out_i = to->index();
+
+    if( (in_i < 0) || (out_i < 0) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
+        return;
+    }
+    if( (in_i >= _inputs.size()) || (out_i >= _outputs.size()) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
+        return;
+    }
+
+    if( (!port->node()->view()) || (!to->node()->view()))
+    {
+        std::cerr << "io::NodeView::inputConnected - error: missing view\n";
+        return;
+    }
+
+    auto io_nv = dynamic_cast<io::NodeView*>(to->node()->view());
+    _inputs[in_i]->connect( io_nv->outputViews()[out_i] );
+}
+
+void NodeView::outputDisconnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* from)
+{
+
+}
+
+void NodeView::inputDisconnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* from)
+{
+
+}
+
 
 }//namespace

@@ -11,7 +11,7 @@ class LinkView;
 class PortView : public QGraphicsItem
 {
 public:
-    enum{ INPUT, OUTPUT };
+    enum{ INVALID = 0, INPUT, OUTPUT };
     enum{ IDLE = 0, DRAG };
     typedef std::vector<LinkView*> LinkArray;
 
@@ -40,8 +40,21 @@ public:
         return _connections;
     }
 
+    int isInput() const
+    {
+        return _io == INPUT;
+    }
+
+    int isOutput() const
+    {
+        return _io == OUTPUT;
+    }
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QRectF boundingRect() const;
+
+protected:
+    void mousePressEvent ( QGraphicsSceneMouseEvent * event );
 
 private:
     NodeView * _nodeView;

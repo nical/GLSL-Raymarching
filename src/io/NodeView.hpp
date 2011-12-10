@@ -27,12 +27,28 @@ public:
 
     void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
 
-    TypeInfo * type();
+    virtual void outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* to);
+    virtual void inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* to);
+    virtual void outputDisconnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* from);
+    virtual void inputDisconnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* from);
+
 
     QRectF boundingRect() const
     {
         return _rect;
     }
+
+    const PortArray& inputs() const
+    {
+        return _inputs;
+    }
+
+    const PortArray& outputs() const
+    {
+        return _outputs;
+    }
+
+    TypeInfo * type();
 
     float leftX() const
     {
@@ -64,14 +80,16 @@ public:
         return pos().y() + headerHeight() + _inputs.size() * portsSpacing();
     }
 
-    const PortArray& inputs() const
+    const PortArray& inputViews() const
     {
         return _inputs;
     }
-    const PortArray& outputs() const
+    const PortArray& outputViews() const
     {
         return _outputs;
     }
+
+    int indexOf( PortView* pv, int inputOrOutout = 0 ) const;
 
     QPointF relativeInputPos(int i) const;
     QPointF relativeOutputPos(int i) const;

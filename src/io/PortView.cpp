@@ -3,8 +3,13 @@
 #include <QPainter>
 #include <QRectF>
 #include <QGraphicsScene>
+#include <QGraphicsView>
+
+#include <assert.h>
+#include <iostream>
 
 #include "io/LinkView.hpp"
+#include "io/Compositor.hpp"
 
 namespace io{
 
@@ -60,6 +65,26 @@ bool PortView::connect(PortView *p)
 
     scene()->addItem(link);
     link->setZValue( -100 );
+}
+
+void PortView::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+{
+
+    auto s = scene()->selectedItems();
+
+    for(auto it = s.begin(); it != s.end(); ++it)
+    {
+        io::PortView * sp = dynamic_cast<io::PortView*>( *it );
+        if( !sp )
+            continue;
+        if( Compositor::Instance().tryConnect( this, sp ) )
+            break;
+        else
+            std::cerr << "failed to connect\n";
+    }
+    std::cerr << "no port to connect to\n";
+
+    QGraphicsItem::mousePressEvent(event);
 }
 
 }//namespace

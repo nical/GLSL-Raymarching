@@ -1,3 +1,4 @@
+#pragma once
 #ifndef DRAGPORTVIEW_HPP
 #define DRAGPORTVIEW_HPP
 

@@ -8,6 +8,7 @@ class QGraphicsView;
 namespace io{
 
 class NodeView;
+class PortView;
 
 class Compositor
 {
@@ -17,6 +18,12 @@ public:
     static void Create( QGraphicsView * v );
     static Compositor& Instance();
     void add(NodeView * nv);
+    QGraphicsScene * scene()
+    {
+        return &_scene;
+    }
+
+    bool tryConnect( PortView* p1, PortView * p2);
 private:
     Compositor( QGraphicsView * v );
 

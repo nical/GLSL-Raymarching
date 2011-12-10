@@ -148,7 +148,6 @@ namespace renderer{
 
     assert( timeNode );
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
-    nv2->outputs()[0]->connect( nv1->inputs()[0] );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
     assert( winSizeNode->output() >> rayMarchingNode->input(9) );
   }

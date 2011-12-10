@@ -6,6 +6,7 @@
 #include "io/Compositor.hpp"
 #include "io/Window.hpp"
 #include "io/ZoomAdapter.hpp"
+#include "io/ConnectAdapter.hpp"
 #include "renderer/Renderer.hpp"
 #include <assert.h>
 #include "kiwi/core/all.hpp"
@@ -20,7 +21,7 @@
 #include <QGraphicsView>
 #include <QTransform>
 #include <QSlider>
-
+#include <QPushButton>
 
 #define WINDOW_TITLE_PREFIX "Raymarcher Shader"
 #define WIDTH     600
@@ -86,6 +87,12 @@ int main(int argc, char* argv[])
     io::ZoomAdapter za( kiwiGraphicsView );
     QObject::connect(zoomSlider, SIGNAL(valueChanged(int)),&za, SLOT(zoomChanged(int)) );
 
+    /*
+    QPushButton* connectButton = mainUi->findChild<QPushButton*>("connectButton");
+    assert(connectButton);
+    io::ConnectAdaper ca( Compositor::Instance().scene() );
+    //QObject::connect(connectButton,SIGNAL() );
+*/
     return raymarcher.exec();
 }
 
