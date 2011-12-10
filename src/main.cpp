@@ -87,12 +87,12 @@ int main(int argc, char* argv[])
     io::ZoomAdapter za( kiwiGraphicsView );
     QObject::connect(zoomSlider, SIGNAL(valueChanged(int)),&za, SLOT(zoomChanged(int)) );
 
-    /*
+
     QPushButton* connectButton = mainUi->findChild<QPushButton*>("connectButton");
     assert(connectButton);
-    io::ConnectAdaper ca( Compositor::Instance().scene() );
-    //QObject::connect(connectButton,SIGNAL() );
-*/
+    io::ConnectAdapter ca( io::Compositor::Instance().scene() );
+    QObject::connect(connectButton,SIGNAL(clicked(void)), &ca, SLOT(buttonClicked(void)) );
+
     return raymarcher.exec();
 }
 

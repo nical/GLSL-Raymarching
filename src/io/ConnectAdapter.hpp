@@ -17,7 +17,7 @@ public:
 signals:
 
 public slots:
-    void connectButtonClecked();
+    void buttonClicked();
 private:
     QGraphicsScene * _scene;
 };

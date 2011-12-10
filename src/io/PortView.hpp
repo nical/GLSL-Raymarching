@@ -34,6 +34,7 @@ public:
 
     bool isCompatible( PortView * p );
     bool connect( PortView * p );
+    bool disconnect();
 
     const LinkArray& connections() const
     {

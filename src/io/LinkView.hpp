@@ -18,6 +18,16 @@ public:
 
     void updatePos();
 
+    PortView * inputView() const
+    {
+        return _inPort;
+    }
+
+    PortView * outputView() const
+    {
+        return _outPort;
+    }
+
 private:
     PortView * _outPort;
     PortView * _inPort;

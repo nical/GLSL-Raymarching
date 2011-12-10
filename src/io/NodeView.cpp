@@ -112,10 +112,15 @@ void NodeView::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 
     for(int i = 0; i < _outputs.size(); ++i)
     {
+        // update port positions
         if(_outputs[i]->state() != PortView::DRAG )
             _outputs[i]->setPos( QPointF( rightX(), outputsY() + i * portsSpacing() ) );
-        for(int i = 0; i < _outputs[i]->connections().size(); ++i )
-            _outputs[i]->connections()[i]->updatePos();
+        // update link positions
+        for(int j = 0; j < _outputs[i]->connections().size(); ++j )
+        {
+            std::cerr << "mouseEvent, j=" << j << "/"<<_outputs[i]->connections().size()<< std::endl;
+            _outputs[i]->connections()[j]->updatePos();
+        }
     }
 }
 
@@ -152,34 +157,7 @@ int NodeView::indexOf( PortView* pv, int inputOrOutout ) const
 
 void NodeView::outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* to)
 {
-    /*
-    int in_i = port->index();
-    int out_i = to->index();
 
-    if( (in_i < 0) || (out_i < 0) )
-    {
-        std::cerr << "io::NodeView::outputConnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
-        return;
-    }
-
-    if( (!port->node()->view()) || (!to->node()->view()))
-    {
-        std::cerr << "io::NodeView::outputConnected - error: missing view\n";
-        return;
-    }
-
-
-    auto io_nv = dynamic_cast<io::NodeView*>(to->node()->view());
-
-    if( (in_i >= io_nv->inputs().size()) || (out_i >= _outputs.size()) )
-    {
-        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
-        return;
-    }
-    assert( io_nv );
-
-    _outputs[out_i]->connect(io_nv->inputViews()[in_i] );
-    */
 }
 
 void NodeView::inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* to)
@@ -217,7 +195,30 @@ void NodeView::outputDisconnected(kiwi::core::OutputPort* port, kiwi::core::Inpu
 
 void NodeView::inputDisconnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* from)
 {
+    std::cerr << "ioNodeView::inputDisconnected\n";
+    int in_i = port->index();
+    int out_i = from->index();
 
+    if( (in_i < 0) || (out_i < 0) )
+    {
+        std::cerr << "io::NodeView::outputDisconnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
+        return;
+    }
+
+    if( (!port->node()->view()) || (!from->node()->view()))
+    {
+        std::cerr << "io::NodeView::inputDisconnected - error: missing view\n";
+        return;
+    }
+
+    auto io_nv = dynamic_cast<io::NodeView*>(from->node()->view());
+
+    if( (in_i >= _inputs.size()) || (out_i >= io_nv->outputViews().size()) )
+    {
+        std::cerr << "io::NodeView::outputDisconnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
+        return;
+    }
+    _inputs[in_i]->disconnect();
 }
 
 

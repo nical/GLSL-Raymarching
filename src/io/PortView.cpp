@@ -63,8 +63,53 @@ bool PortView::connect(PortView *p)
     else
         link = new LinkView(p,this);
 
+    _connections.push_back(link);
+    p->_connections.push_back(link);
+
     scene()->addItem(link);
     link->setZValue( -100 );
+}
+
+bool PortView::disconnect()
+{
+    std::cerr << "io::PortView::disconnect()\n";
+    assert( isInput() );
+
+    assert( _connections.size() != 0  );
+    if( _connections.size() == 0 )
+        return false;
+
+    // should happen once only!
+    for( int i = 0; i < _connections.size(); ++i)
+    {
+        LinkView * l = _connections[i];
+        PortView * op = l->outputView();
+
+        // remove link from output port op
+        for( int j = 0; j < op->_connections.size(); ++j )
+        {
+            if( op->_connections[j] == l )
+            {
+                int testOpSize = op->_connections.size();
+                op->_connections[j] = op->_connections[ op->_connections.size()-1];
+                op->_connections.resize(op->_connections.size()-1);
+                assert( op->_connections.size() == testOpSize -1 );
+            }
+        }
+        // remove link from this input port
+        int testsize = _connections.size();
+        _connections[i] = _connections[ _connections.size()-1];
+        _connections.resize(_connections.size()-1);
+        assert( _connections.size() == testsize-1 );
+
+        // remove from scene
+        l->scene()->removeItem( l );
+
+        // delete without mercy
+        delete l;
+    }
+    return true;
+
 }
 
 void PortView::mousePressEvent ( QGraphicsSceneMouseEvent * event )
