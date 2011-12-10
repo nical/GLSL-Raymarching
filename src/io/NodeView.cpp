@@ -152,17 +152,13 @@ int NodeView::indexOf( PortView* pv, int inputOrOutout ) const
 
 void NodeView::outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* to)
 {
+    /*
     int in_i = port->index();
     int out_i = to->index();
 
     if( (in_i < 0) || (out_i < 0) )
     {
         std::cerr << "io::NodeView::outputConnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
-        return;
-    }
-    if( (in_i >= _inputs.size()) || (out_i >= _outputs.size()) )
-    {
-        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
         return;
     }
 
@@ -174,9 +170,16 @@ void NodeView::outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPo
 
 
     auto io_nv = dynamic_cast<io::NodeView*>(to->node()->view());
+
+    if( (in_i >= io_nv->inputs().size()) || (out_i >= _outputs.size()) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
+        return;
+    }
     assert( io_nv );
 
     _outputs[out_i]->connect(io_nv->inputViews()[in_i] );
+    */
 }
 
 void NodeView::inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* to)
@@ -189,11 +192,6 @@ void NodeView::inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPor
         std::cerr << "io::NodeView::outputConnected - error: negative index "<< out_i<<" "<< in_i<<"\n";
         return;
     }
-    if( (in_i >= _inputs.size()) || (out_i >= _outputs.size()) )
-    {
-        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
-        return;
-    }
 
     if( (!port->node()->view()) || (!to->node()->view()))
     {
@@ -202,6 +200,13 @@ void NodeView::inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPor
     }
 
     auto io_nv = dynamic_cast<io::NodeView*>(to->node()->view());
+
+    if( (in_i >= _inputs.size()) || (out_i >= io_nv->outputViews().size()) )
+    {
+        std::cerr << "io::NodeView::outputConnected - error: index too big "<< out_i<<" "<< in_i<<"\n";;
+        return;
+    }
+
     _inputs[in_i]->connect( io_nv->outputViews()[out_i] );
 }
 

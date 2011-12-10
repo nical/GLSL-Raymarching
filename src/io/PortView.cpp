@@ -69,8 +69,11 @@ bool PortView::connect(PortView *p)
 
 void PortView::mousePressEvent ( QGraphicsSceneMouseEvent * event )
 {
+    bool deselect = false;
 
     auto s = scene()->selectedItems();
+
+    std::cerr << "PortView::mousePressEvent\n";
 
     for(auto it = s.begin(); it != s.end(); ++it)
     {
@@ -78,13 +81,18 @@ void PortView::mousePressEvent ( QGraphicsSceneMouseEvent * event )
         if( !sp )
             continue;
         if( Compositor::Instance().tryConnect( this, sp ) )
+        {
+            sp->setSelected(false);
+            setSelected(false);
+            deselect = true;
             break;
+        }
         else
             std::cerr << "failed to connect\n";
     }
-    std::cerr << "no port to connect to\n";
 
     QGraphicsItem::mousePressEvent(event);
+    if(deselect) setSelected(false);
 }
 
 }//namespace
