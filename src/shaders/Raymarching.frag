@@ -325,10 +325,10 @@ void main(void)
         out_Colour[2].a = 0.0;
 
 
-        hitPosition.z -= position.z;
+        //hitPosition.z -= position.z;
 
         out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
-        out_Colour[1].a = hitPosition.z;
+        out_Colour[1].a = length(position-hitPosition);
     }
     else // sky
     {

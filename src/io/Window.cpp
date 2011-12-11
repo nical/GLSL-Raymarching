@@ -28,7 +28,7 @@ namespace io{
   static renderer::Renderer* _renderer;
 
   GLWidget::GLWidget(const QGLFormat& format, QWidget *parent)
-    : QGLWidget( format, parent)
+    : QGLWidget( /*format,*/ parent)
   {
     connect(&redrawClock, SIGNAL(timeout()), this, SLOT(update()));
     redrawClock.start(20);
@@ -76,7 +76,7 @@ namespace io{
       cout << "resize\n";
     CurrentWidth = Width;
     CurrentHeight = Height;
-    
+
     if (_renderer) {
       _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     }
@@ -101,7 +101,7 @@ namespace io{
   }
 
   void GLWidget::setRenderer (renderer::Renderer* r){
-    std::cout << "Initialising renderer" << std::endl;    
+    std::cout << "Initialising renderer" << std::endl;
     r->init();
     r->createBuffers();
     _renderer = r;

@@ -40,18 +40,36 @@
 		</Compiler>
 		<Unit filename="../extern/shaderLoader/shader.cpp" />
 		<Unit filename="../extern/shaderLoader/shader.hpp" />
+		<Unit filename="../src/KiwiInit.cpp" />
+		<Unit filename="../src/KiwiInit.hpp" />
 		<Unit filename="../src/io/Window.cpp" />
 		<Unit filename="../src/io/Window.hpp" />
 		<Unit filename="../src/main.cpp" />
+		<Unit filename="../src/moc_Window.cpp" />
+		<Unit filename="../src/nodes/ColorNode.cpp" />
+		<Unit filename="../src/nodes/ColorNode.hpp" />
+		<Unit filename="../src/nodes/RayMarchingNode.cpp" />
+		<Unit filename="../src/nodes/RayMarchingNode.hpp" />
+		<Unit filename="../src/nodes/TimeNode.cpp" />
+		<Unit filename="../src/nodes/TimeNode.hpp" />
 		<Unit filename="../src/renderer/DefaultShaders.cpp" />
 		<Unit filename="../src/renderer/DefaultShaders.hpp" />
+		<Unit filename="../src/renderer/DrawQuad.cpp" />
+		<Unit filename="../src/renderer/DrawQuad.hpp" />
+		<Unit filename="../src/renderer/FrameBuffer.cpp" />
+		<Unit filename="../src/renderer/FrameBuffer.hpp" />
 		<Unit filename="../src/renderer/Renderer.cpp" />
 		<Unit filename="../src/renderer/Renderer.hpp" />
+		<Unit filename="../src/renderer/Shader.cpp" />
+		<Unit filename="../src/renderer/Shader.hpp" />
 		<Unit filename="../src/renderer/ShaderProgram.hpp" />
+		<Unit filename="../src/renderer/Texture.hpp" />
 		<Unit filename="../src/shaders/Raymarching.frag" />
 		<Unit filename="../src/shaders/Raymarching.vert" />
 		<Unit filename="../src/shaders/SecondPass.frag" />
 		<Unit filename="../src/shaders/SecondPass.vert" />
+		<Unit filename="../src/utils/CheckGLError.cpp" />
+		<Unit filename="../src/utils/CheckGLError.hpp" />
 		<Unit filename="../src/utils/LoadFile.cpp" />
 		<Unit filename="../src/utils/LoadFile.hpp" />
 		<Extensions>

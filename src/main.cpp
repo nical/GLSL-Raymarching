@@ -32,10 +32,10 @@ int main(int argc, char* argv[])
     // Specify an OpenGL 3.3 format using the Core profile.
     // That is, no old-school fixed pipeline functionality
     QGLFormat glFormat;
-    glFormat.setVersion( 3, 3 );
+    //glFormat.setVersion( 3, 3 );
     //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
-    glFormat.setAlpha( true );
-    glFormat.setSampleBuffers( true );
+    //glFormat.setAlpha( true );
+    //glFormat.setSampleBuffers( true );
 
     glewExperimental = GL_TRUE;
     renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);

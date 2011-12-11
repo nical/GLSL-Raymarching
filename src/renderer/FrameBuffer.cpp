@@ -67,7 +67,7 @@ void FrameBuffer::init( int nbTextures, int fbwidth, int fbheight)
         _textures.push_back( new Texture2D );
         glBindTexture( GL_TEXTURE_2D, _textures[i]->id() );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMPPRO);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         if ( i == nbTextures ) // depth texture
@@ -96,7 +96,7 @@ void FrameBuffer::init( int nbTextures, int fbwidth, int fbheight)
         glDrawBuffers(_textures.size()-1, &attachements[0]);
         CHECKERROR
         delete[] attachements;
-        
+
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
           std::cout << "Fuck!" << std::endl;
