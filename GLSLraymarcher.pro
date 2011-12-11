@@ -18,7 +18,9 @@ HEADERS +=  src/io/Window.hpp \
     src/io/LinkView.hpp \
     src/io/DragPortView.hpp \
     src/io/ZoomAdapter.hpp \
-    src/io/ConnectAdapter.hpp
+    src/io/ConnectAdapter.hpp \
+    src/io/ColorNodeView.hpp \
+    src/nodes/PostFxNode.hpp
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
             src/io/Window.cpp \
@@ -38,7 +40,9 @@ SOURCES +=  src/main.cpp \
     src/io/LinkView.cpp \
     src/io/DragPortView.cpp \
     src/io/ZoomAdapter.cpp \
-    src/io/ConnectAdapter.cpp
+    src/io/ConnectAdapter.cpp \
+    src/io/ColorNodeView.cpp \
+    src/nodes/PostFxNode.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pg -g
             

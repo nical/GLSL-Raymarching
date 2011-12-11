@@ -27,6 +27,8 @@ public:
 
     void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
 
+    virtual QString nodeName() const;
+
     virtual void outputConnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* to);
     virtual void inputConnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* to);
     virtual void outputDisconnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* from);
@@ -48,7 +50,7 @@ public:
         return _outputs;
     }
 
-    TypeInfo * type();
+    TypeInfo * nodeType() const;
 
     float leftX() const
     {
