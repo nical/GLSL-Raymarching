@@ -23,6 +23,7 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <time.h>
+#include <algorithm>
 #include <initializer_list>
 
 
@@ -110,8 +111,7 @@ namespace renderer{
         {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"godRaysTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
     postEffectShader = new Shader;
     CHECKERROR
@@ -120,22 +120,48 @@ namespace renderer{
     CHECKERROR
 
     nodes::RegisterPostFxNode( postEffectShader ,"Depth of field");
+    nodes::RegisterScreenNode();
+
+    //vs.clear();
+    fs.clear();
+    //utils::LoadTextFile("shaders/EdgeDetection.vert", vs);
+    utils::LoadTextFile("shaders/EdgeDetection.frag", fs);
+    Shader::LocationMap edgeLoc = {
+        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+    };
+    auto edgeShader = new Shader;
+    CHECKERROR
+    edgeShader ->build( vs, fs, edgeLoc  );
+
+    CHECKERROR
+
+    nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
+
+
+
+
 
     skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
     groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
     buildingsColorNode = nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) );
     sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
     dofNode = nodes::CreatePostFxNode("Depth of field");
+    screenNode = nodes::CreateScreenNode();
+    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
 
-    auto nv1 = new io::NodeView(QPointF(0,0), rayMarchingNode);
-    auto nv2 = new io::NodeView(QPointF(-300,0), timeNode);
 
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,0),screenNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 0), winSizeNode) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 100), skyColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 150), groundColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 200), buildingsColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 250), sphereColorNode ) );
-    io::Compositor::Instance().add( nv1 );
-    io::Compositor::Instance().add( nv2 );
+
+    io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), rayMarchingNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
 
 
 
@@ -143,29 +169,64 @@ namespace renderer{
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
     assert( winSizeNode->output() >> rayMarchingNode->input(9) );
+    assert( rayMarchingNode->output(1) >> screenNode->input() );
+    rayMarchingNode->output(1) >> dofNode->input(0);
+    rayMarchingNode->output(2) >> dofNode->input(1);
+    timeNode->output() >> dofNode->input(2);
+    dofNode->output(1) >> screenNode->input();
   }
 
 
+  static std::list<kiwi::core::Node*> s_processList;
+  void OrderNodes( kiwi::core::Node * last )
+  {
+    for( auto it = last->previousNodes().begin(); it != last->previousNodes().end(); ++it)
+    {
+        OrderNodes( *it );
+        if( find(s_processList.begin(), s_processList.end(), *it ) == s_processList.end() )
+        {
+            s_processList.push_back( *it );
+        }
+    }
+  }
 
+  void ProcessNodes( kiwi::core::Node * last )
+  {
+      s_processList.clear();
+      OrderNodes(last);
+      s_processList.push_back(last);
+      for(auto it = s_processList.begin(); it != s_processList.end(); ++it )
+      {
+         // std::cerr << (*it)->type()->name() << endl;
+          (*it)->update();
+      }
+      //std::cerr << "----------------\n";
+
+  }
 
   void Renderer::drawScene(){
 
     CHECKERROR
     if( _frameBuffer == 0 ) return;
-
+/*
     timeNode->update();
 
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     rayMarchingNode->update();
 
+    screenNode->update();
 
-    glBindVertexArray(0);
+    //glBindVertexArray(0);
 
-    raymarchingShader->unbind();
+    //raymarchingShader->unbind();
 
     FrameBuffer::unbind();
     CHECKERROR
+*/
+    ProcessNodes(screenNode);
+
+    /*
 
     postEffectShader->bind();
     postEffectShader->uniform2f("windowSize", window.x, window.y );
@@ -190,17 +251,7 @@ namespace renderer{
     CHECKERROR
     
     DrawQuad();
-    /*
-    glBindVertexArray(vaoID[0]);
-CHECKERROR
-    glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-    CHECKERROR
-    glFinish();
 
-    glBindVertexArray(0);
-CHECKERROR
-    */
-    //glActiveTexture(GL_TEXTURE1);
     CHECKERROR
     glBindTexture(GL_TEXTURE_2D, 0);
 CHECKERROR
@@ -216,6 +267,7 @@ CHECKERROR
 
     postEffectShader->unbind();
     CHECKERROR
+    */
   }
 
 

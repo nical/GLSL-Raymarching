@@ -76,7 +76,6 @@ void NodeView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     for(int i = 0; i < _inputs.size(); ++i )
     {
         float rip = relativeInputPos(i).y();
-        cout << rip << endl;
         painter->drawText( QRectF(10, rip-8.0, _rect.width(), rip+5.0), nodeType()->inputs()[i].name().c_str() );
     }
 
@@ -123,7 +122,6 @@ void NodeView::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
         // update link positions
         for(int j = 0; j < _outputs[i]->connections().size(); ++j )
         {
-            std::cerr << "mouseEvent, j=" << j << "/"<<_outputs[i]->connections().size()<< std::endl;
             _outputs[i]->connections()[j]->updatePos();
         }
     }

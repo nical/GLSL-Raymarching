@@ -33,6 +33,24 @@ namespace io{
   static renderer::Renderer* _renderer;
 
 
+int GetRenderWindowWidth()
+{
+    return CurrentWidth;
+}
+
+int GetRenderWindowHeight()
+{
+    return CurrentHeight;
+}
+
+void GraphicsView::resizeEvent(QResizeEvent *event) {
+    if (scene())
+        scene()->setSceneRect(
+            QRect(QPoint(0, 0), event->size()));
+    QGraphicsView::resizeEvent(event);
+    CurrentWidth = event->size().width();
+    CurrentHeight = event->size().height();
+}
 
 QDialog * GraphicsScene::createDialog( const QString &windowTitle) const
 {

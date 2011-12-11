@@ -5,6 +5,8 @@
 #include "renderer/DrawQuad.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "utils/CheckGLError.hpp"
+#include "utils/LoadFile.hpp"
+#include "io/Window.hpp"
 
 #include "kiwi/core/NodeTypeManager.hpp"
 #include "kiwi/core/DataTypeManager.hpp"
@@ -19,9 +21,9 @@
 using namespace renderer;
 using namespace kiwi::core;
 
-static const DataTypeInfo * textureTypeInfo;
-static const DataTypeInfo * vec3TypeInfo;
-static const DataTypeInfo * floatTypeInfo;
+static const DataTypeInfo * textureTypeInfo = 0;
+static const DataTypeInfo * vec3TypeInfo = 0;
+static const DataTypeInfo * floatTypeInfo = 0;
 
 namespace nodes{
 
@@ -46,9 +48,12 @@ static GLuint selectTexture(int i)
 
 bool ShaderNodeUpdater::update(const Node& n)
 {
-
-    this->_shader->bind();
-
+    CHECKERROR
+    _shader->bind();
+    CHECKERROR
+    if(_shader->hasLocation("windowSize"))
+        _shader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight() );
+    CHECKERROR
     int nbTex = 0;
 
     for(int i = 0; i < n.inputs().size(); ++i)
@@ -60,22 +65,34 @@ bool ShaderNodeUpdater::update(const Node& n)
         }
         if( n.input(i).dataType() == textureTypeInfo )
         {
-            _shader->uniform1i("colourTexture", nbTex);
-            glActiveTexture( selectTexture(i) );
+            CHECKERROR
+            _shader->uniform1i(n.input(i).name(), nbTex);
+            glActiveTexture( selectTexture(nbTex) );
             (*n.input(i).dataAs<Texture2D*>())->bind();
+            //std::cerr << "uniform texture " << n.input(i).name() << " -> "<< nbTex << std::endl;
+            ++nbTex;
+            CHECKERROR
         }
         else if ( n.input(i).dataType() == vec3TypeInfo )
         {
+            CHECKERROR
             _shader->uniformVec3(n.input(i).name(), *n.input(i).dataAs<glm::vec3>() );
+            //std::cerr << "uniform vec3" << n.input(i).name() << std::endl;
+            CHECKERROR
         }
         else if ( n.input(i).dataType() == floatTypeInfo )
         {
+            CHECKERROR
+            //std::cerr << "uniform float " << n.input(i).name() << std::endl;
             _shader->uniform1f(n.input(i).name(), *n.input(i).dataAs<float>() );
+            CHECKERROR
         }
     }
-
+    CHECKERROR
+    (*n.output(0).dataAs<FrameBuffer*>())->bind();
+    CHECKERROR
     renderer::DrawQuad();
-
+    CHECKERROR
     _shader->unbind();
 
     return true;
@@ -84,6 +101,7 @@ bool ShaderNodeUpdater::update(const Node& n)
 
 void RegisterPostFxNode( renderer::Shader* shader, const std::string& name )
 {
+    auto fboTypeInfo = DataTypeManager::TypeOf("FrameBuffer");
     textureTypeInfo = DataTypeManager::TypeOf("Texture2D");
     vec3TypeInfo = DataTypeManager::TypeOf("Vec3");
     floatTypeInfo = DataTypeManager::TypeOf("Float");
@@ -122,6 +140,7 @@ void RegisterPostFxNode( renderer::Shader* shader, const std::string& name )
             layout.inputs.push_back(InputPortDescriptor(it->first, info, kiwi::READ ));
     }
     layout.outputs = {
+        {"frame buffer", fboTypeInfo, kiwi::READ },
         {"color", textureTypeInfo, kiwi::READ }
     };
     NodeTypeManager::RegisterNode(name, layout, new ShaderNodeUpdater( shader ) );
@@ -130,14 +149,69 @@ void RegisterPostFxNode( renderer::Shader* shader, const std::string& name )
 
 kiwi::core::Node * CreatePostFxNode(const std::string& name)
 {
-    return kiwi::core::NodeTypeManager::TypeOf(name)->newInstance();
+    auto node = kiwi::core::NodeTypeManager::TypeOf(name)->newInstance();
+
+    // create output resources (for render to texture)
+    // Port 0 : frame buffer
+    // Port 1 : texture (attached to the fbo)
+
+    auto fbo = new FrameBuffer(2,400,400);
+    *node->output(0).dataAs<FrameBuffer*>() = fbo;
+
+    assert( *node->output(0).dataAs<FrameBuffer*>() == fbo );
+
+    *node->output(1).dataAs<Texture2D*>() = &fbo->texture(0);
+
+    return node;
+}
+
+static renderer::Shader * s_renderToScreenShader = 0;
+
+typedef DynamicNodeUpdater::DataArray DataArray;
+bool RenderToScreen(const DataArray& inputs, const DataArray&)
+{
+    assert(s_renderToScreenShader);
+    s_renderToScreenShader->bind();
+
+    auto inputTex = *inputs[0]->value<Texture2D*>();
+    assert(inputTex);
+
+    s_renderToScreenShader->uniform1i("colourTexture",0);
+    s_renderToScreenShader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight());
+
+    glActiveTexture(GL_TEXTURE0);
+    inputTex->bind();
+
+    renderer::DrawQuad();
+}
+
+void RegisterScreenNode()
+{
+    assert(textureTypeInfo);
+
+    s_renderToScreenShader = new renderer::Shader;
+    std::string vs;
+    std::string fs;
+    assert( utils::LoadTextFile("shaders/ToScreen.vert", vs) );
+    assert( utils::LoadTextFile("shaders/ToScreen.frag", fs) );
+
+    renderer::Shader::LocationMap locations = {
+        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",   { Shader::UNIFORM | Shader::FLOAT2} }
+    };
+    s_renderToScreenShader->build(vs,fs,locations);
+
+    NodeLayoutDescriptor layout;
+    layout.inputs = {
+        { "color", textureTypeInfo, kiwi::READ }
+    };
+
+    NodeTypeManager::RegisterNode("Screen", layout, new DynamicNodeUpdater( &RenderToScreen ) );
 }
 
 kiwi::core::Node * CreateScreenNode()
 {
-
+    return NodeTypeManager::Create("Screen");
 }
-
-
 
 }//namespace

@@ -24,16 +24,11 @@ public:
     }
 
 protected:
-    void resizeEvent(QResizeEvent *event) {
-        if (scene())
-            scene()->setSceneRect(
-                QRect(QPoint(0, 0), event->size()));
-        QGraphicsView::resizeEvent(event);
-    }
+    void resizeEvent(QResizeEvent *event);
 };
 
-
-
+int GetRenderWindowWidth();
+int GetRenderWindowHeight();
 
 class GraphicsScene : public QGraphicsScene
 {

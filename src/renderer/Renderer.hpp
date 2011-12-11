@@ -55,6 +55,7 @@ private:
   kiwi::core::Node * radialBlurNode;
   kiwi::core::Node * edgeDetectionNode;
   kiwi::core::Node * dofNode;
+  kiwi::core::Node * screenNode;
 
   kiwi::core::Pipeline * renderPipeline;
 
