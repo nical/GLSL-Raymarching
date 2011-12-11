@@ -151,20 +151,6 @@ private:
 
 
 
-class ShaderNodeUpdater : public kiwi::core::NodeUpdater
-{
-public:
-    ShaderNodeUpdater( Shader* shader )
-    : _shader( shader ) {}
-    bool update( const kiwi::core::Node& node );
-private:
-    Shader* _shader;
-};
-
-
-
-const kiwi::core::NodeTypeInfo * RegisterShaderNode(const kiwi::string& name, Shader& shader);
-
 }//namespace
 
 

@@ -13,7 +13,12 @@
 
 #include "nodes/TimeNode.hpp"
 #include "nodes/ColorNode.hpp"
+#include "nodes/PostFxNode.hpp"
 #include "nodes/RayMarchingNode.hpp"
+#include "io/Compositor.hpp"
+#include "io/NodeView.hpp"
+#include "io/ColorNodeView.hpp"
+#include "io/PortView.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -66,8 +71,6 @@ namespace renderer{
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    fuffaTime = 0;
-
     // shaders
 
     CHECKERROR
@@ -104,7 +107,7 @@ namespace renderer{
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
     utils::LoadTextFile("shaders/SecondPass.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"fuffaTime",       { Shader::UNIFORM | Shader::FLOAT} },
+        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
@@ -116,7 +119,26 @@ namespace renderer{
 
     CHECKERROR
 
-    skyColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+    nodes::RegisterPostFxNode( postEffectShader ,"Depth of field");
+
+    skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
+    groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
+    buildingsColorNode = nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) );
+    sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
+    dofNode = nodes::CreatePostFxNode("Depth of field");
+
+    auto nv1 = new io::NodeView(QPointF(0,0), rayMarchingNode);
+    auto nv2 = new io::NodeView(QPointF(-300,0), timeNode);
+
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 100), skyColorNode ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 150), groundColorNode ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 200), buildingsColorNode ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 250), sphereColorNode ) );
+    io::Compositor::Instance().add( nv1 );
+    io::Compositor::Instance().add( nv2 );
+
+
+
     assert( timeNode );
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
@@ -147,7 +169,7 @@ namespace renderer{
 
     postEffectShader->bind();
     postEffectShader->uniform2f("windowSize", window.x, window.y );
-    postEffectShader->uniform1f("fuffaTime", fuffaTime );
+    postEffectShader->uniform1f("time", 0 );
     postEffectShader->uniform1i("colourTexture", 0 );
     postEffectShader->uniform1i("normalsTexture", 1 );
 

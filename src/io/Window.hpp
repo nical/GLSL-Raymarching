@@ -4,13 +4,47 @@
 #include <QApplication>
 #include <QGLFormat>
 #include <QTimer>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QResizeEvent>
 
 namespace renderer{
   class Renderer;
-  class FBOManager;
 }
 
 namespace io{
+
+
+class GraphicsView : public QGraphicsView
+{
+public:
+    GraphicsView()
+    {
+        setWindowTitle(tr("GLSL raymarcher"));
+    }
+
+protected:
+    void resizeEvent(QResizeEvent *event) {
+        if (scene())
+            scene()->setSceneRect(
+                QRect(QPoint(0, 0), event->size()));
+        QGraphicsView::resizeEvent(event);
+    }
+};
+
+
+
+
+class GraphicsScene : public QGraphicsScene
+{
+public:
+    GraphicsScene();
+    void drawBackground(QPainter *painter, const QRectF &);
+private:
+    QDialog * createDialog( const QString &windowTitle) const;
+};
+
+
 
   class GLWidget : public QGLWidget{
     Q_OBJECT;
@@ -20,7 +54,7 @@ namespace io{
       ~GLWidget();
 
       QSize minimumSizeHint() const;
-      QSize sizeHint() const;
+      //QSize sizeHint() const;
 
       void setRenderer (renderer::Renderer* r);
 
