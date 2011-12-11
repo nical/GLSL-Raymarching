@@ -133,6 +133,12 @@ in real time.
 
 Thanks to Ray Marching technique the Ambient Occlusion effect can be computed easily.
 The idea is to march a new ray for a fixed number of same length steps along the normal
-of the surface that was hit and use the 
+of the surface that was hit and use the distance to the closest surface at each step
+to compute the occlusion effect due to how near that is. This value is then used to
+apply a shadow effect on the pixel that is currently computed. The effect of a surface is
+divided by the square of the distance, as occlusions are less important if they are further
+away from the pixel.
 
 
+
+This computation can be done effici

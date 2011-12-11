@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     QApplication raymarcher( argc, argv );
 
     QGLFormat glFormat;
-    //glFormat.setVersion( 3, 3 );
+    glFormat.setVersion( 3, 3 );
     //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
     //glFormat.setAlpha( true );
     //glFormat.setSampleBuffers( true );
