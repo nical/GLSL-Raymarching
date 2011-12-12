@@ -92,13 +92,6 @@ bool Shader::build(const string& vs_src,const string& fs_src, const LocationMap&
 
 bool Shader::bind()
 {
-    /*
-    if( !(_state & VALID) )
-    {
-        cout << "Shader::bind Error! invalid state "<< _state << endl;
-        assert(false);
-        return false;
-    }*/
     glUseProgram(_id);
     _state &= BINDED;
     return true;
@@ -119,23 +112,6 @@ const Shader::Location* Shader::location(const string& name)
     if( ! hasLocation(name) )
         return 0;
     return &_locations[name];
-}
-
-GLuint getGLTextureLocation( int i )
-{
-    switch( i )
-    {   
-        case 0 : return GL_TEXTURE0;
-        case 1 : return GL_TEXTURE1;
-        case 2 : return GL_TEXTURE2;
-        case 3 : return GL_TEXTURE3;
-        case 4 : return GL_TEXTURE4;
-        case 5 : return GL_TEXTURE5;
-        case 6 : return GL_TEXTURE6;
-        case 7 : return GL_TEXTURE7;
-    }
-    assert( "bad"=="parameter" );
-    return 0;
 }
 
 }//namespace

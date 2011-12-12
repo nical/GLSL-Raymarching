@@ -1,7 +1,7 @@
 #version 330
 #define MAX_STEPS 200
 
-out vec4 out_Colour[3];
+out vec4 out_Colour[2];
 
 uniform float time;
 uniform vec2 windowSize;
@@ -319,23 +319,23 @@ void main(void)
         float AO = AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0);
         hitColor = mix(shadowColor, hitColor, AO);
 
-        applyFog( length(position-hitPosition), hitColor);
+        float distance = length(position-hitPosition);
+        applyFog( distance, hitColor);
         out_Colour[0] = vec4(hitColor, 1.0);
-        out_Colour[1] = vec4(vec3(shadow), 1.0);        // todo apply fog
-        out_Colour[2].a = 0.0;
+        out_Colour[1] = vec4(
+            hitNormal*0.5 + 0.5
+            , distance //clamp(distance*0.001, 0.0, 1.0)
+        );
+        //out_Colour[1] = vec4( clamp(length(hitPosition - position)*0.001, 0.0, 1.0) );
 
-
-        hitPosition.z -= position.z;
-
-        out_Colour[1].b = clamp(hitPosition.y/7.0, 0.0, 1.0);
-        out_Colour[1].a = hitPosition.z;
     }
     else // sky
     {
-        vec3 hitColor = skyColor;
+        float shade = direction.y*5.0;
+        hitColor = mix(skyColor, skyColor*0.8, shade);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
-        out_Colour[1].a = 1000000.0;
+        out_Colour[1].a = 1.0;
         //out_Colour[2] = vec4(hitColor, 1.0);
     }
 

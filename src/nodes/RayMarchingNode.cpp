@@ -5,6 +5,7 @@
 #include "renderer/DrawQuad.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "utils/CheckGLError.hpp"
+#include "io/Window.hpp"
 #include "kiwi/core/all.hpp"
 #include "kiwi/core/DynamicNodeUpdater.hpp"
 
@@ -80,12 +81,7 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
         _raymarchingShader->uniform1f("shadowHardness", *inputs[8]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("shadowHardness", 7.0f );
 
-    if ( inputs[9] ){
-        _raymarchingShader->uniformVec2("windowSize", *inputs[9]->value<glm::vec2>() );
-        auto temp = *inputs[9]->value<glm::vec2>();
-    } else _raymarchingShader->uniform2f("windowSize", 400, 400 );
-    
-
+   _raymarchingShader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight() );
 
     renderer::DrawQuad();
 
@@ -121,8 +117,7 @@ void RegisterRayMarchingNode( Shader * shader )
         {"viewMatrix", mat4TypeInfo, kiwi::READ | OPT },
         {"time", floatTypeInfo, kiwi::READ | OPT },
         {"shadowHardness", floatTypeInfo, kiwi::READ | OPT },
-        {"fovyCoefficient", floatTypeInfo, kiwi::READ | OPT },
-        {"windowSize", vec2TypeInfo, kiwi::READ | OPT }
+        {"fovyCoefficient", floatTypeInfo, kiwi::READ | OPT }
     };
     raymacherLayout.outputs = {
         {"fbo", frameBufferTypeInfo, kiwi::READ },
@@ -139,7 +134,7 @@ Node * CreateRayMarchingNode()
 {
     auto node = _marcherTypeInfo->newInstance();
 
-    assert(node->inputs().size() == 10 );
+    assert(node->inputs().size() == 9 );
     assert(node->outputs().size() == 3 );
 
     assert(node->input(0).dataType() == kiwi::core::DataTypeManager::TypeOf("Vec3") );

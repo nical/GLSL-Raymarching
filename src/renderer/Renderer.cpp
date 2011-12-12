@@ -132,13 +132,21 @@ namespace renderer{
     };
     auto edgeShader = new Shader;
     CHECKERROR
-    edgeShader ->build( vs, fs, edgeLoc  );
-
-    CHECKERROR
-
+    edgeShader->build( vs, fs, edgeLoc  );
     nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
 
 
+
+    //-----------------------------------------------------
+    fs.clear();
+    utils::LoadTextFile("shaders/Sepia.frag", fs );
+    Shader::LocationMap sepiaMap;
+    auto sepiaShader = new Shader;
+    sepiaShader->build(vs,fs,sepiaMap);
+    nodes::RegisterPostFxNode( sepiaShader  ,"Sepia");
+    auto sepiaNode = nodes::CreatePostFxNode("Sepia");
+
+    CHECKERROR
 
 
 
@@ -162,13 +170,14 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), rayMarchingNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
 
 
 
     assert( timeNode );
     //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
-    assert( winSizeNode->output() >> rayMarchingNode->input(9) );
+    //assert( winSizeNode->output() >> rayMarchingNode->input(9) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
     rayMarchingNode->output(1) >> dofNode->input(0);
     rayMarchingNode->output(2) >> dofNode->input(1);

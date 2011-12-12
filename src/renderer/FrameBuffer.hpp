@@ -26,7 +26,7 @@ public:
 
     void bind() const
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _id);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _id);
     }
 
     static void unbind()

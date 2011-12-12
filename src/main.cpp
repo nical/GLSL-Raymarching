@@ -77,11 +77,10 @@ int main(int argc, char* argv[])
 
 
     mainUi->show();
-    //mainUi->resize(600,400);
     renderer::Renderer* _renderer = new renderer::Renderer(WIDTH, HEIGHT);
     glsection.setRenderer(_renderer);
 
-    mainUi->resize(600,400);
+    mainUi->resize(800,600);
     QSlider* zoomSlider = mainUi->findChild<QSlider*>("kiwiZoomSlider");
     assert(zoomSlider);
     io::ZoomAdapter za( kiwiGraphicsView );

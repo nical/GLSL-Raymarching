@@ -28,7 +28,7 @@ static const DataTypeInfo * floatTypeInfo = 0;
 namespace nodes{
 
 
-static GLuint selectTexture(int i)
+static GLuint SelectTexture(int i)
 {
     switch(i)
     {
@@ -49,6 +49,8 @@ static GLuint selectTexture(int i)
 bool ShaderNodeUpdater::update(const Node& n)
 {
     CHECKERROR
+    (*n.output(0).dataAs<FrameBuffer*>())->bind();
+    CHECKERROR
     _shader->bind();
     CHECKERROR
     if(_shader->hasLocation("windowSize"))
@@ -67,9 +69,9 @@ bool ShaderNodeUpdater::update(const Node& n)
         {
             CHECKERROR
             _shader->uniform1i(n.input(i).name(), nbTex);
-            glActiveTexture( selectTexture(nbTex) );
+            glActiveTexture( SelectTexture(nbTex) );
             (*n.input(i).dataAs<Texture2D*>())->bind();
-            //std::cerr << "uniform texture " << n.input(i).name() << " -> "<< nbTex << std::endl;
+            std::cerr << "uniform texture " << n.input(i).name() << " -> "<< nbTex << std::endl;
             ++nbTex;
             CHECKERROR
         }
@@ -88,11 +90,11 @@ bool ShaderNodeUpdater::update(const Node& n)
             CHECKERROR
         }
     }
-    CHECKERROR
-    (*n.output(0).dataAs<FrameBuffer*>())->bind();
+
     CHECKERROR
     renderer::DrawQuad();
     CHECKERROR
+    FrameBuffer::unbind();
     _shader->unbind();
 
     return true;
@@ -155,7 +157,7 @@ kiwi::core::Node * CreatePostFxNode(const std::string& name)
     // Port 0 : frame buffer
     // Port 1 : texture (attached to the fbo)
 
-    auto fbo = new FrameBuffer(2,400,400);
+    auto fbo = new FrameBuffer(1,io::GetRenderWindowWidth(),io::GetRenderWindowHeight());
     *node->output(0).dataAs<FrameBuffer*>() = fbo;
 
     assert( *node->output(0).dataAs<FrameBuffer*>() == fbo );
@@ -164,6 +166,10 @@ kiwi::core::Node * CreatePostFxNode(const std::string& name)
 
     return node;
 }
+
+
+// ---------------------------------------------------------------- Render to screen
+
 
 static renderer::Shader * s_renderToScreenShader = 0;
 

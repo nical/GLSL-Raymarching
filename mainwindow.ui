@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>500</height>
+    <width>914</width>
+    <height>637</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,8 +33,8 @@
   <widget class="QDockWidget" name="kiwiDock">
    <property name="minimumSize">
     <size>
-     <width>112</width>
-     <height>127</height>
+     <width>250</width>
+     <height>400</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
