@@ -86,6 +86,16 @@ void NodeView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     }
 }
 
+void NodeView::setWidth( float w )
+{
+    _rect.setWidth(w);
+}
+void NodeView::setHeight( float w )
+{
+    _rect.setHeight(w);
+}
+
+
 QString NodeView::nodeName() const
 {
     return nodeType()->name().c_str();

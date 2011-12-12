@@ -20,6 +20,7 @@
 #include "io/NodeView.hpp"
 #include "io/ColorNodeView.hpp"
 #include "io/PortView.hpp"
+#include "io/SliderNodeView.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -109,7 +110,6 @@ namespace renderer{
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
     utils::LoadTextFile("shaders/SecondPass.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
@@ -197,12 +197,13 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
 
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 0.0, 100.0 ) );
+
     assert( timeNode );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
     rayMarchingNode->output(1) >> dofNode->input(0);
     rayMarchingNode->output(2) >> dofNode->input(1);
-    timeNode->output() >> dofNode->input(2);
     dofNode->output(1) >> screenNode->input();
   }
 
@@ -234,70 +235,14 @@ namespace renderer{
 
   }
 
-  void Renderer::drawScene(){
+  void Renderer::drawScene()
+  {
 
     CHECKERROR
     if( _frameBuffer == 0 ) return;
-/*
-    timeNode->update();
 
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    rayMarchingNode->update();
-
-    screenNode->update();
-
-    //glBindVertexArray(0);
-
-    //raymarchingShader->unbind();
-
-    FrameBuffer::unbind();
-    CHECKERROR
-*/
     ProcessNodes(screenNode);
 
-    /*
-
-    postEffectShader->bind();
-    postEffectShader->uniform2f("windowSize", window.x, window.y );
-    postEffectShader->uniform1f("time", 0 );
-    postEffectShader->uniform1i("colourTexture", 0 );
-    postEffectShader->uniform1i("normalsTexture", 1 );
-
-    CHECKERROR
-    
-    //  Binding Colour Texture
-    glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    //_frameBuffer->texture(0).bind();
-    (*rayMarchingNode->output(1).dataAs<Texture2D*>())->bind();
-    CHECKERROR
-
-    //  Binding Normals' Texture
-    glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    //_frameBuffer->texture(1).bind();
-    (*rayMarchingNode->output(2).dataAs<Texture2D*>())->bind();
-    CHECKERROR
-    
-    DrawQuad();
-
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-CHECKERROR
-
-    glActiveTexture(GL_TEXTURE1);
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-CHECKERROR
-
-    glActiveTexture(GL_TEXTURE0);
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    postEffectShader->unbind();
-    CHECKERROR
-    */
   }
 
 
@@ -311,7 +256,7 @@ CHECKERROR
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    _frameBuffer = (FrameBuffer*)1;
+    _frameBuffer = (FrameBuffer*)1; // TODO: change that before the gos of programming see it.
 
   }
 

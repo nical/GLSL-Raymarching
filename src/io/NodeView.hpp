@@ -34,11 +34,15 @@ public:
     virtual void outputDisconnected(kiwi::core::OutputPort* port, kiwi::core::InputPort* from);
     virtual void inputDisconnected(kiwi::core::InputPort* port, kiwi::core::OutputPort* from);
 
+    virtual void addToScene(QGraphicsScene * s);
 
     QRectF boundingRect() const
     {
         return _rect;
     }
+
+    void setWidth( float w );
+    void setHeight( float w );
 
     const PortArray& inputs() const
     {
@@ -95,8 +99,6 @@ public:
 
     QPointF relativeInputPos(int i) const;
     QPointF relativeOutputPos(int i) const;
-
-    void addToScene(QGraphicsScene * s);
 
     ~NodeView();
 private:
