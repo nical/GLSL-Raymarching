@@ -15,6 +15,7 @@
 #include "nodes/ColorNode.hpp"
 #include "nodes/PostFxNode.hpp"
 #include "nodes/RayMarchingNode.hpp"
+#include "nodes/FloatMathNodes.hpp"
 #include "io/Compositor.hpp"
 #include "io/NodeView.hpp"
 #include "io/ColorNodeView.hpp"
@@ -128,7 +129,8 @@ namespace renderer{
     utils::LoadTextFile("shaders/EdgeDetection.frag", fs);
     Shader::LocationMap edgeLoc = {
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto edgeShader = new Shader;
     CHECKERROR
@@ -142,16 +144,33 @@ namespace renderer{
     utils::LoadTextFile("shaders/Sepia.frag", fs );
     Shader::LocationMap sepiaMap = {
         {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"factor",   { Shader::UNIFORM | Shader::FLOAT} }
+        {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
     };
     auto sepiaShader = new Shader;
     sepiaShader->build(vs,fs,sepiaMap);
     nodes::RegisterPostFxNode( sepiaShader  ,"Sepia");
     auto sepiaNode = nodes::CreatePostFxNode("Sepia");
 
+    //-----------------------------------------------------
+    fs.clear();
+    utils::LoadTextFile("shaders/BlackAndWhite.frag", fs );
+    Shader::LocationMap bnwMap = {
+        {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
+    };
+    auto bnwShader = new Shader;
+    bnwShader->build(vs,fs,bnwMap);
+    nodes::RegisterPostFxNode( bnwShader  ,"Black and white");
+    auto bnwNode = nodes::CreatePostFxNode("Black and white");
+
+
     CHECKERROR
 
-
+    nodes::RegisterFloatMathNodes();
 
     skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
     groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
@@ -164,7 +183,6 @@ namespace renderer{
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(400,0),screenNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 0), winSizeNode) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 100), skyColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 150), groundColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 200), buildingsColorNode ) );
@@ -174,13 +192,13 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,300),bnwNode) );
 
-
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
 
     assert( timeNode );
-    //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
-    //assert( winSizeNode->output() >> rayMarchingNode->input(9) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
     rayMarchingNode->output(1) >> dofNode->input(0);
     rayMarchingNode->output(2) >> dofNode->input(1);
