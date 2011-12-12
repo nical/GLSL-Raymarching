@@ -139,6 +139,18 @@ apply a shadow effect on the pixel that is currently computed. The effect of a s
 divided by the square of the distance, as occlusions are less important if they are further
 away from the pixel.
 
+float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float samples) {
+	float occlusion;
+	int tempMaterial;   //  Needed by the DistanceField function
+	for (occlusion = 1.0 ; samples > 0.0 ; samples--) {
+		occlusion -= (samples * stepDistance - (DistanceField( point + normal * samples * stepDistance, tempMaterial))) / pow(2.0, samples);
+	}
+	return occlusion;
+}
+
+This computation can be done efficiently thanks to Raymarching since it requires informations
+on the distance of objects along the ray.
+
+### Soft Shadows
 
 
-This computation can be done effici
