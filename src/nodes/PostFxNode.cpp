@@ -60,13 +60,15 @@ bool ShaderNodeUpdater::update(const Node& n)
 
     for(int i = 0; i < n.inputs().size(); ++i)
     {
-        if( ! n.input(i).isConnected() )
-        {
-            std::cerr << "ShadeNodeUpdate::update error! disconnected input\n";
-            return false;
-        }
+
         if( n.input(i).dataType() == textureTypeInfo )
         {
+            if( !n.input(i).isConnected() )
+            {
+                std::cerr << "ShadeNodeUpdate::update error! disconnected input\n";
+                FrameBuffer::unbind();
+                return false;
+            }
             CHECKERROR
             _shader->uniform1i(n.input(i).name(), nbTex);
             glActiveTexture( SelectTexture(nbTex) );
@@ -84,10 +86,17 @@ bool ShaderNodeUpdater::update(const Node& n)
         }
         else if ( n.input(i).dataType() == floatTypeInfo )
         {
-            CHECKERROR
-            //std::cerr << "uniform float " << n.input(i).name() << std::endl;
-            _shader->uniform1f(n.input(i).name(), *n.input(i).dataAs<float>() );
-            CHECKERROR
+            if( !n.input(i).isConnected() )
+            {
+                _shader->uniform1f(n.input(i).name(), 0 );
+            }
+            else
+            {
+                CHECKERROR
+                //std::cerr << "uniform float " << n.input(i).name() << std::endl;
+                _shader->uniform1f(n.input(i).name(), *n.input(i).dataAs<float>() );
+                CHECKERROR
+            }
         }
     }
 

@@ -2,7 +2,7 @@
 
 out vec4 out_Color;
 
-uniform sampler2D colourTexture;
+uniform sampler2D colorTexture;
 uniform float factor;
 
 uniform vec2 windowSize;
@@ -21,7 +21,7 @@ vec4 Sepia( in vec4 color )
 }
 
 void main (void){
-  out_Color = texture2D(colourTexture, texelCoord);
+  out_Color = texture2D(colorTexture, texelCoord);
   out_Color = mix(out_Color, Sepia(out_Color), clamp(factor,0.0,1.0) );
 }
 

@@ -140,7 +140,10 @@ namespace renderer{
     //-----------------------------------------------------
     fs.clear();
     utils::LoadTextFile("shaders/Sepia.frag", fs );
-    Shader::LocationMap sepiaMap;
+    Shader::LocationMap sepiaMap = {
+        {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"factor",   { Shader::UNIFORM | Shader::FLOAT} }
+    };
     auto sepiaShader = new Shader;
     sepiaShader->build(vs,fs,sepiaMap);
     nodes::RegisterPostFxNode( sepiaShader  ,"Sepia");
