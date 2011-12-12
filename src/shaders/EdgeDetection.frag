@@ -11,7 +11,7 @@ uniform vec2 windowSize;
 vec2 texelCoord = vec2(gl_FragCoord.xy / windowSize);
 
 float edgeDetection(in vec2 coords){
-  float dxtex = 1.0 / windowSize.x;
+  float dxtex = 1.0 / windowSize.x;     
   float dytex = 1.0 / windowSize.y;
 
   float depth0 = texture2D(normalsTexture,coords).a;

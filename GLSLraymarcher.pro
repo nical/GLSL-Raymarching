@@ -20,7 +20,8 @@ HEADERS +=  src/io/Window.hpp \
     src/io/ZoomAdapter.hpp \
     src/io/ConnectAdapter.hpp \
     src/io/ColorNodeView.hpp \
-    src/nodes/PostFxNode.hpp
+    src/nodes/PostFxNode.hpp \
+    src/io/ColourPicker.hpp
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
             src/io/Window.cpp \
@@ -42,7 +43,8 @@ SOURCES +=  src/main.cpp \
     src/io/ZoomAdapter.cpp \
     src/io/ConnectAdapter.cpp \
     src/io/ColorNodeView.cpp \
-    src/nodes/PostFxNode.cpp
+    src/nodes/PostFxNode.cpp \
+    src/io/ColourPicker.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pg -g
             
