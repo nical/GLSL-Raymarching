@@ -5,7 +5,6 @@ out vec4 out_Colour;
 
 uniform sampler2D colourTexture;
 uniform sampler2D normalsTexture;
-uniform sampler2D godRaysTexture;
 
 uniform vec2 windowSize;
 
