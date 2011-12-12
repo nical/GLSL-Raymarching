@@ -4,19 +4,19 @@
 
 One of the biggest difficulties we encountered was to make the program work on
 different graphic cards. Luckily enough, the two laptops we work on have deffierent
-hardware (one nvidia and one ATI) so it gives stronger chances to detect some problems. 
+hardware (one nVidia and one ATI) so it gives stronger chances to detect some problems. 
 For instance, at some point the program worked on both computers, but after an update
-of the graphics driver the nvidia one wouldn't render the scene any more, displaying
+of the graphics driver the nVidia one wouldn't render the scene any more, displaying
 silently a black screen instead. It turned out that some initialization steps were
 done in the wrong order (some code that was written a week before without us noticing it),
-with ATI drivers being more permissive than nvida's on
+and some texture initialisations were missing, with ATI drivers being more permissive than nVida's on
 the matter. The use of gDebugger helped a lot to understand what was going on inside,
 since a traditionnal debugguer cannot inspect what happens within OpenGL and since OpenGL
 does not give much information on errors.
 gDebugger let you see and intercept draw calls and displays the buffers that are
 on gpu memory (textures, render buffers, vertex buffers, etc.), which is convenient
 when implementing deferred shading.
-It also happened that in order to implement the deferred shading on the nvidia linux
+It also happened that in order to implement the deferred shading on the nVidia linux
 system, we had to enable the _glewExperimental_ flag.
 
 
@@ -130,5 +130,27 @@ AO is a crude approximateion of the way light bounces around in real world, in
 order to provide with more realistic results. It does not give as good results as
 global illumination techniques like radiosity, but helps providing convincing graphics
 in real time.
+
+Thanks to Ray Marching technique the Ambient Occlusion effect can be computed easily.
+The idea is to march a new ray for a fixed number of same length steps along the normal
+of the surface that was hit and use the distance to the closest surface at each step
+to compute the occlusion effect due to how near that is. This value is then used to
+apply a shadow effect on the pixel that is currently computed. The effect of a surface is
+divided by the square of the distance, as occlusions are less important if they are further
+away from the pixel.
+
+float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float samples) {
+	float occlusion;
+	int tempMaterial;   //  Needed by the DistanceField function
+	for (occlusion = 1.0 ; samples > 0.0 ; samples--) {
+		occlusion -= (samples * stepDistance - (DistanceField( point + normal * samples * stepDistance, tempMaterial))) / pow(2.0, samples);
+	}
+	return occlusion;
+}
+
+This computation can be done efficiently thanks to Raymarching since it requires informations
+on the distance of objects along the ray.
+
+### Soft Shadows
 
 

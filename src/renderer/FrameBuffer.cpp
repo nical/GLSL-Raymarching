@@ -96,7 +96,7 @@ void FrameBuffer::init( int nbTextures, int fbwidth, int fbheight)
         glDrawBuffers(_textures.size()-1, &attachements[0]);
         CHECKERROR
         delete[] attachements;
-        
+
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
           std::cout << "Fuck!" << std::endl;

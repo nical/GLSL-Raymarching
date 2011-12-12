@@ -207,6 +207,29 @@ vec4 radialBlur(in vec2 coords) {
   return mix( colour, blurredColour, t );
 }
 
+vec4 bloomEffect(in vec2 coords) {
+   
+  vec4 bloom = vec4(0.0);
+  int j;
+  int i;
+
+  for( i = -4 ; i < 4; i++) {
+    for (j = -3; j < 3; j++) {
+      bloom += texture2D(colourTexture, coords + vec2((j * 1.0 / windowSize.x), (i * 1.0 / windowSize.y))) * 0.25;
+    }
+  }
+    
+  if (texture2D(colourTexture, coords).r < 0.3) {
+    bloom = bloom * bloom * 0.012;
+  } else if (texture2D(colourTexture, coords).r < 0.5) {
+    bloom = bloom * bloom * 0.009;
+  } else {
+    bloom = bloom * bloom *0.0075;
+  }
+  
+  return bloom + texture2D(colourTexture, coords);
+}
+
 void main (void){
 
     float zDistance = texture2D(normalsTexture, texelCoord).a;
@@ -215,7 +238,8 @@ void main (void){
       //out_Color = texture2D(colourTexture, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
-        out_Color = vec4(DOF(zDistance, texelCoord), 1.0);
+        //out_Color = vec4(DOF(zDistance, texelCoord), 1.0);
+        out_Color = bloomEffect(texelCoord);
     } else {
       //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).rgb, 1.0);
       //out_Color = vec4(texture2D(normalsTexture, texelCoord).aaa, 1.0);

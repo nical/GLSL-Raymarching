@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     QGLFormat glFormat;
     glFormat.setVersion( 3, 3 );
     //glFormat.setProfile( QGLFormat::CoreProfile ); // Requires >=Qt-4.8.0
-    glFormat.setAlpha( true );
-    glFormat.setSampleBuffers( true );
+    //glFormat.setAlpha( true );
+    //glFormat.setSampleBuffers( true );
 
     glewExperimental = GL_TRUE;
 

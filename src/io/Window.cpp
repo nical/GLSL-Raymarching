@@ -154,7 +154,7 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
   {
     CurrentWidth = Width;
     CurrentHeight = Height;
-    
+
     if (_renderer) {
       _renderer->setWindowDimensions(CurrentWidth, CurrentHeight);
     }
@@ -179,7 +179,7 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
   }
 
   void GLWidget::setRenderer (renderer::Renderer* r){
-    std::cout << "Initialising renderer" << std::endl;    
+    std::cout << "Initialising renderer" << std::endl;
     r->init();
     r->createBuffers();
     _renderer = r;

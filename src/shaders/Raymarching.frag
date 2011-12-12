@@ -327,7 +327,6 @@ void main(void)
             , distance //clamp(distance*0.001, 0.0, 1.0)
         );
         //out_Colour[1] = vec4( clamp(length(hitPosition - position)*0.001, 0.0, 1.0) );
-
     }
     else // sky
     {
