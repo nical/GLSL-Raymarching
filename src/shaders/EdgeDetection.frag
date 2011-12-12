@@ -10,11 +10,9 @@ uniform vec2 windowSize;
 //  Computing it once so we don't have to do it every time
 vec2 texelCoord = vec2(gl_FragCoord.xy / windowSize);
 
-float edgeDetection(in vec2 uncoords){
-  float dxtex = 1.0 / windowSize.x;
+float edgeDetection(in vec2 coords){
+  float dxtex = 1.0 / windowSize.x;     
   float dytex = 1.0 / windowSize.y;
-
-  vec2 coords = (uncoords / windowSize);
 
   float depth0 = texture2D(normalsTexture,coords).a;
   float depth1 = texture2D(normalsTexture,coords + vec2(dxtex,0.0)).a;
@@ -29,5 +27,5 @@ float edgeDetection(in vec2 uncoords){
 
 void main (void){
   out_Color = texture2D(colourTexture, texelCoord);
-  out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
+  out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(texelCoord));
 }

@@ -6,12 +6,19 @@
 
 namespace io{
 
+class ColourPicker;
+
 class ColorNodeView : public NodeView
 {
 public:
     explicit ColorNodeView(const QPointF& position, kiwi::core::Node * n );
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QString nodeName() const;
+    void UpdateGraphics();
+protected:
+    void mouseDoubleClickEvent ( QGraphicsSceneMouseEvent * event );
+private:
+    ColourPicker *colourPicker;
 };
 
 

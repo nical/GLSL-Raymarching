@@ -29,7 +29,7 @@ SliderNodeView::SliderNodeView(const QPointF& position, float smin, float smax)
 
     _adapter = new SliderNodeAdapter(this);
 
-    QObject::connect( _slider, SIGNAL(valueChanged(int)), _adapter, SLOT(setValue(int)));
+    assert( QObject::connect( _slider, SIGNAL(valueChanged(int)), _adapter, SLOT(setValue(int))) );
 }
 
 QString SliderNodeView::nodeName() const

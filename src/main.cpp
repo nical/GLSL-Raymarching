@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
     QWidget *mainUi = loader.load(&uiFile);
     uiFile.close();
-
+    mainUi->setWindowTitle("Composited Raymarcher");
     QFrame* renderFrame = mainUi->findChild<QFrame*>("renderFrame");
     assert(renderFrame);
     QGridLayout renderFrameLayout;
