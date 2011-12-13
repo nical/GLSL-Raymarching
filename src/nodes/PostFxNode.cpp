@@ -79,6 +79,12 @@ bool ShaderNodeUpdater::update(const Node& n)
         }
         else if ( n.input(i).dataType() == vec3TypeInfo )
         {
+            if( !n.input(i).isConnected() )
+            {
+                std::cerr << "ShadeNodeUpdate::update error! disconnected input\n";
+                FrameBuffer::unbind();
+                return false;
+            }
             CHECKERROR
             _shader->uniformVec3(n.input(i).name(), *n.input(i).dataAs<glm::vec3>() );
             //std::cerr << "uniform vec3" << n.input(i).name() << std::endl;

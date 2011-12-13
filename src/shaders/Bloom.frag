@@ -3,7 +3,7 @@
 out vec4 out_Color;
 
 uniform sampler2D inputImage;
-uniform sampler2D normalsTexture;
+uniform sampler2D fragmentInfo;
 
 uniform vec2 windowSize;
 

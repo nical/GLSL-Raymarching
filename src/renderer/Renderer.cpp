@@ -92,7 +92,7 @@ namespace renderer{
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"outputImage",     { Shader::OUTPUT  | Shader::TEXTURE2D} },
-        {"fragmentInfos",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
+        {"fragmentInfo",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
     raymarchingShader = new Shader;
     CHECKERROR
@@ -107,11 +107,13 @@ namespace renderer{
     fs.clear();
 
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
-    utils::LoadTextFile("shaders/SecondPass.frag", fs);
+
+    //  Depth Of Field Shader
+    utils::LoadTextFile("shaders/DOF.frag", fs);
     Shader::LocationMap postFxLoc = {
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"fragmentInfos",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
     postEffectShader = new Shader;
     CHECKERROR
@@ -122,20 +124,52 @@ namespace renderer{
     nodes::RegisterPostFxNode( postEffectShader ,"Depth of field");
     nodes::RegisterScreenNode();
 
-    //vs.clear();
+    //  Edge Detection Shader
+
     fs.clear();
-    //utils::LoadTextFile("shaders/EdgeDetection.vert", vs);
     utils::LoadTextFile("shaders/EdgeDetection.frag", fs);
     Shader::LocationMap edgeLoc = {
         {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"fragmentInfos",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"edgeColor",      { Shader::UNIFORM | Shader::FLOAT3} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
     };
     auto edgeShader = new Shader;
     CHECKERROR
     edgeShader->build( vs, fs, edgeLoc  );
     nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
+    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
 
+    //  Bloom Shader
+
+    fs.clear();
+    utils::LoadTextFile("shaders/Bloom.frag", fs);
+    Shader::LocationMap bloomLoc = {
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+    };
+    auto bloomShader = new Shader;
+    CHECKERROR
+    bloomShader->build( vs, fs, bloomLoc  );
+    nodes::RegisterPostFxNode( bloomShader  ,"Bloom");
+    auto bloomNode = nodes::CreatePostFxNode("Bloom");
+
+    //  Radial Blur Shader
+
+    fs.clear();
+    utils::LoadTextFile("shaders/RadialBlur.frag", fs);
+    Shader::LocationMap radialLoc = {
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+    };
+    auto radialShader = new Shader;
+    CHECKERROR
+    radialShader->build( vs, fs, radialLoc  );
+    nodes::RegisterPostFxNode( radialShader  ,"Radial Blur");
+    auto radialNode = nodes::CreatePostFxNode("Radial Blur");
 
 
     //-----------------------------------------------------
@@ -190,7 +224,7 @@ namespace renderer{
     sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
     dofNode = nodes::CreatePostFxNode("Depth of field");
     screenNode = nodes::CreateScreenNode();
-    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
+
 
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
@@ -203,20 +237,24 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), rayMarchingNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,400),radialNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,500),bloomNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(400,300),bnwNode) );
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 400), nodes::CreateCosNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 500), nodes::CreateMultiplyNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateDivideNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateClampNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 600), nodes::CreateSubstractNode() ) );
 
     io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 0.0, 100.0 ) );
 
     assert( timeNode );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
-    rayMarchingNode->output(1) >> dofNode->input(0);
-    rayMarchingNode->output(2) >> dofNode->input(1);
-    dofNode->output(1) >> screenNode->input();
   }
 
 
@@ -266,7 +304,7 @@ namespace renderer{
 
     GLint maxBuffers;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
-    std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
+    std::cout << "Max color Attachments: " << maxBuffers << std::endl;
 
     _frameBuffer = (FrameBuffer*)1; // TODO: change that before the gos of programming see it.
 

@@ -1,10 +1,10 @@
 #version 330
 #define PI    3.14159265
 
-out vec4 out_Colour;
+out vec4 out_color;
 
 uniform sampler2D inputImage;
-uniform sampler2D normalsTexture;
+uniform sampler2D fragmentInfo;
 
 uniform vec2 windowSize;
 
@@ -49,7 +49,7 @@ vec2 noiseGeneration (in vec2 coord){
 
 //  Processing the texel to get highlights and blur
 vec3 colorProcessing (vec2 coords, float blur) {
-	vec3 newColour = vec3(0.0);
+	vec3 newcolor = vec3(0.0);
 	vec2 blurringCoord = texelCoord * bokehFringe * blur * 0.001;
 
   /*if(abs((coords + vec2(0.0,1.0) * blurringCoord).y) > 1.0)/*abs((coords + vec2(0.0,1.0) * blurringCoord).y) > 1.0){
@@ -64,14 +64,14 @@ vec3 colorProcessing (vec2 coords, float blur) {
     return (vec3(0.0, 0.0, 1.0));
   }*/
 
-	newColour.r = texture2D(inputImage,coords + vec2(0.0,1.0) * blurringCoord).r;
-	newColour.g = texture2D(inputImage,coords + vec2(-0.866,-0.5) * blurringCoord).g;
-	newColour.b = texture2D(inputImage,coords + vec2(0.866,-0.5) * blurringCoord).b;
+	newcolor.r = texture2D(inputImage,coords + vec2(0.0,1.0) * blurringCoord).r;
+	newcolor.g = texture2D(inputImage,coords + vec2(-0.866,-0.5) * blurringCoord).g;
+	newcolor.b = texture2D(inputImage,coords + vec2(0.866,-0.5) * blurringCoord).b;
 
 	vec3 lumcoeff = vec3(0.299,0.587,0.114);
-	float lum = dot(newColour.rgb, lumcoeff);
+	float lum = dot(newcolor.rgb, lumcoeff);
 	float thresh = max((lum - highlightThreshold) * highlightGain, 0.0);
-	return newColour + mix(vec3(0.0), newColour, thresh * blur);
+	return newcolor + mix(vec3(0.0), newcolor, thresh * blur);
 }
 
 //  Depth-Based blurring
@@ -102,7 +102,7 @@ float depthBlurring(vec2 coords)
 
 	for( int i = 0; i < 9; i++ )
 	{
-		float tmpDepth = texture2D(normalsTexture, clamp(coords + offset[i], 0.0, 1.0)).a;
+		float tmpDepth = texture2D(fragmentInfo, clamp(coords + offset[i], 0.0, 1.0)).a;
 		depth += tmpDepth * kernel[i];
 	}
 
@@ -122,8 +122,8 @@ vec3 DOF (float zDistance, vec2 coords){
 
 	if (useAutoFocus)
 	{
-		//float fDepth = clamp(texture2D(normalsTexture, vec2(0.5,0.5)).a, 0.0, 1.0);
-		float fDepth = texture2D(normalsTexture, vec2(0.5,0.5)).a;
+		//float fDepth = clamp(texture2D(fragmentInfo, vec2(0.5,0.5)).a, 0.0, 1.0);
+		float fDepth = texture2D(fragmentInfo, vec2(0.5,0.5)).a;
 		//float fDepth = 0.5;
 		blur = clamp((abs(zDistance - fDepth)/focalRange)*100.0, -maxBlur, maxBlur);
 	}
@@ -134,7 +134,7 @@ vec3 DOF (float zDistance, vec2 coords){
 	float h = (1.0/windowSize.y) * blur + noise.y;
 
 
-	vec3 colour = texture2D(inputImage, coords).rgb;
+	vec3 color = texture2D(inputImage, coords).rgb;
 	float s = 1.0;
 
 	float ringSamples;
@@ -148,17 +148,17 @@ vec3 DOF (float zDistance, vec2 coords){
 			float blurStep = PI*2.0 / ringSamples;
 			float pw = (cos(j * blurStep) * i);
 			float ph = (sin(j * blurStep) * i);
-			colour += colorProcessing(coords + vec2(pw * w, ph * h), blur) * mix(1.0, i/depthRings, bokehBias);
+			color += colorProcessing(coords + vec2(pw * w, ph * h), blur) * mix(1.0, i/depthRings, bokehBias);
 			s += 1.0 * mix(1.0, i/depthRings, bokehBias);
 		}
 	}
 
-	colour /= s;
+	color /= s;
 
-	return colour;
+	return color;
 }
 
 void main (void){
-    float zDistance = texture2D(normalsTexture, texelCoord).a;
-    out_Colour = vec4(DOF(zDistance, texelCoord), 1.0);
+    float zDistance = texture2D(fragmentInfo, texelCoord).a;
+    out_color = vec4(DOF(zDistance, texelCoord), 1.0);
 }
