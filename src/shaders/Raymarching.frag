@@ -1,7 +1,7 @@
 #version 330
 #define MAX_STEPS 200
 
-out vec4 out_Colour[2];
+out vec4 out_color[2];
 
 uniform float time;
 uniform vec2 windowSize;
@@ -321,21 +321,21 @@ void main(void)
 
         float distance = length(position-hitPosition);
         applyFog( distance, hitColor);
-        out_Colour[0] = vec4(hitColor, 1.0);
-        out_Colour[1] = vec4(
+        out_color[0] = vec4(hitColor, 1.0);
+        out_color[1] = vec4(
             hitNormal*0.5 + 0.5
             , distance //clamp(distance*0.001, 0.0, 1.0)
         );
-        //out_Colour[1] = vec4( clamp(length(hitPosition - position)*0.001, 0.0, 1.0) );
+        //out_color[1] = vec4( clamp(length(hitPosition - position)*0.001, 0.0, 1.0) );
     }
     else // sky
     {
         float shade = direction.y*5.0;
         hitColor = mix(skyColor, skyColor*0.8, shade);
-        out_Colour[0] = vec4(hitColor, 1.0);
-        out_Colour[1] = vec4(1.0);
-        out_Colour[1].a = 10000000.0;
-        //out_Colour[2] = vec4(hitColor, 1.0);
+        out_color[0] = vec4(hitColor, 1.0);
+        out_color[1] = vec4(1.0);
+        out_color[1].a = 10000000.0;
+        //out_color[2] = vec4(hitColor, 1.0);
     }
 
 }

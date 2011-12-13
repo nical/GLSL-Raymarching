@@ -64,24 +64,24 @@ bool RayMarcherNodeUpdate(const DataArray& inputs, const DataArray& outputs)
     if ( inputs[4] ){
         _raymarchingShader->uniformVec3("shadowColor", *inputs[4]->value<glm::vec3>() );
     } else _raymarchingShader->uniform3f("shadowColor", 0.0, 0.3, 0.7 );
-    
+
     if ( inputs[5] ){
         _raymarchingShader->uniformMatrix4fv("viewMatrix", &(*inputs[5]->value<glm::mat4>())[0][0] );
     } else _raymarchingShader->uniformMatrix4fv("viewMatrix", &viewMatrix[0][0] );
-    
+
     if ( inputs[6] ){
         _raymarchingShader->uniform1f("time", *inputs[6]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("time", time);
-    
+
     if ( inputs[7] ){
-        _raymarchingShader->uniform1f("fovyCoefficient", *inputs[7]->value<GLfloat>() );
-    } else _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
-    
-    if ( inputs[8] ){
-        _raymarchingShader->uniform1f("shadowHardness", *inputs[8]->value<GLfloat>() );
+        _raymarchingShader->uniform1f("shadowHardness", *inputs[7]->value<GLfloat>() );
     } else _raymarchingShader->uniform1f("shadowHardness", 7.0f );
 
-   _raymarchingShader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight() );
+    if ( inputs[8] ){
+        _raymarchingShader->uniform1f("fovyCoefficient", *inputs[8]->value<GLfloat>() );
+    } else _raymarchingShader->uniform1f("fovyCoefficient", 1.0 );
+
+    _raymarchingShader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight() );
 
     renderer::DrawQuad();
 
@@ -121,8 +121,8 @@ void RegisterRayMarchingNode( Shader * shader )
     };
     raymacherLayout.outputs = {
         {"fbo", frameBufferTypeInfo, kiwi::READ },
-        {"color", textureTypeInfo, kiwi::READ   },
-        {"normals", textureTypeInfo, kiwi::READ }
+        {"outputImage", textureTypeInfo, kiwi::READ   },
+        {"fragmentInfos", textureTypeInfo, kiwi::READ }
     };
 
     _marcherTypeInfo = NodeTypeManager::RegisterNode("RayMarcher", raymacherLayout, new DynamicNodeUpdater( &RayMarcherNodeUpdate ) );

@@ -91,9 +91,8 @@ namespace renderer{
         {"shadowHardness",  { Shader::UNIFORM | Shader::FLOAT} },
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
-        {"colourTexture",   { Shader::OUTPUT  | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} },
-        {"godRaysTexture",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
+        {"outputImage",     { Shader::OUTPUT  | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
     raymarchingShader = new Shader;
     CHECKERROR
@@ -113,8 +112,8 @@ namespace renderer{
     utils::LoadTextFile("shaders/DOF.frag", fs);
     Shader::LocationMap postFxLoc = {
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
-        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
     postEffectShader = new Shader;
     CHECKERROR
@@ -130,9 +129,9 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/EdgeDetection.frag", fs);
     Shader::LocationMap edgeLoc = {
-        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"edgeColour",      { Shader::UNIFORM | Shader::FLOAT3} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"edgeColor",      { Shader::UNIFORM | Shader::FLOAT3} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
 
     };
@@ -147,8 +146,8 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/Bloom.frag", fs);
     Shader::LocationMap bloomLoc = {
-        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto bloomShader = new Shader;
@@ -162,8 +161,8 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/RadialBlur.frag", fs);
     Shader::LocationMap radialLoc = {
-        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto radialShader = new Shader;
@@ -177,7 +176,7 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/Sepia.frag", fs );
     Shader::LocationMap sepiaMap = {
-        {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
 
@@ -191,7 +190,7 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/BlackAndWhite.frag", fs );
     Shader::LocationMap bnwMap = {
-        {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
 
@@ -201,6 +200,19 @@ namespace renderer{
     nodes::RegisterPostFxNode( bnwShader  ,"Black and white");
     auto bnwNode = nodes::CreatePostFxNode("Black and white");
 
+    //-----------------------------------------------------
+    fs.clear();
+    utils::LoadTextFile("shaders/SetAlpha.frag", fs );
+    Shader::LocationMap alphaMap = {
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"alpha",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
+    };
+    auto alphaShader = new Shader;
+    alphaShader->build(vs,fs,alphaMap);
+    nodes::RegisterPostFxNode( alphaShader  ,"SetAlpha");
+    auto alphaNode = nodes::CreatePostFxNode("SetAlpha");
 
     CHECKERROR
 
@@ -232,15 +244,17 @@ namespace renderer{
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 400), nodes::CreateCosNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 500), nodes::CreateMultiplyNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateDivideNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateClampNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 600), nodes::CreateSubstractNode() ) );
 
     io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 0.0, 100.0 ) );
 
     assert( timeNode );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
-    rayMarchingNode->output(1) >> dofNode->input(0);
-    rayMarchingNode->output(2) >> dofNode->input(1);
-    dofNode->output(1) >> screenNode->input();
   }
 
 
@@ -290,7 +304,7 @@ namespace renderer{
 
     GLint maxBuffers;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
-    std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
+    std::cout << "Max color Attachments: " << maxBuffers << std::endl;
 
     _frameBuffer = (FrameBuffer*)1; // TODO: change that before the gos of programming see it.
 

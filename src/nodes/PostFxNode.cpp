@@ -73,12 +73,18 @@ bool ShaderNodeUpdater::update(const Node& n)
             _shader->uniform1i(n.input(i).name(), nbTex);
             glActiveTexture( SelectTexture(nbTex) );
             (*n.input(i).dataAs<Texture2D*>())->bind();
-            std::cerr << "uniform texture " << n.input(i).name() << " -> "<< nbTex << std::endl;
+            //std::cerr << "uniform texture " << n.input(i).name() << " -> "<< nbTex << std::endl;
             ++nbTex;
             CHECKERROR
         }
         else if ( n.input(i).dataType() == vec3TypeInfo )
         {
+            if( !n.input(i).isConnected() )
+            {
+                std::cerr << "ShadeNodeUpdate::update error! disconnected input\n";
+                FrameBuffer::unbind();
+                return false;
+            }
             CHECKERROR
             _shader->uniformVec3(n.input(i).name(), *n.input(i).dataAs<glm::vec3>() );
             //std::cerr << "uniform vec3" << n.input(i).name() << std::endl;
@@ -151,8 +157,8 @@ void RegisterPostFxNode( renderer::Shader* shader, const std::string& name )
             layout.inputs.push_back(InputPortDescriptor(it->first, info, kiwi::READ ));
     }
     layout.outputs = {
-        {"frame buffer", fboTypeInfo, kiwi::READ },
-        {"color", textureTypeInfo, kiwi::READ }
+        {"fbo", fboTypeInfo, kiwi::READ },
+        {"outputImage", textureTypeInfo, kiwi::READ }
     };
     NodeTypeManager::RegisterNode(name, layout, new ShaderNodeUpdater( shader ) );
 }
@@ -191,7 +197,7 @@ bool RenderToScreen(const DataArray& inputs, const DataArray&)
     auto inputTex = *inputs[0]->value<Texture2D*>();
     assert(inputTex);
 
-    s_renderToScreenShader->uniform1i("colourTexture",0);
+    s_renderToScreenShader->uniform1i("inputImage",0);
     s_renderToScreenShader->uniform2f("windowSize", io::GetRenderWindowWidth(), io::GetRenderWindowHeight());
 
     glActiveTexture(GL_TEXTURE0);
@@ -211,14 +217,14 @@ void RegisterScreenNode()
     assert( utils::LoadTextFile("shaders/ToScreen.frag", fs) );
 
     renderer::Shader::LocationMap locations = {
-        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"windowSize",   { Shader::UNIFORM | Shader::FLOAT2} }
     };
     s_renderToScreenShader->build(vs,fs,locations);
 
     NodeLayoutDescriptor layout;
     layout.inputs = {
-        { "color", textureTypeInfo, kiwi::READ }
+        { "inputImage", textureTypeInfo, kiwi::READ }
     };
 
     NodeTypeManager::RegisterNode("Screen", layout, new DynamicNodeUpdater( &RenderToScreen ) );
