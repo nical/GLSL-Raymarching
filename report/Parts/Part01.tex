@@ -1,0 +1,25 @@
+\chapter{Introduction}
+	
+	The purpose of this project was to implement, at first, a real time
+	raytracer written in GLSL so that it could exploit the power of stream
+	processing given by the GPU. To achieve this it was needed to implement
+	a GLSL fragment shader that rendered the scene by doing per-pixel
+	computation.
+	
+	The idea included the possibility to control the rendering in real time
+	using an OpenGL rendered UI connected to the shader to, for example,
+	change the colour of the sky or of the rendered objects.
+	
+	From there the project advanced and included a set of post effect shaders,
+	implemented as deffered shading shaders, and a real time node compositor
+	to create and modify in real time the rendering chain. In this way
+	is possible, for example, to change the post effects order, change the colours of the
+	elements or modify parameters of the post effects.
+	
+	OpenGL, however, has some limitations for UI design and rendering, since
+	even trying to draw a simple string on the screen requires the developers
+	to implement specific geometry and fragment shaders.
+	
+	To tackle this problem it QT was chosen as framework for the creation
+	of the User Interface. In this way it was possible to render the scene
+	in a window and then add the node compositor beneath it. 
