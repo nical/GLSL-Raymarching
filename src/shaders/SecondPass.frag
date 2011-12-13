@@ -3,7 +3,7 @@
 
 out vec4 out_Color;
 
-uniform sampler2D colourTexture;
+uniform sampler2D inputImage;
 uniform sampler2D normalsTexture;
 uniform sampler2D godRaysTexture;
 
@@ -68,9 +68,9 @@ vec3 colorProcessing (vec2 coords, float blur) {
     return (vec3(0.0, 0.0, 1.0));
   }*/
 
-	newColour.r = texture2D(colourTexture,coords + vec2(0.0,1.0) * blurringCoord).r;
-	newColour.g = texture2D(colourTexture,coords + vec2(-0.866,-0.5) * blurringCoord).g;
-	newColour.b = texture2D(colourTexture,coords + vec2(0.866,-0.5) * blurringCoord).b;
+	newColour.r = texture2D(inputImage,coords + vec2(0.0,1.0) * blurringCoord).r;
+	newColour.g = texture2D(inputImage,coords + vec2(-0.866,-0.5) * blurringCoord).g;
+	newColour.b = texture2D(inputImage,coords + vec2(0.866,-0.5) * blurringCoord).b;
 
 	vec3 lumcoeff = vec3(0.299,0.587,0.114);
 	float lum = dot(newColour.rgb, lumcoeff);
@@ -138,7 +138,7 @@ vec3 DOF (float zDistance, vec2 coords){
 	float h = (1.0/windowSize.y) * blur + noise.y;
 
 
-	vec3 colour = texture2D(colourTexture, coords).rgb;
+	vec3 colour = texture2D(inputImage, coords).rgb;
 	float s = 1.0;
 
 	float ringSamples;
@@ -188,11 +188,11 @@ vec4 radialBlur(in vec2 coords) {
 
   dir = normalize(dir);
 
-  vec4 colour =  texture2D(colourTexture, coords);
+  vec4 colour =  texture2D(inputImage, coords);
   vec4 blurredColour = colour;
 
   for (int i = 0; i < 10; i++) {
-    blurredColour += texture2D( colourTexture, coords + dir * samples[i] * sampleDist );
+    blurredColour += texture2D( inputImage, coords + dir * samples[i] * sampleDist );
   }
 
   // we have taken eleven samples
@@ -215,19 +215,19 @@ vec4 bloomEffect(in vec2 coords) {
 
   for( i = -4 ; i < 4; i++) {
     for (j = -3; j < 3; j++) {
-      bloom += texture2D(colourTexture, coords + vec2((j * 1.0 / windowSize.x), (i * 1.0 / windowSize.y))) * 0.25;
+      bloom += texture2D(inputImage, coords + vec2((j * 1.0 / windowSize.x), (i * 1.0 / windowSize.y))) * 0.25;
     }
   }
     
-  if (texture2D(colourTexture, coords).r < 0.3) {
+  if (texture2D(inputImage, coords).r < 0.3) {
     bloom = bloom * bloom * 0.012;
-  } else if (texture2D(colourTexture, coords).r < 0.5) {
+  } else if (texture2D(inputImage, coords).r < 0.5) {
     bloom = bloom * bloom * 0.009;
   } else {
     bloom = bloom * bloom *0.0075;
   }
   
-  return bloom + texture2D(colourTexture, coords);
+  return bloom + texture2D(inputImage, coords);
 }
 
 void main (void){
@@ -235,7 +235,7 @@ void main (void){
     float zDistance = texture2D(normalsTexture, texelCoord).a;
 
     if (gl_FragCoord.x < (windowSize.x * 0.5) ) {
-      //out_Color = texture2D(colourTexture, texelCoord);
+      //out_Color = texture2D(inputImage, texelCoord);
       //out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(gl_FragCoord.xy));
       //out_Color = radialBlur(gl_FragCoord.xy/windowSize);
         //out_Color = vec4(DOF(zDistance, texelCoord), 1.0);
@@ -243,9 +243,9 @@ void main (void){
     } else {
       //out_Color = vec4(texture2D(normalsTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).rgb, 1.0);
       //out_Color = vec4(texture2D(normalsTexture, texelCoord).aaa, 1.0);
-      out_Color = texture2D(colourTexture, texelCoord);
+      out_Color = texture2D(inputImage, texelCoord);
       out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, clamp(mix(1.0, 0.0, zDistance/300.0), 0.0, 1.0)), edgeDetection(gl_FragCoord.xy));
       //out_Color = vec4(texture2D(godRaysTexture, vec2(gl_FragCoord.x/windowSize.x, gl_FragCoord.y/windowSize.y)).aaa, 1.0);
     }
-    //out_Color = texture2D(colourTexture, gl_TexCoord[0].st);
+    //out_Color = texture2D(inputImage, gl_TexCoord[0].st);
 }

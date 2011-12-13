@@ -3,7 +3,7 @@
 
 out vec4 out_Colour;
 
-uniform sampler2D colourTexture;
+uniform sampler2D inputImage;
 uniform sampler2D normalsTexture;
 
 uniform vec2 windowSize;
@@ -64,9 +64,9 @@ vec3 colorProcessing (vec2 coords, float blur) {
     return (vec3(0.0, 0.0, 1.0));
   }*/
 
-	newColour.r = texture2D(colourTexture,coords + vec2(0.0,1.0) * blurringCoord).r;
-	newColour.g = texture2D(colourTexture,coords + vec2(-0.866,-0.5) * blurringCoord).g;
-	newColour.b = texture2D(colourTexture,coords + vec2(0.866,-0.5) * blurringCoord).b;
+	newColour.r = texture2D(inputImage,coords + vec2(0.0,1.0) * blurringCoord).r;
+	newColour.g = texture2D(inputImage,coords + vec2(-0.866,-0.5) * blurringCoord).g;
+	newColour.b = texture2D(inputImage,coords + vec2(0.866,-0.5) * blurringCoord).b;
 
 	vec3 lumcoeff = vec3(0.299,0.587,0.114);
 	float lum = dot(newColour.rgb, lumcoeff);
@@ -134,7 +134,7 @@ vec3 DOF (float zDistance, vec2 coords){
 	float h = (1.0/windowSize.y) * blur + noise.y;
 
 
-	vec3 colour = texture2D(colourTexture, coords).rgb;
+	vec3 colour = texture2D(inputImage, coords).rgb;
 	float s = 1.0;
 
 	float ringSamples;

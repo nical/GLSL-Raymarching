@@ -2,7 +2,7 @@
 
 out vec4 out_Color;
 
-uniform sampler2D colourTexture;
+uniform sampler2D inputImage;
 uniform sampler2D normalsTexture;
 
 uniform vec2 windowSize;
@@ -22,11 +22,11 @@ vec4 radialBlur(in vec2 coords) {
 
   dir = normalize(dir);
 
-  vec4 colour =  texture2D(colourTexture, coords);
+  vec4 colour =  texture2D(inputImage, coords);
   vec4 blurredColour = colour;
 
   for (int i = 0; i < 10; i++) {
-    blurredColour += texture2D( colourTexture, coords + dir * samples[i] * sampleDist );
+    blurredColour += texture2D( inputImage, coords + dir * samples[i] * sampleDist );
   }
 
   // we have taken eleven samples
