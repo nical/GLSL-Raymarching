@@ -316,7 +316,7 @@ void main(void)
         }
         hitColor = mix(shadowColor, mtlColor, 0.4+shadow*0.6) - debugColor;
         vec3 hitNormal = ComputeNormal(hitPosition, 0);
-        float AO = AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0);
+        float AO = clamp(AmbientOcclusion(hitPosition, hitNormal, 0.35, 5.0), 0.0, 1.0);
         hitColor = mix(shadowColor, hitColor, AO);
 
         float distance = length(position-hitPosition);
@@ -334,7 +334,7 @@ void main(void)
         hitColor = mix(skyColor, skyColor*0.8, shade);
         out_Colour[0] = vec4(hitColor, 1.0);
         out_Colour[1] = vec4(1.0);
-        out_Colour[1].a = 1.0;
+        out_Colour[1].a = 10000000.0;
         //out_Colour[2] = vec4(hitColor, 1.0);
     }
 
