@@ -7,8 +7,8 @@ uniform sampler2D normalsTexture;
 
 uniform vec2 windowSize;
 
-uniform float sampleDist;
-uniform float sampleStrength;
+const float sampleDist = 1.0;
+const float sampleStrength = 2.2;
 
 //  Computing it once so we don't have to do it every time
 vec2 texelCoord = vec2(gl_FragCoord.xy / windowSize);

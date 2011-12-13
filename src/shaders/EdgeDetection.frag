@@ -4,6 +4,7 @@ out vec4 out_Color;
 
 uniform sampler2D colourTexture;
 uniform sampler2D normalsTexture;
+uniform vec3 edgeColour;
 
 uniform vec2 windowSize;
 
@@ -27,5 +28,5 @@ float edgeDetection(in vec2 coords){
 
 void main (void){
   out_Color = texture2D(colourTexture, texelCoord);
-  out_Color = mix(out_Color, vec4(0.5, 0.0, 0.0, 1.0), edgeDetection(texelCoord));
+  out_Color = mix(out_Color, vec4(edgeColour, 1.0), edgeDetection(texelCoord));
 }

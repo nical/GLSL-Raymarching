@@ -106,7 +106,9 @@ namespace renderer{
     fs.clear();
 
     utils::LoadTextFile("shaders/SecondPass.vert", vs);
-    utils::LoadTextFile("shaders/SecondPass.frag", fs);
+
+    //  Depth Of Field Shader
+    utils::LoadTextFile("shaders/DOF.frag", fs);
     Shader::LocationMap postFxLoc = {
         {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
@@ -122,19 +124,45 @@ namespace renderer{
     nodes::RegisterPostFxNode( postEffectShader ,"Depth of field");
     nodes::RegisterScreenNode();
 
-    //vs.clear();
+    //  Edge Detection Shader
+
     fs.clear();
-    //utils::LoadTextFile("shaders/EdgeDetection.vert", vs);
     utils::LoadTextFile("shaders/EdgeDetection.frag", fs);
     Shader::LocationMap edgeLoc = {
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"edgeColour",      { Shader::UNIFORM | Shader::FLOAT3} }
     };
     auto edgeShader = new Shader;
     CHECKERROR
     edgeShader->build( vs, fs, edgeLoc  );
     nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
 
+    //  Bloom Shader
+
+    fs.clear();
+    utils::LoadTextFile("shaders/Bloom.frag", fs);
+    Shader::LocationMap bloomLoc = {
+        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+    };
+    auto bloomShader = new Shader;
+    CHECKERROR
+    bloomShader->build( vs, fs, bloomLoc  );
+    nodes::RegisterPostFxNode( bloomShader  ,"Bloom");
+
+    //  Radial Blur Shader
+
+    fs.clear();
+    utils::LoadTextFile("shaders/RadialBlur.frag", fs);
+    Shader::LocationMap radialLoc = {
+        {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+    };
+    auto radialShader = new Shader;
+    CHECKERROR
+    radialShader->build( vs, fs, radialLoc  );
+    nodes::RegisterPostFxNode( radialShader  ,"Edge detection");
 
 
     //-----------------------------------------------------
