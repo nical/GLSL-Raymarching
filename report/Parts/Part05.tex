@@ -1,0 +1,30 @@
+\chapter{Conclusion and Considerations}
+
+\section{OpenGL 3+ on different hardware}
+
+One of the biggest difficulties encountered was to make the program work on
+different graphic cards. Luckily enough, the two laptops used to work on the project had different
+hardware (one nVidia and one ATI) so it gives stronger chances to detect some problems.
+ 
+For instance, at some point the program worked on both computers, but after an update
+of the graphics driver the one with nVidia hardware wouldn't render the scene any more, displaying
+silently a black screen instead. That was given by some initialization steps that were
+done in the wrong order (some code that was written a week before without us noticing it),
+and some texture initialisations were missing, with ATI drivers being more permissive than nVida's on
+the matter.
+
+The use of gDebugger helped a lot to understand what was going on inside,
+since a traditionnal debugguer cannot inspect what happens within OpenGL and since OpenGL
+does not give much information on errors.
+
+gDebugger intercepts draw calls and displays the buffers that are
+on gpu memory (textures, render buffers, vertex buffers, etc.), which is convenient
+when implementing deferred shading.
+
+Another problem was the support of experimental features on the OpenGL context used
+in the project. To be forward compatible the project was written using Vertex
+Array Objects to contain informations on the vertices rendered on the screen.
+This worked ``Out of the box'' on the ATI card (most probably because it was
+more recent), while was not supported on the nVidia one. To fix this, however,
+the Glew was used to enable experimental extensions for the OpenGL context used,
+by enabling the \syntax{glewExperimental} flag in initialisation.

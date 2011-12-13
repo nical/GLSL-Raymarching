@@ -143,7 +143,9 @@ float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float sampl
 	float occlusion;
 	int tempMaterial;   //  Needed by the DistanceField function
 	for (occlusion = 1.0 ; samples > 0.0 ; samples--) {
-		occlusion -= (samples * stepDistance - (DistanceField( point + normal * samples * stepDistance, tempMaterial))) / pow(2.0, samples);
+		occlusion -= (samples * stepDistance -
+		  (DistanceField( point + normal * samples * stepDistance, tempMaterial)))
+		  / pow(2.0, samples);
 	}
 	return occlusion;
 }

@@ -1,0 +1,194 @@
+\chapter{Raymarching}
+
+Ray marching is a technic similar to ray tracing on many aspects. The colour of
+each fragment is determined by using rays going from the viewer to the scene with
+a pinhole camera model. Rays are not casted directly to the surfaces of the objects
+like in most of the methods derived from ray tracing.
+
+Instead the distance to the closest object is computed and the ray is advanced one step towards
+its vector by this distance. This procedure is repeated
+until the ray reaches an object or a maximum number of steps is reached. Another version can limit
+the distance marched. The step version, however, is more compatible with the version
+of GLSL that comes together with WebGL (a slightly modified version of OpenGL ES2), which requires
+loops to be limited in the number of steps. 
+
+This method can seem sub-optimal at first, as every ray need several iterations before reaching an object,
+but it turns out that it is often faster than raytracing for the following reasons:
+\begin{itemize}
+ \item most simple objects have a very fast distance equation\footnote{As can be seen on this
+ 	very useful web page: http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm}.
+ \item distance functions can be modified in order to add interesting effects such as
+	infinite repetition for a negligible cost.
+ \item it provides local and global informations, which makes possible additional effects
+ 	such as Ambient Occlusion or Soft Shadows with no to little extra effort
+ \item it requres less branching. Since GPUs are not meant for conditional execution, then
+ 	the less branches executed on the GPU the better, since fragment shaders run SIMD
+ 	(Single Instruction Multiple Data) branching.
+\end{itemize}
+
+\section{Infinite repetition} 
+
+In raymarching repeating objects infinitely is both easy and cheap in term of GPU cycles.
+
+Let's take a look at the distance function of a sphere.
+
+\begin{lstlisting}
+#define center vec3(0,0,0)
+#define radius 2.0
+float SphereDistance( vec3 point )
+{
+    return length( center - point ) - radius;
+}
+\end{lstlisting}
+
+This functions returns the distance between a point and the center of the sphere
+minus the radius of the sphere.
+
+To repeat infinitely the sphere arround the X axis we only need to add a modulo
+operation like follows:
+
+\begin{lstlisting}
+#define dist 10
+// ...
+point.x = mod( point.x + dist/2, dist ) - dist/2;
+return length( center - point ) - radius;
+}
+\end{lstlisting}
+
+An infinte number of copies of the same object will appear and the frame rate will not change
+noticeably. Adding $\frac{dist}{2}$ inside the modulo and removing it afterward does not alter
+the position of the object but is necessary because, without it, the sphere would
+be cut by the modulo as it is centered on zero.
+
+%todo: image of a cut sphere
+
+%todo: scheme to explain the effect of modulo on the position of the distance field
+
+This is one of the big advantages of ray marching. Repeating geometry to infinity
+at almost no cost is a nice feature, since it can be used for a high number of objects,
+such as grass or honeycombs. However, the resulting image could be somewhat boring because
+of the repetition itself. This is not a big problem however because we can modify
+the distance function in order to modify the shape in function of the position.
+For instance, to have variable sphere radius on the same object wa can add the following
+line before applying the modulo:
+
+\begin{lstlisting}
+float newRadius =  1+2*sin(floor(point.x/dist)));
+\end{lstlisting}
+
+Here, \syntax{floor(point.x/dist)} returns a different constant number for replication
+of the sphere as it is divided by the distance between two repetitions, and the decimal part
+is removed. This number grows along with the x position of the sphere, so it
+can be interesting to place it inside a periodic function to clamp it
+whithin a certain range. Then it is just a matter of tweaking the mathematical
+function in order to break periodicity and introduce a feeling of randomness.
+
+To sum up, with the following distance function, we obtain an infinite number
+of spheres which radius varies between $1.0$ and $3.0$. 
+
+\begin{lstlisting}
+#define dist 10
+#define center vec3(0,0,0)
+float SphereDistance( vec3 point )
+{
+    float newRadius =  1+2*sin(floor(point.x/dist)));
+    point.x = mod( point.x + dist/2, dist ) - dist/2;
+    return length( center - point ) - newRadius;
+}
+\end{lstlisting}
+
+Performance-wise, this is a great feature. An infinity of objects in the screen introduced by
+one simple three lines distance function that contains no loop, and not even a branch.  
+
+
+\section{Computing normals}
+
+At first we tried to compute normals using a specific function for each kind of
+shape. This is simple for a sphere but can get complex for other objects.
+In fact there is a much simpler and efficient way to compute normals, by using
+the expression of the gradient:
+Given a point \syntax{p} on the surface of an object
+described by the distance function \syntax{f}, its normal \syntax{n} can be evaluated using a very
+small \syntax{epsilon} quantity.
+
+This can be expressed in GLSL code in the following way:
+
+\begin{lstlisting}
+n = normalize( vec3(
+      f(p + vec3(epsilon,0,0)  ) - f(p - vec3(epsilon,0,0))
+    , f(p + vec3(0,epsilon,0)  ) - f(p - vec3(0,epsilon,0))
+    , f(p + vec3(0,0,epsilon)  ) - f(p - vec3(0,0,epsilon))
+) );
+\end{lstlisting}
+
+This is very convenient on objects more complicated than a sphere, since
+the normal vector is used in various occasions, such as reflections or Ambient
+Occlusion Computations.
+
+\section{Ambient occlusion}
+
+Ambient occlusion (AO) is the effect of small areas being darkened by taking into
+account the attenuation of light due to occlusion by surrounding objects.
+AO is a crude approximateion of the way light bounces around in real world, in
+order to provide with more realistic results. It does not give as good results as
+global illumination techniques like radiosity, but helps providing convincing graphics
+in real time.
+
+Thanks to Ray Marching technique the Ambient Occlusion effect can be computed easily.
+The idea is to march a new ray for a fixed number of same length steps along the normal
+of the surface that was hit and use the distance to the closest surface at each step
+to compute the occlusion effect due to how near that is. This value is then used to
+apply a shadow effect on the pixel that is currently computed. The effect of a surface is
+divided by the square of the distance, as occlusions are less important if they are further
+away from the pixel.
+
+\begin{lstlisting}
+float AmbientOcclusion (vec3 point, vec3 normal, float stepDistance, float samples) {
+	float occlusion;
+	int tempMaterial;   //  Needed by the DistanceField function
+	for (occlusion = 1.0 ; samples > 0.0 ; samples--) {
+		occlusion -= (samples * stepDistance -
+				(DistanceField( point + normal * samples * stepDistance, tempMaterial))
+			) / pow(2.0, samples);
+	}
+	return occlusion;
+}
+\end{lstlisting}
+
+This computation can be done efficiently thanks to Raymarching since it requires informations
+on the distance of objects along the ray.
+
+\section{Soft Shadows}
+
+Rendering shadows in Raymarching is based on a simple idea: once a ray has hit something
+other rays are casted from that position towards the lights in the scene (one ray
+per light). If the ray manages to reach the light then it means that that point is
+illuminated by that source.
+
+Using this data is possible to generate hard shadows, since it possible to know either if
+the ray hitted the light or not, starting from a specific point. To generate
+soft shadows it would be necessary to cast more than one ray per light by jittering the starting
+position. This greatly increases the computation cycles required per pixel.
+
+With Raymarching, however, each ray can be raymarched to retrieve informations about the whereabouts 
+of the objects along its path. In this way it is possible to know how near the ray
+passed from an object and use that data to generate soft shadow edges by using the distance
+marched and how near to an object the ray passes.
+
+\label{lst:SoftShadow}\begin{lstlisting}
+for( float t = (mint + rand(gl_FragCoord.xy) * 0.01); t < maxt; )
+{
+    float nextDist = min(
+        BuildingsDistance(landPoint + lightVector * t )
+        , RedDistance(landPoint + lightVector * t )
+    );
+
+    if( nextDist < 0.001 ){ return 0.0; }
+    
+    penumbraFactor = min( penumbraFactor, iterations * nextDist / t );
+    t += nextDist;
+}
+\end{lstlisting}
+
+The \syntax{iterations} variable is used to modify the softness of the shadow. The lower the
+value is, the softer the shadow is.
