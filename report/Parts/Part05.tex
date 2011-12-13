@@ -21,10 +21,26 @@ gDebugger intercepts draw calls and displays the buffers that are
 on gpu memory (textures, render buffers, vertex buffers, etc.), which is convenient
 when implementing deferred shading.
 
+gDebugger, however, can cause the disappearance of specific OpenGL related Heisenbugs. This
+happened a great number of times. The texture initialisation problem was not debuggable
+with gDebugger since the program bypasses some bad initialisations and uses some standard
+parameters, whereas in a non controlled environment this does not happen. One of the
+greatest mysteries that were encountered during the development of the project that was
+resolved in the last days was caused by a wrong initialisation of the textures, once again,
+but this time it was due to a removal of support for a specific enumerator. This, however,
+did not throw any error but caused some random bugs, such as showing incorrect rendering,
+reading the wrong data from the texture during deferred shading and such.
+
+This problem was due to the fact that OpenGL 3+ does not have any more the \syntax{GL\_CLAMP}
+option for the \syntax{glTexParameteri} function but instead has two new options:
+\syntax{GL\_CLAMP\_TO\_EDGE} and \syntax{GL\_CLAMP\_TO\_BORDER}. The first one was
+used in the project and, after replacing it some of the bugs, such as incorrect
+edge detection and blurring on the borders or wrong initialisation, disappeared.
+
 Another problem was the support of experimental features on the OpenGL context used
 in the project. To be forward compatible the project was written using Vertex
 Array Objects to contain informations on the vertices rendered on the screen.
 This worked ``Out of the box'' on the ATI card (most probably because it was
 more recent), while was not supported on the nVidia one. To fix this, however,
 the Glew was used to enable experimental extensions for the OpenGL context used,
-by enabling the \syntax{glewExperimental} flag in initialisation.
+by enabling the \syntax{glewExperimental} flag in initialisation.	
