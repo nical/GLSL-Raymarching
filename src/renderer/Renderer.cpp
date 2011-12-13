@@ -15,10 +15,12 @@
 #include "nodes/ColorNode.hpp"
 #include "nodes/PostFxNode.hpp"
 #include "nodes/RayMarchingNode.hpp"
+#include "nodes/FloatMathNodes.hpp"
 #include "io/Compositor.hpp"
 #include "io/NodeView.hpp"
 #include "io/ColorNodeView.hpp"
 #include "io/PortView.hpp"
+#include "io/SliderNodeView.hpp"
 
 #include <GL/glew.h>
 #include <iostream>
@@ -110,7 +112,6 @@ namespace renderer{
     //  Depth Of Field Shader
     utils::LoadTextFile("shaders/DOF.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"time",            { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
@@ -131,12 +132,15 @@ namespace renderer{
     Shader::LocationMap edgeLoc = {
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"edgeColour",      { Shader::UNIFORM | Shader::FLOAT3} }
+        {"edgeColour",      { Shader::UNIFORM | Shader::FLOAT3} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
     };
     auto edgeShader = new Shader;
     CHECKERROR
     edgeShader->build( vs, fs, edgeLoc  );
     nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
+    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
 
     //  Bloom Shader
 
@@ -144,12 +148,14 @@ namespace renderer{
     utils::LoadTextFile("shaders/Bloom.frag", fs);
     Shader::LocationMap bloomLoc = {
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto bloomShader = new Shader;
     CHECKERROR
     bloomShader->build( vs, fs, bloomLoc  );
     nodes::RegisterPostFxNode( bloomShader  ,"Bloom");
+    auto bloomNode = nodes::CreatePostFxNode("Bloom");
 
     //  Radial Blur Shader
 
@@ -157,12 +163,14 @@ namespace renderer{
     utils::LoadTextFile("shaders/RadialBlur.frag", fs);
     Shader::LocationMap radialLoc = {
         {"colourTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} }
+        {"normalsTexture",  { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto radialShader = new Shader;
     CHECKERROR
     radialShader->build( vs, fs, radialLoc  );
-    nodes::RegisterPostFxNode( radialShader  ,"Edge detection");
+    nodes::RegisterPostFxNode( radialShader  ,"Radial Blur");
+    auto radialNode = nodes::CreatePostFxNode("Radial Blur");
 
 
     //-----------------------------------------------------
@@ -170,16 +178,33 @@ namespace renderer{
     utils::LoadTextFile("shaders/Sepia.frag", fs );
     Shader::LocationMap sepiaMap = {
         {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"factor",   { Shader::UNIFORM | Shader::FLOAT} }
+        {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
     };
     auto sepiaShader = new Shader;
     sepiaShader->build(vs,fs,sepiaMap);
     nodes::RegisterPostFxNode( sepiaShader  ,"Sepia");
     auto sepiaNode = nodes::CreatePostFxNode("Sepia");
 
+    //-----------------------------------------------------
+    fs.clear();
+    utils::LoadTextFile("shaders/BlackAndWhite.frag", fs );
+    Shader::LocationMap bnwMap = {
+        {"colorTexture",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+
+    };
+    auto bnwShader = new Shader;
+    bnwShader->build(vs,fs,bnwMap);
+    nodes::RegisterPostFxNode( bnwShader  ,"Black and white");
+    auto bnwNode = nodes::CreatePostFxNode("Black and white");
+
+
     CHECKERROR
 
-
+    nodes::RegisterFloatMathNodes();
 
     skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
     groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
@@ -187,12 +212,11 @@ namespace renderer{
     sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
     dofNode = nodes::CreatePostFxNode("Depth of field");
     screenNode = nodes::CreateScreenNode();
-    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
+
 
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(400,0),screenNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 0), winSizeNode) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 100), skyColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 150), groundColorNode ) );
     io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 200), buildingsColorNode ) );
@@ -201,18 +225,21 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), rayMarchingNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,400),radialNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,500),bloomNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,300),bnwNode) );
 
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
 
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 0.0, 100.0 ) );
 
     assert( timeNode );
-    //assert( skyColorNode->output() >> rayMarchingNode->input(0) );
     assert( timeNode->output() >> rayMarchingNode->input(6) );
-    //assert( winSizeNode->output() >> rayMarchingNode->input(9) );
     assert( rayMarchingNode->output(1) >> screenNode->input() );
     rayMarchingNode->output(1) >> dofNode->input(0);
     rayMarchingNode->output(2) >> dofNode->input(1);
-    timeNode->output() >> dofNode->input(2);
     dofNode->output(1) >> screenNode->input();
   }
 
@@ -244,70 +271,14 @@ namespace renderer{
 
   }
 
-  void Renderer::drawScene(){
+  void Renderer::drawScene()
+  {
 
     CHECKERROR
     if( _frameBuffer == 0 ) return;
-/*
-    timeNode->update();
 
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    rayMarchingNode->update();
-
-    screenNode->update();
-
-    //glBindVertexArray(0);
-
-    //raymarchingShader->unbind();
-
-    FrameBuffer::unbind();
-    CHECKERROR
-*/
     ProcessNodes(screenNode);
 
-    /*
-
-    postEffectShader->bind();
-    postEffectShader->uniform2f("windowSize", window.x, window.y );
-    postEffectShader->uniform1f("time", 0 );
-    postEffectShader->uniform1i("colourTexture", 0 );
-    postEffectShader->uniform1i("normalsTexture", 1 );
-
-    CHECKERROR
-    
-    //  Binding Colour Texture
-    glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, texColour[0]);
-    //_frameBuffer->texture(0).bind();
-    (*rayMarchingNode->output(1).dataAs<Texture2D*>())->bind();
-    CHECKERROR
-
-    //  Binding Normals' Texture
-    glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, texNorms[0]);
-    //_frameBuffer->texture(1).bind();
-    (*rayMarchingNode->output(2).dataAs<Texture2D*>())->bind();
-    CHECKERROR
-    
-    DrawQuad();
-
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-CHECKERROR
-
-    glActiveTexture(GL_TEXTURE1);
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-CHECKERROR
-
-    glActiveTexture(GL_TEXTURE0);
-    CHECKERROR
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    postEffectShader->unbind();
-    CHECKERROR
-    */
   }
 
 
@@ -321,7 +292,7 @@ CHECKERROR
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxBuffers);
     std::cout << "Max Colour Attachments: " << maxBuffers << std::endl;
 
-    _frameBuffer = (FrameBuffer*)1;
+    _frameBuffer = (FrameBuffer*)1; // TODO: change that before the gos of programming see it.
 
   }
 

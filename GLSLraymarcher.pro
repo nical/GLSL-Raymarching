@@ -11,6 +11,7 @@ HEADERS +=  src/io/Window.hpp \
             src/nodes/TimeNode.hpp \
             src/nodes/ColorNode.hpp \
             src/nodes/RayMarchingNode.hpp \
+            src/nodes/FloatMathNodes.hpp \
             src/utils/CheckGLError.hpp \
     src/io/NodeView.hpp \
     src/io/Compositor.hpp \
@@ -21,7 +22,10 @@ HEADERS +=  src/io/Window.hpp \
     src/io/ConnectAdapter.hpp \
     src/io/ColorNodeView.hpp \
     src/nodes/PostFxNode.hpp \
+    src/io/SliderNodeView.hpp \
+    src/io/SliderNodeAdapter.hpp \
     src/io/ColourPicker.hpp
+
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
             src/io/Window.cpp \
@@ -33,6 +37,7 @@ SOURCES +=  src/main.cpp \
             src/nodes/TimeNode.cpp \
             src/nodes/ColorNode.cpp \
             src/nodes/RayMarchingNode.cpp \
+            src/nodes/FloatMathNodes.cpp \
             src/utils/CheckGLError.cpp \
             src/KiwiInit.cpp \
     src/io/NodeView.cpp \
@@ -44,6 +49,8 @@ SOURCES +=  src/main.cpp \
     src/io/ConnectAdapter.cpp \
     src/io/ColorNodeView.cpp \
     src/nodes/PostFxNode.cpp \
+    src/io/SliderNodeView.cpp \
+    src/io/SliderNodeAdapter.cpp \
     src/io/ColourPicker.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pg -g
