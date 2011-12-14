@@ -146,9 +146,9 @@ namespace renderer{
     fs.clear();
     utils::LoadTextFile("shaders/Bloom.frag", fs);
     Shader::LocationMap bloomLoc = {
-        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+        {"inputImage",      { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"bloomCoefficient",{ Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto bloomShader = new Shader;
     CHECKERROR
@@ -162,7 +162,6 @@ namespace renderer{
     utils::LoadTextFile("shaders/RadialBlur.frag", fs);
     Shader::LocationMap radialLoc = {
         {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
-        {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
     auto radialShader = new Shader;
@@ -250,7 +249,8 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateClampNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 600), nodes::CreateSubstractNode() ) );
 
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 0.0, 100.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 1.0, 100.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 550), 0.0, 1.0 ) );
 
     assert( timeNode );
     assert( timeNode->output() >> rayMarchingNode->input(6) );

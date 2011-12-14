@@ -13,17 +13,17 @@ vec2 texelCoord = vec2(gl_FragCoord.xy / windowSize);
 
 //  DOF effect variables here. We'll have to translate them into uniforms, but that will come when it's working. :3
 
-float focalDepth = 100.0;  //focal point. comes from external script, but you may use autofocus option below
+float focalDepth = 150.0;  //focal point. comes from external script, but you may use autofocus option below
 
 float depthSamples = 3; //samples on the first ring
 float depthRings = 5; //ring count
 
 bool useAutoFocus = false; //use autofocus in shader?
-float focalRange = 10000.0; //focal range
+float focalRange = 100.0; //focal range
 float maxBlur =  1.5;//clamp value of max blur
 
-float highlightThreshold = 0.9; //highlight threshold;
-float highlightGain = 1.0; //highlight gain;
+float highlightThreshold = 0.7; //highlight threshold;
+float highlightGain = 2.0; //highlight gain;
 
 float bokehBias = 0.8; //bokeh edge bias
 float bokehFringe = 0.7; //bokeh chromatic aberration/fringing
@@ -117,7 +117,7 @@ vec3 DOF (float zDistance, vec2 coords){
 		zDistance = depthBlurring(coords);
 	}
 
-	blur = clamp((abs(zDistance - focalDepth)/focalRange)*100.0, -maxBlur, maxBlur);
+	blur = clamp((abs(zDistance - focalDepth)/focalRange), -maxBlur, maxBlur);
 	//blur = clamp((abs(depth - focalDepth)/range)*(maxblur/float(rings)),-maxblur,maxblur);
 
 	if (useAutoFocus)

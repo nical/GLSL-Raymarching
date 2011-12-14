@@ -52,7 +52,7 @@ void SliderNodeView::mouseMoveEvent( QGraphicsSceneMouseEvent* event )
 
 void SliderNodeView::updateValue(int val)
 {
-    *node()->output().dataAs<float>() = (float)val * 0.001;
+    *node()->output().dataAs<float>() = (float)val * 0.01;
 }
 
 }//namespace

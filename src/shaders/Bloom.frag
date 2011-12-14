@@ -4,6 +4,7 @@ out vec4 out_Color;
 
 uniform sampler2D inputImage;
 uniform sampler2D fragmentInfo;
+uniform float bloomCoefficient;
 
 uniform vec2 windowSize;
 
@@ -18,7 +19,7 @@ vec4 bloomEffect(in vec2 coords) {
 
   for( i = -4 ; i < 4; i++) {
     for (j = -3; j < 3; j++) {
-      bloom += texture2D(inputImage, coords + vec2((j * 1.0 / windowSize.x), (i * 1.0 / windowSize.y))) * 0.25;
+      bloom += texture2D(inputImage, coords + vec2((j * 1.0 / windowSize.x), (i * 1.0 / windowSize.y))) * (bloomCoefficient * 0.01);
     }
   }
     
