@@ -1,25 +1,45 @@
 \chapter{Introduction}
 	
-	The purpose of this project was to implement, at first, a real time
-	raytracer written in GLSL so that it could exploit the power of stream
-	processing given by the GPU. To achieve this it was needed to implement
-	a GLSL fragment shader that rendered the scene by doing per-pixel
+	The purpose of this project was to implement, a real time and cross platform
+	ray marcher written in GLSL that can exploit the power of stream
+	processing provided by the GPU. To achieve this it we implemented the ray marching
+    algorithm in a GLSL fragment shader that renders the scene by doing per-pixel
 	computation.
 	
-	The idea included the possibility to control the rendering in real time
-	using an OpenGL rendered UI connected to the shader to, for example,
-	change the colour of the sky or of the rendered objects.
+	The idea included the possibility to control the rendering parameters in real time
+	using a dynamic compositing system which interface would also be rendered through OpenGL.
 	
-	From there the project advanced and included a set of post effect shaders,
-	implemented as deffered shading shaders, and a real time node compositor
-	to create and modify in real time the rendering chain. In this way
-	is possible, for example, to change the post effects order, change the colours of the
-	elements or modify parameters of the post effects.
+	From there the project advanced and we implemented deffered shading with multiple
+    render targets on the ray marcher in order to add a set of post effect shaders. 
+    We added 
 	
-	OpenGL, however, has some limitations for UI design and rendering, since
-	even trying to draw a simple string on the screen requires the developers
-	to implement specific geometry and fragment shaders.
-	
-	To tackle this problem it QT was chosen as framework for the creation
-	of the User Interface. In this way it was possible to render the scene
-	in a window and then add the node compositor beneath it. 
+    since the integration of a node compositor took longer time than expected,
+    we decided to use the Qt framework to speed up the development of the user interface.
+    This way we would be able to use widgets such as sliders and color pickers,
+    and also have text rendering that we would probably not have time to implement
+    in OpenGL. It turned out that mixing
+    Qt widgets and OpenGL rendering in the same frame is not as well supported as
+    we hoped. Therefore we dropped implementing the widgets in OpenGL in order to
+    be able to finish the project and concentrate on more important features.
+
+    The entire rendering pipeline is implemented in OpenGL, but not the user interface
+    of the compositing system (rendered separately using the Qt graphics API).
+
+    Here is a quick summary of the interesting features of this project:
+    \begin{itemize}
+        \item \textbf{Real-time} ray marching implemented on the GPU through a GLSL fragment shader. \footnote{See part \ref{chap:raymarching}.}
+        \item Post effects also implemented using shaders\footnote{See part \ref{chap:postfx}.}:
+        \begin{itemize}
+            \item Radia blur
+            \item Bloom
+            \item Edge detection
+            \item Sepia and black and white color filters
+            \item Depth of field with bokehs
+        \end{itemize}
+        \item Deferred shading with multiple target rendering\footnote{See part \ref{chap:compositor}.}. 
+        \item A completely dynamic and modular compositing system\footnote{See part \ref{chap:compositor}.}. This feature is
+        important because it forced us to rethink the way we use the OpenGL API
+        in order to integrate it in a dynamic visual scripting system and make it
+        possible to change the rendering pipeline at run-time. We also wrapped
+        most of the use of OpenGL into classes (Shader, FrameBuffer, Texture...).
+    \end{itemize}
