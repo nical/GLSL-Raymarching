@@ -1,1 +1,125 @@
 \chapter{The compositing system\label{chap:compositor}}
+
+This part of the report is mainly related to problematics of the Computer graphics course.
+
+\section{Node compositing}
+
+Node based compositors are widely used in computer graphics softwares. They provide
+an efficient way to compose a rendering pipeline at runtime in a way that is accessible
+to non-programmers (such as graphic artists). In our case it provides us with a
+nice framework to experiment with the different parts of the rendering pipeline.
+
+Our system allowed us to very quckly add new shaders and play with their parameters
+and composition within the application instead of doing so in the code. 
+
+Our node compositor is constituted of "boxes", the nodes, that can be connected
+through their inpout and output ports. Ports are typed to ensure correct rooting.
+To decide the order of processing of the nodes, we added a special node,
+the screen node, that takes a texture in parameter and render it to the screen.
+the dependency chain is then computed recursively starting from this node. All
+the other shader based nodes - the ray marcher and the post effects - cannot render
+to the screen. Instead, they render into textures grouped together into frame
+buffer objects.
+
+\section{The backend of the compositor}
+
+The backend of the compositor is an open source external library named Kiwi, developed as a side
+project, and available at \url{http://github.com/nical/kiwi}.
+
+We used the following features provided by Kiwi:
+\begin{itemize}
+    \item Data structures for nodes, ports and pipelines with facilities to traverse the node graph.
+    \item Generic runtime typing system allowing to create types - in our case we added
+    types such as \textit{Texture}, \textit{Float}, \textit{Color}, etc.
+\end{itemize}
+
+\section{The frontend}
+
+The user interface was implemented for this project, using the Qt framework. Because
+of time constraint we only implemented basic interactions with the system, so the
+user experience is not optimal (connecting/deconnecting ports could be operated
+through drag and drop, for instance), yet it provides all the features we wanted for
+this project.
+
+We initially planned to implement the user interface display in OpenGL on top of
+the rendered scene. It turned out that Qt does not make this kind of things easy.
+If we wanted to use widgets provided by Qt, the scene had to be rendered as a
+backround of a QGraphicsScene and the nodes displayed using the QGraphicsItem class.
+This mixed use of Qt and OpenGL is not yet fully supported, and even the only tutorial
+available on the subject from the Qt documentation compiled but did not work properly.
+This is partly due to the way Qt handles OpenGL contexts. When experimenting with
+it and looking inside a GPU debugger, we found out that Qt was creating four different
+OpenGL contexts, and that context switching did not happen correctly. With the way
+context were handled, we also had errors when trying to use the GLEW library to
+initialize the OpenGL extensions we needed in cross platform way.
+
+Finally we decided to separate the render frame and the compositor's user interface
+and only use the standard Qt API to display the node compositor, while the rendering
+pipeline would still be implemented in OpenGL, in a separate widget. This way we
+stopped having OpenGL context problems, and we could use sliders and color pickers
+with the compositing system.
+
+\section{From hard-coded to dynamic rendering pipeline}
+
+Most of the work of integrating the node compositor - if we don't consider the
+time spent on resolving problems with Qt and OpenGL contexts - consisted in redesigning
+our application in a way that made it possible to reorganize parts of the
+rendering process at runtime.
+
+In the first iterations of the project, the rendering pipeline was basically implemented
+in two functions, the initialization function and the display function. We quickly
+set up a base to display the ray marching shader by rendering it into a quad that
+fills the screen. We then splitted the rendering process so that the ray marching
+shader would render into a frame buffer object containing two textures - one for
+the rendered scene, and another for additionnal per fragment informations (normals and depth)
+that we wanted to reuse in post effects - and a second pass would use it to render
+the scene to the screen with a shader based post effect. At this point every
+resource was initialized together in the init function and the whole rendering
+process was done in the display function. Although it made it possible for us to
+rapidly get to work on the ray marcher, a complete redesign would be necessary in
+order to add the compositing system we planned for. The first step was to change
+the management of OpenGL resources so that we would not have to copy-paste ten lines
+of code every time we needed a new texture, shader or frame buffer. We encapsulated
+most of the openGL objects into classes that manage their initialization. This part
+was important because it forced us to really understand how OpenGL works in order
+to reorganize adequately its functionnalities in different classes. In particular,
+we needed to make it possible to root any output texture port of any node into any input
+texture port which requires to be carefull about how multiple target rendering works
+and how frame buffers and textures are to be managed.
+
+xxx TODO xxx
+
+In the end, adding a new shader based effect to the program only requires to write
+the shader in a separate file and to invoke the following lines of C++ code:
+\begin{lstlisting}
+    // initialization
+    string vs, fs;
+    utils::LoadTextFile("shaders/SecondPass.vert", vs );
+    utils::LoadTextFile("shaders/myNewShader.frag", fs );
+    auto myShader = new renderer::Shader;
+    // the following info will be used to generate the node's ports and
+    // to check that uniforms are passed correctly.
+    renderer::Shader::LocationMap locations = {
+        {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"alpha",        { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",   { Shader::UNIFORM | Shader::FLOAT2} },
+        {"outputImage",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
+    };
+    myShader->build(vs,fs,locations);
+    nodes::RegisterPostFxNode( myShader  ,"Name of the effect"); // register a node type
+
+    // create an instance of the node type (the node can be independently instanciated
+    // any number of times) and allocate the necessary resources (fbo, textures...)
+    kiwi::core::Node * myNode = nodes::CreatePostFxNode("Name of the effect");
+    // create the GUI for the node and add it to the scene
+    io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), myNode) );
+}
+\end{lstlisting}
+
+\section{Possible improvements}
+
+xxx TODO xxx\\
+implement nicer user experience\\
+manage frame buffers and textures to reuse them as much as possible instead of allocating for each node\\
+allow to save and restore pipelines (should be a feature of Kiwi)\\
+add more nodes!\\

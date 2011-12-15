@@ -92,7 +92,7 @@ namespace renderer{
         {"fovyCoefficient", { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
         {"outputImage",     { Shader::OUTPUT  | Shader::TEXTURE2D} },
-        {"fragmentInfo",  { Shader::OUTPUT  | Shader::TEXTURE2D} }
+        {"fragmentInfo",    { Shader::OUTPUT  | Shader::TEXTURE2D} }
     };
     raymarchingShader = new Shader;
     CHECKERROR
