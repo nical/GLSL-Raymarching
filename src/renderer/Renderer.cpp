@@ -201,6 +201,22 @@ namespace renderer{
 
     //-----------------------------------------------------
     fs.clear();
+    utils::LoadTextFile("shaders/Corners.frag", fs );
+    Shader::LocationMap cornerMap = {
+        {"inputImage",     { Shader::UNIFORM | Shader::TEXTURE2D} },
+        {"cornerColor",          { Shader::UNIFORM | Shader::FLOAT3} },
+        {"offset",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
+        {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
+    };
+    
+    auto cornerShader = new Shader;
+    cornerShader->build(vs,fs,cornerMap);
+    nodes::RegisterPostFxNode( cornerShader  ,"Corners");
+    auto cornerNode = nodes::CreatePostFxNode("Corners");
+
+    //-----------------------------------------------------
+    fs.clear();
     utils::LoadTextFile("shaders/SetAlpha.frag", fs );
     Shader::LocationMap alphaMap = {
         {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
@@ -240,6 +256,7 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,500),bloomNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(400,300),bnwNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,400),cornerNode) );
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );

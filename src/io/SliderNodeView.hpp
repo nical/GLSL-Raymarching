@@ -19,6 +19,10 @@ public:
 
     void mouseMoveEvent( QGraphicsSceneMouseEvent* event );
 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+
+
     virtual QString nodeName() const;
 
     void updateValue(int value);
