@@ -8,7 +8,6 @@ uniform vec3 edgeColor;
 
 uniform vec2 windowSize;
 
-//  Computing it once so we don't have to do it every time
 vec2 texelCoord = vec2(gl_FragCoord.xy / windowSize);
 
 float edgeDetection(in vec2 coords){

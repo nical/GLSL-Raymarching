@@ -42,20 +42,9 @@ private:
   } window;
 
   glm::mat4 viewMatrix;
-
-  kiwi::core::Node * viewMatNode; 
-  kiwi::core::Node * winSizeNode;
-  kiwi::core::Node * timeNode;
-  kiwi::core::Node * skyColorNode;
-  kiwi::core::Node * groundColorNode;
-  kiwi::core::Node * buildingsColorNode;
-  kiwi::core::Node * sphereColorNode;
   
-  kiwi::core::Node * rayMarchingNode;
-  kiwi::core::Node * radialBlurNode;
-  kiwi::core::Node * edgeDetectionNode;
-  kiwi::core::Node * dofNode;
   kiwi::core::Node * screenNode;
+  kiwi::core::Node * timeNode;
 
   kiwi::core::Pipeline * renderPipeline;
 

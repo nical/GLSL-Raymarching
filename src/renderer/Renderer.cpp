@@ -16,6 +16,7 @@
 #include "nodes/PostFxNode.hpp"
 #include "nodes/RayMarchingNode.hpp"
 #include "nodes/FloatMathNodes.hpp"
+#include "nodes/ColorMix.hpp"
 #include "io/Compositor.hpp"
 #include "io/NodeView.hpp"
 #include "io/ColorNodeView.hpp"
@@ -41,7 +42,6 @@ namespace renderer{
   {
     window.x = x;
     window.y = y;
-    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)x, (float)y);
   }
 
 
@@ -49,29 +49,12 @@ namespace renderer{
       
     CHECKERROR
     
-    //createPlane();
     InitQuad();
     
-
-
-    viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-
-    auto mat4TypeInfo = kiwi::core::DataTypeManager::TypeOf("Mat4");
-    auto uintTypeInfo = kiwi::core::DataTypeManager::TypeOf("GLuint");
-    auto vec2TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec2");
-    auto vec3TypeInfo = kiwi::core::DataTypeManager::TypeOf("Vec3");
-    auto textureTypeInfo = kiwi::core::DataTypeManager::TypeOf("Texture2D");
-    
-
-    viewMatNode = kiwi::core::NodeTypeManager::Create("Mat4");
-    winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
-    *viewMatNode->output().data()->value<glm::mat4>() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.f));
-
     nodes::RegisterTimeNode();
-    timeNode = nodes::CreateTimeNode();
-    winSizeNode = kiwi::core::NodeTypeManager::Create("Vec2");
-    *winSizeNode->output().dataAs<glm::vec2>() = glm::vec2((float)window.x, (float)window.y);
 
+    timeNode = nodes::CreateTimeNode();
+    
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // shaders
@@ -99,7 +82,6 @@ namespace renderer{
     raymarchingShader->build( vs, fs, marcherLoc );
 
     nodes::RegisterRayMarchingNode(raymarchingShader);
-    rayMarchingNode = nodes::CreateRayMarchingNode();
 
 
     CHECKERROR
@@ -139,7 +121,6 @@ namespace renderer{
     CHECKERROR
     edgeShader->build( vs, fs, edgeLoc  );
     nodes::RegisterPostFxNode( edgeShader  ,"Edge detection");
-    auto edgeNode = nodes::CreatePostFxNode("Edge detection");
 
     //  Bloom Shader
 
@@ -154,7 +135,6 @@ namespace renderer{
     CHECKERROR
     bloomShader->build( vs, fs, bloomLoc  );
     nodes::RegisterPostFxNode( bloomShader  ,"Bloom");
-    auto bloomNode = nodes::CreatePostFxNode("Bloom");
 
     //  Radial Blur Shader
 
@@ -168,8 +148,7 @@ namespace renderer{
     CHECKERROR
     radialShader->build( vs, fs, radialLoc  );
     nodes::RegisterPostFxNode( radialShader  ,"Radial Blur");
-    auto radialNode = nodes::CreatePostFxNode("Radial Blur");
-
+    
 
     //-----------------------------------------------------
     fs.clear();
@@ -183,7 +162,7 @@ namespace renderer{
     auto sepiaShader = new Shader;
     sepiaShader->build(vs,fs,sepiaMap);
     nodes::RegisterPostFxNode( sepiaShader  ,"Sepia");
-    auto sepiaNode = nodes::CreatePostFxNode("Sepia");
+    
 
     //-----------------------------------------------------
     fs.clear();
@@ -197,8 +176,7 @@ namespace renderer{
     auto bnwShader = new Shader;
     bnwShader->build(vs,fs,bnwMap);
     nodes::RegisterPostFxNode( bnwShader  ,"Black and white");
-    auto bnwNode = nodes::CreatePostFxNode("Black and white");
-
+    
     //-----------------------------------------------------
     fs.clear();
     utils::LoadTextFile("shaders/Corners.frag", fs );
@@ -209,12 +187,10 @@ namespace renderer{
         {"factor",         { Shader::UNIFORM | Shader::FLOAT} },
         {"windowSize",     { Shader::UNIFORM | Shader::FLOAT2} }
     };
-    
     auto cornerShader = new Shader;
     cornerShader->build(vs,fs,cornerMap);
     nodes::RegisterPostFxNode( cornerShader  ,"Corners");
-    auto cornerNode = nodes::CreatePostFxNode("Corners");
-
+    
     //-----------------------------------------------------
     fs.clear();
     utils::LoadTextFile("shaders/SetAlpha.frag", fs );
@@ -232,32 +208,28 @@ namespace renderer{
     CHECKERROR
 
     nodes::RegisterFloatMathNodes();
-
-    skyColorNode = nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) );
-    groundColorNode = nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) );
-    buildingsColorNode = nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) );
-    sphereColorNode = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
-    dofNode = nodes::CreatePostFxNode("Depth of field");
-    screenNode = nodes::CreateScreenNode();
-
+    nodes::RegisterColorMixNode();
 
 
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(400,0),screenNode) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 100), skyColorNode ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 150), groundColorNode ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 200), buildingsColorNode ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-300, 250), sphereColorNode ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 100), nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) ) ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 150), nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) ) ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 200), nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) ) ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 250), nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) ) ) );
 
-    io::Compositor::Instance().add( new io::NodeView(QPointF(0,0), rayMarchingNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),dofNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,200),edgeNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,400),radialNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,500),bloomNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,300),sepiaNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(400,300),bnwNode) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(400,400),cornerNode) );
+    auto rayMarcher = nodes::CreateRayMarchingNode();
+    screenNode = nodes::CreateScreenNode();
+    io::Compositor::Instance().add( new io::NodeView(QPointF(0,0),     rayMarcher ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(600,0),   screenNode ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),   nodes::CreatePostFxNode("Depth of field") ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,200), nodes::CreatePostFxNode("Edge detection") ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,400), nodes::CreatePostFxNode("Radial Blur") ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,500), nodes::CreatePostFxNode("Bloom")) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200,300), nodes::CreatePostFxNode("Sepia") ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,300), nodes::CreatePostFxNode("Black and white") ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400,400), nodes::CreatePostFxNode("Corners") ) );
 
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 200), nodes::CreateColorMixNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 400), nodes::CreateCosNode()) );
@@ -266,12 +238,16 @@ namespace renderer{
     io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateClampNode()) );
     io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 600), nodes::CreateSubstractNode() ) );
 
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 450), 1.0, 100.0 ) );
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-100, 550), 0.0, 1.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 0), 1.0, 100.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 100), 0.0, 10.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 200), 0.0, 1.0 ) );
+    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 300), 0.0, 1.0 ) );
 
+    assert( screenNode );
     assert( timeNode );
-    assert( timeNode->output() >> rayMarchingNode->input(6) );
-    assert( rayMarchingNode->output(1) >> screenNode->input() );
+    assert( rayMarcher );
+    assert( timeNode->output() >> rayMarcher->input(6) );
+    assert( rayMarcher->output(1) >> screenNode->input() );
   }
 
 

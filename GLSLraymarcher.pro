@@ -12,6 +12,7 @@ HEADERS +=  src/io/Window.hpp \
             src/nodes/ColorNode.hpp \
             src/nodes/RayMarchingNode.hpp \
             src/nodes/FloatMathNodes.hpp \
+            src/nodes/ColorMix.hpp \
             src/utils/CheckGLError.hpp \
     src/io/NodeView.hpp \
     src/io/Compositor.hpp \
@@ -38,6 +39,7 @@ SOURCES +=  src/main.cpp \
             src/nodes/ColorNode.cpp \
             src/nodes/RayMarchingNode.cpp \
             src/nodes/FloatMathNodes.cpp \
+            src/nodes/ColorMix.cpp \
             src/utils/CheckGLError.cpp \
             src/KiwiInit.cpp \
     src/io/NodeView.cpp \
