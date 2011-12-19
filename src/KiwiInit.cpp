@@ -12,7 +12,6 @@
 //#include "nodes/RayMarchingNode.hpp"
 
 #include <GL/glew.h>
-#include <GL/freeglut.h>
 
 using namespace kiwi;
 using namespace glm;
