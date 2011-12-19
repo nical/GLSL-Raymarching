@@ -1,10 +1,17 @@
 #include "Compositor.hpp"
 
 #include <QGraphicsView>
+#include <QMenu>
+#include <QString>
+#include <QList>
+#include <QAction>
+
 #include <assert.h>
 
 #include "io/NodeView.hpp"
 #include "io/PortView.hpp"
+#include "io/CreateNodeAction.hpp"
+
 #include "kiwi/core/NodeTypeManager.hpp"
 #include "kiwi/core/OpConnect.hpp"
 #include "kiwi/core/Node.hpp"
@@ -12,6 +19,8 @@
 namespace io{
 
 static Compositor * s_instance = 0;
+static QMenu * s_menu = 0;
+static QList<QAction*> s_actions;
 
 void Compositor::Create( QGraphicsView * v )
 {
@@ -37,9 +46,25 @@ Compositor::~Compositor()
     _view->setScene(0);
 }
 
+void Compositor::menu( QPoint pos )
+{
+    std::cerr << "contextMenuEvent\n";
+    QMenu menu; //= new QMenu;
+    menu.addSeparator();
+    QString s = "Add node...";
+    menu.addActions( s_actions );
+    menu.exec( pos );
+    menu.show();
+}
+
 void Compositor::add(NodeView * nv)
 {
     nv->addToScene( &_scene );
+}
+
+void Compositor::addNodeToMenu( const QString& name, void(*fptr)(const QPointF&) )
+{
+    s_actions.push_back( new CreateNodeAction(name, fptr) );
 }
 
 bool Compositor::tryConnect( PortView* p1, PortView * p2)

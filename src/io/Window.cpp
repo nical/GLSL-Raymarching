@@ -5,7 +5,7 @@
 #include "io/Window.hpp"
 #include "renderer/Renderer.hpp"
 #include "renderer/FrameBuffer.hpp"
-
+#include "io/Compositor.hpp"
 
 
 #include <QApplication>
@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QWidget>
 #include <QGraphicsItem>
+#include <QGraphicsSceneContextMenuEvent>
 
 #include <iostream>
 
@@ -28,6 +29,8 @@ namespace io{
 
   int CurrentWidth;
   int CurrentHeight;
+  int CursorX;
+  int CursorY;
   int WindowHandle = 0;
 
   static renderer::Renderer* _renderer;
@@ -43,69 +46,28 @@ int GetRenderWindowHeight()
     return CurrentHeight;
 }
 
-void GraphicsView::resizeEvent(QResizeEvent *event) {
-    if (scene())
-        scene()->setSceneRect(
-            QRect(QPoint(0, 0), event->size()));
-    QGraphicsView::resizeEvent(event);
-    CurrentWidth = event->size().width();
-    CurrentHeight = event->size().height();
-}
-
-QDialog * GraphicsScene::createDialog( const QString &windowTitle) const
+int GetCursorX()
 {
-    QDialog *dialog = new QDialog(0,
-        Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-
-    dialog->setWindowOpacity(0.8);
-    dialog->setWindowTitle(windowTitle);
-    dialog->setLayout(new QVBoxLayout);
-
-    return dialog;
+    return CursorX;
 }
+
+int GetCursorY()
+{
+    return CursorY;
+}
+
 
 GraphicsScene::GraphicsScene()
+: QGraphicsScene(0)
 {
-     QWidget *instructions = createDialog(tr("Instructions"));
-    instructions->layout()->addWidget(new QLabel(
-        tr("Use mouse wheel to zoom model, and click and "
-           "drag to rotate model")));
-    instructions->layout()->addWidget(new QLabel(
-        tr("Move the sun around to change the light "
-           "position")));
-    addWidget(instructions);
-
-    QPointF pos(10, 10);
-    foreach (QGraphicsItem *item, items()) {
-        item->setFlag(QGraphicsItem::ItemIsMovable);
-        item->setCacheMode(
-            QGraphicsItem::DeviceCoordinateCache);
-    
-        const QRectF rect = item->boundingRect();
-        item->setPos(pos.x() - rect.x(), pos.y() - rect.y());
-        pos += QPointF(0, 10 + rect.height());
-    }
 }
 
-
-void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
+void GraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
 {
-    if (painter->paintEngine()->type() != QPaintEngine::OpenGL)
-    {
-        qWarning("OpenGLScene: drawBackground needs a "
-                 "QGLWidget to be set as viewport on the "
-                 "graphics view");
-        //setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers)));
-        //return;
-    }
-
-    glClearColor(1.0, 0.0, 0.0, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    QTimer::singleShot(20, this, SLOT(update()));
+    CursorX = e->scenePos().x();
+    CursorY = e->scenePos().y();
+    Compositor::Instance().menu( e->screenPos() );
 }
-
-
 
   GLWidget::GLWidget(const QGLFormat& format, QWidget *parent)
     : QGLWidget( format, parent)
@@ -121,11 +83,8 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
   QSize GLWidget::minimumSizeHint() const {
     return QSize(50, 50);
   }
-/*
-  QSize GLWidget::sizeHint() const {
-    return QSize(400, 400);  // TODO look at this ion case of size related pbs.
-  }
-*/
+
+
   void GLWidget::initializeGL() {
 
     GLenum GlewInitResult = glewInit();
@@ -166,16 +125,8 @@ void GraphicsScene::drawBackground(QPainter *painter, const QRectF &)
 
   void GLWidget::paintGL()
   {
-
-    //glutTimerFunc(millisec, RenderFunction, 0);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    // implement the scene rendering here.
-    // like:
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
       _renderer->drawScene();
-    //glutPostRedisplay();
-
   }
 
   void GLWidget::setRenderer (renderer::Renderer* r){

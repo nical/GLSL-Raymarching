@@ -52,8 +52,7 @@ int main(int argc, char* argv[])
     glewExperimental = GL_TRUE;
 
     io::GLWidget glsection (glFormat);
-    //glsection.show();
-
+    
     QUiLoader loader;
 
     QFile uiFile("../mainwindow.ui");

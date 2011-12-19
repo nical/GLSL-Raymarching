@@ -12,6 +12,9 @@ namespace io{
 
 class SliderNodeAdapter;
 
+
+void AddSliderMenu();
+
 class SliderNodeView : public io::NodeView
 {
 public:

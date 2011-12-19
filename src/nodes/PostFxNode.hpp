@@ -27,6 +27,7 @@ private:
 };
 
 
+void AddPostFxToMenu();
 
 void RegisterPostFxNode( renderer::Shader* shader, const std::string& name );
 kiwi::core::Node * CreatePostFxNode( const std::string& name );

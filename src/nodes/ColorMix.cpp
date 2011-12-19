@@ -6,6 +6,9 @@
 #include "kiwi/core/DynamicNodeUpdater.hpp"
 #include "glm/glm.hpp"
 
+#include "io/Compositor.hpp"
+#include "io/NodeView.hpp"
+
 namespace nodes{
 
 typedef kiwi::core::DynamicNodeUpdater::DataArray DataArray;
@@ -18,6 +21,11 @@ bool ApplyColorMix(const DataArray& inputs, const DataArray& outputs)
         *inputs[2]->value<float>()
     );
     return true;
+}
+
+void AddColorMixNodeToScene( const QPointF& p )
+{
+    io::Compositor::Instance().add( new io::NodeView( p, CreateColorMixNode() ) );
 }
 
 void RegisterColorMixNode()
@@ -34,6 +42,7 @@ void RegisterColorMixNode()
         { "out", vec3TypeInfo, kiwi::READ }
     };
     kiwi::core::NodeTypeManager::RegisterNode("ColorMix", layout, new kiwi::core::DynamicNodeUpdater( &ApplyColorMix ) );
+    io::Compositor::Instance().addNodeToMenu("ColorMix", &AddColorMixNodeToScene );
 }
 
 kiwi::core::Node * CreateColorMixNode()

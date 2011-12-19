@@ -15,45 +15,35 @@ namespace renderer{
 namespace io{
 
 
-class GraphicsView : public QGraphicsView
-{
-public:
-    GraphicsView()
-    {
-        setWindowTitle(tr("GLSL raymarcher"));
-    }
-
-protected:
-    void resizeEvent(QResizeEvent *event);
-};
-
 int GetRenderWindowWidth();
 int GetRenderWindowHeight();
+
+int GetCursorX();
+int GetCursorY();
 
 class GraphicsScene : public QGraphicsScene
 {
 public:
     GraphicsScene();
-    void drawBackground(QPainter *painter, const QRectF &);
-private:
-    QDialog * createDialog( const QString &windowTitle) const;
+protected:
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent* e);
 };
 
 
 
-  class GLWidget : public QGLWidget{
-    Q_OBJECT;
+class GLWidget : public QGLWidget{
+Q_OBJECT;
 
-    public:
-      GLWidget(const QGLFormat& format, QWidget *parent = 0);
-      ~GLWidget();
+public:
+  GLWidget(const QGLFormat& format, QWidget *parent = 0);
+  ~GLWidget();
 
-      QSize minimumSizeHint() const;
-      //QSize sizeHint() const;
+  QSize minimumSizeHint() const;
+  //QSize sizeHint() const;
 
-      void setRenderer (renderer::Renderer* r);
+  void setRenderer (renderer::Renderer* r);
 
-    protected:
+protected:
 
       QTimer  redrawClock;
 

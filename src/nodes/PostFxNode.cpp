@@ -7,6 +7,8 @@
 #include "utils/CheckGLError.hpp"
 #include "utils/LoadFile.hpp"
 #include "io/Window.hpp"
+#include "io/Compositor.hpp"
+#include "io/NodeView.hpp"
 
 #include "kiwi/core/NodeTypeManager.hpp"
 #include "kiwi/core/DataTypeManager.hpp"
@@ -182,6 +184,30 @@ kiwi::core::Node * CreatePostFxNode(const std::string& name)
     return node;
 }
 
+
+
+#define FuncForMenu( name, func ) void func( const QPointF& pos ){ \
+io::Compositor::Instance().add( new io::NodeView(pos, CreatePostFxNode(name) ) ); \
+}
+
+FuncForMenu("Depth of field", AddDofMenu)
+FuncForMenu("Radial blur", AddRadBlurMenu)
+FuncForMenu("Edge detection", AddEdgeMenu)
+FuncForMenu("Black and White", AddbnwMenu)
+FuncForMenu("Sepia", AddSepiaMenu)
+FuncForMenu("Bloom", AddBloomMenu)
+FuncForMenu("Corners", AddCornerMenu)
+
+void AddPostFxToMenu()
+{
+  io::Compositor::Instance().addNodeToMenu( "Depth of field", &AddDofMenu );
+  io::Compositor::Instance().addNodeToMenu( "Radial Blur", &AddRadBlurMenu );
+  io::Compositor::Instance().addNodeToMenu( "Edge detection", &AddEdgeMenu );
+  io::Compositor::Instance().addNodeToMenu( "Black and white", &AddbnwMenu );
+  io::Compositor::Instance().addNodeToMenu( "Sepia", &AddSepiaMenu );
+  io::Compositor::Instance().addNodeToMenu( "Bloom", &AddBloomMenu );
+  io::Compositor::Instance().addNodeToMenu( "Corners", &AddCornerMenu );
+}
 
 // ---------------------------------------------------------------- Render to screen
 

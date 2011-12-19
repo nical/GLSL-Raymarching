@@ -25,7 +25,8 @@ HEADERS +=  src/io/Window.hpp \
     src/nodes/PostFxNode.hpp \
     src/io/SliderNodeView.hpp \
     src/io/SliderNodeAdapter.hpp \
-    src/io/ColourPicker.hpp
+    src/io/ColourPicker.hpp \
+    src/io/CreateNodeAction.hpp
 
 INCLUDEPATH += ./extern ./src ./extern/kiwi/include
 SOURCES +=  src/main.cpp \
@@ -53,7 +54,8 @@ SOURCES +=  src/main.cpp \
     src/nodes/PostFxNode.cpp \
     src/io/SliderNodeView.cpp \
     src/io/SliderNodeAdapter.cpp \
-    src/io/ColourPicker.cpp
+    src/io/ColourPicker.cpp \
+    src/io/CreateNodeAction.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pg -g
             

@@ -1,9 +1,10 @@
 #ifndef COMPOSITOR_HPP
 #define COMPOSITOR_HPP
 
-#include <QGraphicsScene>
+#include "io/Window.hpp"
 
 class QGraphicsView;
+class QAction;
 
 namespace io{
 
@@ -23,12 +24,16 @@ public:
         return &_scene;
     }
 
+    void menu( QPoint pos );
+    void addNodeToMenu( const QString& name, void(*fptr)(const QPointF&) );
+
+
     bool tryConnect( PortView* p1, PortView * p2);
 private:
     Compositor( QGraphicsView * v );
 
     QGraphicsView * _view;
-    QGraphicsScene _scene;
+    GraphicsScene _scene;
 };
 
 }//namespace

@@ -3,8 +3,20 @@
 #include "kiwi/core/all.hpp"
 #include <assert.h>
 
+#include "io/ColorNodeView.hpp"
+#include "io/Compositor.hpp"
+
 namespace nodes{
 
+void AddColorNodeToCompositor( const QPointF& p )
+{
+    io::Compositor::Instance().add( new io::ColorNodeView(p, CreateColorNode() ) );
+}
+
+void RegisterColorNode()
+{
+    io::Compositor::Instance().addNodeToMenu( "Color", &AddColorNodeToCompositor );
+}
 
 kiwi::core::Node * CreateColorNode( glm::vec3 color )
 {

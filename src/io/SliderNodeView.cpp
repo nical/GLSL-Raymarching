@@ -5,6 +5,7 @@
 #include "kiwi/core/NodeTypeManager.hpp"
 
 #include "io/PortView.hpp"
+#include "io/Compositor.hpp"
 
 #include <QSlider>
 #include <QGraphicsScene>
@@ -13,6 +14,27 @@
 #include "io/SliderNodeAdapter.hpp"
 
 namespace io {
+
+void InsertSlider0_1( const QPointF& p)
+{
+    io::Compositor::Instance().add( new SliderNodeView(p, 0.0, 1.0) );
+}
+
+void InsertSlider0_10( const QPointF& p)
+{
+    io::Compositor::Instance().add( new SliderNodeView(p, 0.0, 10.0) );
+}
+void InsertSlider0_100( const QPointF& p)
+{
+    io::Compositor::Instance().add( new SliderNodeView(p, 0.0, 100.0) );
+}
+
+void AddSliderMenu()
+{
+    io::Compositor::Instance().addNodeToMenu("Slider [0;1]", &InsertSlider0_1 );
+    io::Compositor::Instance().addNodeToMenu("Slider [0;10]", &InsertSlider0_10 );
+    io::Compositor::Instance().addNodeToMenu("Slider [0;100]", &InsertSlider0_100 );
+}
 
 SliderNodeView::SliderNodeView(const QPointF& position, float smin, float smax)
 : NodeView(position, kiwi::core::NodeTypeManager::Create("Float") )

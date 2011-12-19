@@ -93,7 +93,10 @@ namespace renderer{
     //  Depth Of Field Shader
     utils::LoadTextFile("shaders/DOF.frag", fs);
     Shader::LocationMap postFxLoc = {
-        {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },
+        {"windowSize",      { Shader::UNIFORM | Shader::FLOAT2} },        
+        {"highlightGain",   { Shader::UNIFORM | Shader::FLOAT} },
+        {"focalDepth",      { Shader::UNIFORM | Shader::FLOAT} },
+        {"focalRange",      { Shader::UNIFORM | Shader::FLOAT} },
         {"inputImage",   { Shader::UNIFORM | Shader::TEXTURE2D} },
         {"fragmentInfo",  { Shader::UNIFORM | Shader::TEXTURE2D} }
     };
@@ -147,7 +150,7 @@ namespace renderer{
     auto radialShader = new Shader;
     CHECKERROR
     radialShader->build( vs, fs, radialLoc  );
-    nodes::RegisterPostFxNode( radialShader  ,"Radial Blur");
+    nodes::RegisterPostFxNode( radialShader  ,"Radial blur");
     
 
     //-----------------------------------------------------
@@ -202,51 +205,64 @@ namespace renderer{
     };
     auto alphaShader = new Shader;
     alphaShader->build(vs,fs,alphaMap);
-    nodes::RegisterPostFxNode( alphaShader  ,"SetAlpha");
-    auto alphaNode = nodes::CreatePostFxNode("SetAlpha");
+    nodes::RegisterPostFxNode( alphaShader  ,"Force alpha");
+    auto alphaNode = nodes::CreatePostFxNode("Force alpha");
 
     CHECKERROR
 
     nodes::RegisterFloatMathNodes();
+    nodes::RegisterColorNode();
     nodes::RegisterColorMixNode();
 
+    nodes::AddPostFxToMenu();
+    io::AddSliderMenu();
 
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-300,50), timeNode) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 100), nodes::CreateColorNode( glm::vec3(0.0,0.0,1.0) ) ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 150), nodes::CreateColorNode( glm::vec3(0.8,0.8,0.8) ) ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 200), nodes::CreateColorNode( glm::vec3(1.0,1.0,1.0) ) ) );
-    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(-200, 250), nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) ) ) );
 
+    auto color1 = nodes::CreateColorNode( glm::vec3(0.6,0.6,0.6) );
+    auto color2 = nodes::CreateColorNode( glm::vec3(1.0,0.0,0.0) );
     auto rayMarcher = nodes::CreateRayMarchingNode();
+    auto sinNode = nodes::CreateSinNode();
+    auto divNode = nodes::CreateDivideNode();
+    auto multNode = nodes::CreateMultiplyNode();
+    auto addNode = nodes::CreateAddNode();
+    auto mixNode = nodes::CreateColorMixNode();
     screenNode = nodes::CreateScreenNode();
-    io::Compositor::Instance().add( new io::NodeView(QPointF(0,0),     rayMarcher ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(600,0),   screenNode ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,0),   nodes::CreatePostFxNode("Depth of field") ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,200), nodes::CreatePostFxNode("Edge detection") ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,400), nodes::CreatePostFxNode("Radial Blur") ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,500), nodes::CreatePostFxNode("Bloom")) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(200,300), nodes::CreatePostFxNode("Sepia") ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(400,300), nodes::CreatePostFxNode("Black and white") ) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(400,400), nodes::CreatePostFxNode("Corners") ) );
 
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 200), nodes::CreateColorMixNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 300), nodes::CreateAddNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 400), nodes::CreateSinNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 400), nodes::CreateCosNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 500), nodes::CreateMultiplyNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateDivideNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-100, 600), nodes::CreateClampNode()) );
-    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 600), nodes::CreateSubstractNode() ) );
+    auto sliderNodev = new io::SliderNodeView(QPointF(-350, 150), 0.0, 10.0 );
+    auto slider2Nodev = new io::SliderNodeView(QPointF(-30, 200), 0.0, 1.0 );
 
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 0), 1.0, 100.0 ) );
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 100), 0.0, 10.0 ) );
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 200), 0.0, 1.0 ) );
-    io::Compositor::Instance().add( new io::SliderNodeView(QPointF(-500, 300), 0.0, 1.0 ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-300, 0),  timeNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(750,0), rayMarcher ) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(950,0), screenNode ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(400, 0), color1 ) );
+    io::Compositor::Instance().add( new io::ColorNodeView(QPointF(400, 50), color2 ) );
+
+    io::Compositor::Instance().add( new io::NodeView(QPointF(580, 000), mixNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(30, 100), sinNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(400, 130), addNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(-135, 100), divNode) );
+    io::Compositor::Instance().add( new io::NodeView(QPointF(200, 100), multNode) );
+
+    io::Compositor::Instance().add( sliderNodev );
+    io::Compositor::Instance().add( slider2Nodev );
+
+    // default scene
 
     assert( screenNode );
     assert( timeNode );
     assert( rayMarcher );
     assert( timeNode->output() >> rayMarcher->input(6) );
+    assert( timeNode->output() >> divNode->input(0) );
+    assert( sliderNodev->node()->output() >> divNode->input(1) );
+    assert( divNode->output() >> sinNode->input() );
+    assert( sinNode->output() >> multNode->input(0) );
+    assert( slider2Nodev->node()->output() >> multNode->input(1) );
+    assert( slider2Nodev->node()->output() >> addNode->input(1) );
+    assert( multNode->output() >> addNode->input(0) );
+    assert( addNode->output() >> mixNode->input(2) );
+    assert( color1->output() >> mixNode->input(0));
+    assert( color2->output() >> mixNode->input(1));
+    assert( mixNode->output() >> rayMarcher->input(3) );
     assert( rayMarcher->output(1) >> screenNode->input() );
   }
 

@@ -7,6 +7,9 @@
 #include "kiwi/core/NodeTypeManager.hpp"
 #include "kiwi/core/DataTypeManager.hpp"
 
+#include "io/NodeView.hpp"
+#include "io/Compositor.hpp"
+
 #include <math.h>
 
 using namespace kiwi::core;
@@ -53,6 +56,22 @@ bool ApplySub(const DataArray& inputs, const DataArray& outputs)
     *outputs[0]->value<float>() = (*inputs[0]->value<float>()) - (*inputs[1]->value<float>());
 }
 
+
+#define FuncForMenu( create, func ) void func( const QPointF& pos ){ \
+    std::cerr << "add node\n"; \
+io::Compositor::Instance().add( new io::NodeView(pos, create() ) ); \
+}
+
+#define CompositorAdd( func, name ) io::Compositor::Instance().addNodeToMenu( name, func );
+
+FuncForMenu( CreateSinNode, AddSinToMenu )
+FuncForMenu( CreateCosNode, AddCosToMenu )
+FuncForMenu( CreateClampNode, AddClampToMenu )
+FuncForMenu( CreateAddNode, AddAddToMenu )
+FuncForMenu( CreateSubstractNode, AddSubstractToMenu )
+FuncForMenu( CreateMultiplyNode, AddMultiplyToMenu )
+FuncForMenu( CreateDivideNode, AddDivideToMenu )
+
 void RegisterFloatMathNodes()
 {
     const DataTypeInfo * floatTypeInfo = DataTypeManager::TypeOf("Float");
@@ -85,6 +104,14 @@ void RegisterFloatMathNodes()
     NodeTypeManager::RegisterNode("Divide", layout_2_1, new DynamicNodeUpdater( &ApplyDiv ) );
     NodeTypeManager::RegisterNode("Add", layout_2_1, new DynamicNodeUpdater( &ApplyAdd ) );
     NodeTypeManager::RegisterNode("Substract", layout_2_1, new DynamicNodeUpdater( &ApplySub ) );
+
+    CompositorAdd( &AddSinToMenu, "Sin" );
+    CompositorAdd( &AddCosToMenu, "Cos" );
+    CompositorAdd( &AddAddToMenu, "Add" );
+    CompositorAdd( &AddSubstractToMenu, "Substract" );
+    CompositorAdd( &AddMultiplyToMenu, "Multiply" );
+    CompositorAdd( &AddDivideToMenu, "Divide" );
+    CompositorAdd( &AddClampToMenu, "Clamp" );
 }
 
 kiwi::core::Node * CreateSinNode()
