@@ -87,7 +87,8 @@ we needed to make it possible to root any output texture port of any node into a
 texture port which requires to be carefull about how multiple target rendering works
 and how frame buffers and textures are to be managed.
 
-We put a lot of efforts into making it easy to write new shader-based effects.
+We put a lot of efforts into making it easy to write new shader-based effects without
+having to write a lot of C++ code.
 
 In the end, adding a new shader based effect to the program only requires to write
 the shader in a separate file and to invoke the following lines of C++ code:
