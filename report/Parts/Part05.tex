@@ -44,3 +44,38 @@ This worked ``Out of the box'' on the ATI card (most probably because it was
 more recent), while was not supported on the nVidia one. To fix this, however,
 the Glew was used to enable experimental extensions for the OpenGL context used,
 by enabling the \syntax{glewExperimental} flag in initialisation.	
+
+\section{Windows build}
+
+It turns out that we had a lot of problems building the application Windows. This
+is because we used some C++11 features that have been implemented in gcc for some
+time now, but not in the latest Visual C++ (we tried with Visual Studio 2010 professional).
+the kiwi library is built using CMake, which makes it easy to generate Visual Studio
+solutions, but since it uses initializer lists and type inference, we had to build it
+in a cygwin environment using gcc (cmake did not play well with mingw). Qt does not
+play well with cygwin, so we had to build the program in a mingw environment.\\
+In the end, when we tried on a windows 7 64bit, glew did not manage to load properly
+some of the OpenGL extensions (frame buffer) and the program segfaults at the first
+frame. This behaviour depends on the driver implementation (and glew), and should be
+different on other machines.\\
+Although it is possible to build the project on Windows (it only uses cross platform
+libraries, the main problem is the use of initializer lists everywhere in the source code),
+we don't recommand that the corrector tries to compile it on this platform (well,
+it took us an entire day to do it). The windows binaries are handed in with this
+report.\\
+
+\section{Posix build}
+
+In a posix environment and with a decent compiler, building the project is much
+easier. It requires to have CMake, Git, gcc 4.5 or higher and the Qt sdk installed.
+
+In the base folder, run the script SETUP.sh, then QMAKE.sh, BUILD.sh and fnially
+RUN.sh to run the application.
+
+\section{WebGL version}
+
+We ported the ray marching algorithm to WebGL (without the compositor and post effects).
+Anyone can see it at this url: \url{http://nical.github.com/GLSL-Raymarching/demo/webgl/raymarcher.html}.
+This demo runs without any plugin on modern browsers such as Firefox or Chrome
+if the host machine has good graphics drivers. It runs particularly well with Firefox
+on the Databar machines in the building 305 of DTU.

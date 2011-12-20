@@ -87,7 +87,7 @@ we needed to make it possible to root any output texture port of any node into a
 texture port which requires to be carefull about how multiple target rendering works
 and how frame buffers and textures are to be managed.
 
-xxx TODO xxx
+We put a lot of efforts into making it easy to write new shader-based effects.
 
 In the end, adding a new shader based effect to the program only requires to write
 the shader in a separate file and to invoke the following lines of C++ code:
@@ -116,12 +116,55 @@ the shader in a separate file and to invoke the following lines of C++ code:
 }
 \end{lstlisting}
 
+\image{Images/InterfaceTuto.png}{User interface of the compositor}{0.8}{img:compositorTuto}
+
 \image{Images/ComposingResult.png}{One of the possible outcomes using the composer}{0.8}{img:ComposingResult}
+
+\section{ How to use the compositor }
+
+User interface is devided in two areas. The rendering area displays the outcome of the composited scene,
+while the compositor area displays the node compositor and allows the user to interact with it.
+
+The user can move nodes around by drag and drop. This does not change the behaviour of the
+application but it is still usefull for readability.
+
+when the user clicks on a port, the later should change color, showing that it is selected.
+Once a port is selected and the users clicks on another port, the compositor will
+try to connect them. If connection succeeds, a link between the port is displayed.
+
+To unselect ports, click on the backround.
+
+To disconnect ports, select the input port (input ports are on the left side of
+the nodes), and press the \textit{Disconnect} button.
+
+In order to add nodes to the scene, use the right click on the compositor area.
+A menu should appear providing a list of availables nodes.
+
+the color stored in a \textit{ColorNode} can be choosed through a color picker by
+double clicking on the color preview of the node.
+
+Finally, the compositor view can be zoomed in and out using the horizontal slider
+at the bottom of the user interface. 
+
+
+It is easy to experiment with the compositing system. Most of the parameters can
+be animated if they depend on the time node, and control on the time input can be
+done using floating point math nodes such as \textit{sin}, \textit{cos}, \textit{add},
+\textit{multiply}, etc. For example animating a color can be done by using the
+\textit{ColorMix} node that take a float parameter \textit{t} which can depend on
+the sine of the time.
+The user should \textit{not} try to make cyclic graphs because this will
+crash the application (we did not implement checks for this case).
 
 \section{Possible improvements}
 
-xxx TODO xxx\\
-implement nicer user experience\\
-manage frame buffers and textures to reuse them as much as possible instead of allocating for each node\\
-allow to save and restore pipelines (should be a feature of Kiwi)\\
-add more nodes!\\
+The user interface and the compositor integration were implemented in a hurry so
+as to be usable in time, therefore it is perfectible on many aspects.
+If we were to continue this project, we would certainly start with:
+\begin{itemize}
+    \item implementing nicer user experience (drag and drop ports to connect/disconnect them, allow to remove nodes...)
+    \item check against cyclic graphs.
+    \item manage frame buffers and textures to reuse them as much as possible instead of allocating for each node
+    \item allow to save and restore pipelines (this will be a feature of the kiwi library)
+    \item add more nodes!
+\end{itemize}
